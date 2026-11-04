@@ -31,6 +31,7 @@ If customers ask, book, order or pay, we can digitalize it: cafés, shops, salon
       a: `Yes po! Try them now, no sign-up:<ul>
 <li>🛍️ ${a('demo.html', 'Online seller demo', true)}</li>
 <li>🏢 ${a('leasing-demo.html', 'Leasing demo', true)}: lease a unit yourself</li>
+<li>🏝️ ${a('resort-demo.html', 'Private resort demo', true)}: bookings, Airbnb sync, check-in</li>
 <li>🔄 ${a('tour.html#u206', '360° tour of a unit', true)}</li></ul>
 Want us to walk you through it for your business? ${a(DEMO_FORM, 'Book a free demo')}.` },
     { id: 'ecom', chip: '🛒 Online sellers', kw: ['tiktok', 'shopee', 'lazada', 'online seller', 'seller', 'sellers', 'online shop', 'live selling', 'live sell', 'mine', 'ecommerce', 'e-commerce', 'founding seller', 'reseller'],

@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Private Resort Demo</title>
+<meta name="description" content="Try a working private-resort booking system: booking page, Messenger answers, GCash down payments, Airbnb calendar sync, check-in, turnover and owner report.">
+<link rel="icon" type="image/png" sizes="64x64" href="img/mark-64.png">
+<link rel="apple-touch-icon" href="img/mark-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell (top bar + Guest/Owner switch) over one working area; green = direct booking, orange = Airbnb, blue = action. */
+:root{
+  --bg:#f4f6f8; --surface:#fff; --ink:#131c2a; --muted:#5d6876; --line:#e1e5ea;
+  --accent:#e8601a; --accent-soft:#fdeee5; --blue:#2563eb; --blue-soft:#e6eefc; --good:#1f8a4c; --good-soft:#e2f3e8;
+  --air:#e2553a; --air-soft:#fde7e1; --dir:#1f9d6b; --dir-soft:#ddf3ea; --warn:#b7791f; --warn-soft:#f8efdc;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222;
+  --air:#ff7b61; --air-soft:#3a1d17; --dir:#3fd19a; --dir-soft:#11332a; --warn:#f2b350; --warn-soft:#3a2f17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222;
+  --air:#ff7b61; --air-soft:#3a1d17; --dir:#3fd19a; --dir-soft:#11332a; --warn:#f2b350; --warn-soft:#3a2f17; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0;line-height:1.15}
+h2{font-size:20px}h3{font-size:16px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:5px;font:600 12px var(--body);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.b-air{background:var(--air-soft);color:var(--air)}.b-dir{background:var(--dir-soft);color:var(--dir)}
+.b-warn{background:var(--warn-soft);color:var(--warn)}.b-good{background:var(--good-soft);color:var(--good)}.b-blue{background:var(--blue-soft);color:var(--blue)}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:62px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand img{width:34px;height:34px;border-radius:9px;background:#fff;padding:3px}
+.brand b{display:block;font:800 16px var(--display);letter-spacing:-.01em}
+.brand small{display:block;color:var(--muted);font-size:12px}
+.seg{display:inline-flex;margin-left:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:999px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.note{background:var(--blue-soft);color:var(--ink);font-size:13.5px}
+.note .wrap{padding-block:8px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.note a{color:var(--blue);font-weight:600}
+
+/* guest view */
+.gview{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:20px;padding-block:20px 40px;align-items:start}
+.gview>*,.ph-in,.panel,.row .grow{min-width:0}
+.hero{position:relative;border-radius:16px 16px 0 0;overflow:hidden;aspect-ratio:16/7;background:var(--line)}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero .ov{position:absolute;inset:auto 0 0 0;padding:16px 18px;background:linear-gradient(transparent,rgba(0,0,0,.65));color:#fff}
+.hero .ov h1{font-size:clamp(22px,3vw,30px)}
+.hero .ov span{font-size:13.5px;opacity:.9}
+.hero .tag{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:999px}
+.bk{padding:18px;display:grid;gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px}
+.stay{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+.stay b{font-weight:700}
+.calhead{display:flex;align-items:center;gap:8px}
+.calhead h3{margin-right:auto}
+.calhead button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .wd{font-size:11.5px;color:var(--muted);text-align:center;font-weight:600}
+.cal .c{min-height:54px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.cal .c b{font-size:14px}
+.cal .c small{font-size:10.5px;color:var(--muted)}
+.cal .blank{border:0;background:transparent}
+.cal .past{opacity:.35}
+.cal .booked{background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,var(--line) 6px,var(--line) 7px);color:var(--muted)}
+.cal .sel{background:var(--blue);border-color:var(--blue);color:#fff}.cal .sel small{color:#fff}
+.cal button.c:not(:disabled):hover{border-color:var(--blue)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.panel{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:12px;background:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row .grow{flex:1;min-width:150px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+label.f input,label.f select{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px;font-size:15px;color:var(--ink)}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.step button{width:36px;height:36px;border:0;background:transparent;font-size:18px}
+.step output{min-width:34px;text-align:center;font-weight:700}
+.sum{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.sum .t{font-weight:700;border-top:1px dashed var(--line);padding-top:6px}
+
+/* messenger phone */
+.phone{border:1px solid var(--line);border-radius:28px;background:var(--surface);padding:10px;position:sticky;top:78px}
+.ph-in{border-radius:20px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;height:min(640px,calc(100vh - 120px))}
+.ph-top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ph-top img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.ph-top b{display:block;font-size:14.5px}.ph-top small{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12px}
+.ph-top small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good)}
+.log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.msg{max-width:86%;padding:9px 12px;border-radius:16px;font-size:14px;line-height:1.45}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:5px}
+.msg .act{margin-top:8px}
+.qchips{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-top:1px solid var(--line);scrollbar-width:none}
+.qchips button{flex:none;border:1px solid var(--blue);color:var(--blue);background:transparent;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:600}
+.ph-in form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+.ph-in form input{flex:1;min-width:0;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px}
+.ph-in form button{width:40px;height:40px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:17px}
+.phone .cap{font-size:12px;color:var(--muted);text-align:center;margin:8px 0 2px}
+
+/* owner view */
+.oview{padding-block:16px 40px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+.tabs button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs .n{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;line-height:17px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{padding:14px 16px}
+.tile span{font-size:13px;color:var(--muted)}
+.tile b{display:block;font:800 26px var(--display);letter-spacing:-.02em;margin-top:2px}
+.tile small{font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.box{padding:16px;display:grid;gap:12px;align-content:start}
+.bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+.todo{display:grid;gap:8px}
+.todo button{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px}
+.todo button span:last-child{margin-left:auto;color:var(--blue);font-weight:600;font-size:13px}
+.ocal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.ocal .wd{font-size:11.5px;color:var(--muted);text-align:center;font-weight:600}
+.ocal .c{min-height:78px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:6px;font-size:12px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.ocal .c b{font-size:13px}
+.ocal .blank{border:0;background:transparent}
+.ocal .c.air{background:var(--air-soft);border-color:var(--air)}.ocal .c.dir{background:var(--dir-soft);border-color:var(--dir)}
+.ocal .c.pen{border:2px dashed var(--warn)}
+.ocal .c.today{outline:2px solid var(--blue);outline-offset:1px}
+.ocal .c .g{font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.loglist{display:grid;gap:6px;font-size:13.5px}
+.loglist div{display:flex;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg)}
+.loglist time{color:var(--muted);font-family:var(--mono);font-size:12px;flex:none;width:120px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:12px;color:var(--muted);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tblwrap{overflow-x:auto}
+.ck{display:grid;gap:8px}
+.ck label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:14px}
+.ck input{width:20px;height:20px;accent-color:var(--good)}
+.ck label.done{opacity:.6;text-decoration:line-through}
+.prev{border-left:3px solid var(--blue);padding:10px 12px;background:var(--bg);border-radius:0 10px 10px 0;font-size:14px}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+.ci{display:grid;grid-template-columns:240px 1fr;gap:16px}
+.ci img{width:100%;border-radius:12px;aspect-ratio:4/3;object-fit:cover}
+
+dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(5,10,20,.55)}
+.dlg{padding:20px;display:grid;gap:14px}
+.gcash{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--blue-soft)}
+.gcash .q{width:64px;height:64px;border-radius:8px;background:#fff;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:5px;flex:none}
+.gcash .q i{background:#0b1324;border-radius:1px}.gcash .q i.o{background:transparent}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 14px 30px -10px rgba(0,0,0,.4);z-index:50;max-width:calc(100% - 32px)}
+
+@media (max-width:900px){.gview{grid-template-columns:minmax(0,1fr)}.phone{position:static}.ph-in{height:560px}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:minmax(0,1fr)}.ci{grid-template-columns:minmax(0,1fr)}.ci img{max-width:280px}}
+@media (max-width:520px){.cal .c{min-height:46px}.cal .c small{font-size:9.5px}.ocal .c{min-height:60px;font-size:10.5px;padding:4px}.ocal .c .g{display:none}.seg{margin-left:0}.top .wrap{gap:8px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><img id="brandimg" src="img/mark-64.png" alt=""><div><b id="brandname"></b><small id="brandsub"></small></div></div>
+    <div class="seg" role="group" aria-label="Switch view">
+      <button type="button" data-act="view" data-v="guest" aria-pressed="true">Guest view</button>
+      <button type="button" data-act="view" data-v="owner" aria-pressed="false">Owner view</button>
+    </div>
+    <button class="btn sm" type="button" data-act="reset">Reset demo</button>
+  </div>
+</header>
+<div class="note" role="note"><div class="wrap"><span id="notetext"></span><a href="https://purrfectdigital.online/#demo">Get this for your resort</a></div></div>
+
+<main id="guest" class="wrap gview"></main>
+<main id="owner" class="wrap oview" hidden>
+  <nav class="tabs" role="tablist" aria-label="Owner sections" id="otabs"></nav>
+  <section id="opanel" aria-live="polite"></section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgtitle"><div class="dlg" id="dlgbody"></div></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  // ---- resort settings (the Casa De Vera copy swaps this block) ----
+  const CFG = {
+    name: 'Bahay Alon Private Resort', short: 'Bahay Alon', place: 'Rizal', sample: true,
+    store: 'resortDemo', photo: 'img/staycation.webp', gcash: '0917 000 0000',
+    weekday: 21000, weekend: 22000, maxPax: 24, extraFee: 500, cleanFee: 3000,
+  };
+  // ------------------------------------------------------------------
+  const TODAY = '2026-11-04';
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const P = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const iso = d => d.toISOString().slice(0, 10);
+  const addD = (s, n) => { const d = P(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
+  const dow = s => P(s).getUTCDay();
+  const fd = s => `${DAYS[dow(s)]}, ${MON[P(s).getUTCMonth()]} ${P(s).getUTCDate()}`;
+  const rate = s => [5, 6, 0].includes(dow(s)) ? CFG.weekend : CFG.weekday;
+  const peso = n => '₱' + Math.round(n).toLocaleString('en-PH');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = id => document.getElementById(id);
+
+  const CHECK = [['b1', 'Bedroom 1: king bed linens changed'], ['b2', 'Bunk room 2: linens and floor'], ['b3', 'Bunk room 3: linens and floor'],
+    ['cr', '3 bathrooms cleaned, toiletries refilled'], ['pool', 'Pool skimmed, chlorine checked'], ['jac', 'Pool jacuzzi cleaned'],
+    ['vip', 'VIP room jacuzzi cleaned'], ['kar', 'Karaoke room reset, mics charged'], ['kit', 'Kitchen, dining and griller area'], ['sup', 'Supplies: trash bags, tissue, soap']];
+  const allKeys = CHECK.map(c => c[0]);
+
+  const fresh = () => ({
+    view: 'guest', otab: 'dash', gmonth: '2026-11', omonth: '2026-11', sel: null, pax: 15, pets: false, gname: '', gmobile: '', nextId: 108, ci: null,
+    bookings: [
+      { id: 'DR-0101', ch: 'dir', date: '2026-11-01', guest: 'Garcia family', pax: 18, price: 22000, dp: 11000, dps: 'paid', status: 'out', fees: [{ l: '2 undeclared guests', a: 1000 }], turn: { done: allKeys.slice(), ready: true }, review: 'sent' },
+      { id: 'AB-7781', ch: 'air', date: '2026-11-03', guest: 'Paolo R.', pax: 12, price: 21000, dp: 0, dps: 'airbnb', status: 'out', fees: [], turn: { done: ['b1', 'b2', 'b3', 'pool'], ready: false }, review: 'due' },
+      { id: 'DR-0104', ch: 'dir', date: '2026-11-04', guest: 'Dela Cruz family', pax: 16, price: 21000, dp: 10500, dps: 'paid', status: 'confirmed', fees: [] },
+      { id: 'AB-7790', ch: 'air', date: '2026-11-06', guest: 'Arvin D.', pax: 14, price: 22000, dp: 0, dps: 'airbnb', status: 'confirmed', fees: [] },
+      { id: 'DR-0105', ch: 'dir', date: '2026-11-07', guest: 'Reyes family', pax: 20, price: 22000, dp: 11000, dps: 'paid', status: 'confirmed', fees: [] },
+      { id: 'DR-0106', ch: 'dir', date: '2026-11-13', guest: 'Santos barkada', pax: 18, price: 22000, dp: 11000, dps: 'review', ref: '5011 228 031 4', status: 'pending', fees: [] },
+      { id: 'AB-7802', ch: 'air', date: '2026-11-20', guest: 'Lea M.', pax: 10, price: 22000, dp: 0, dps: 'airbnb', status: 'confirmed', fees: [] },
+      { id: 'DR-0107', ch: 'dir', date: '2026-11-21', guest: 'Villanueva reunion', pax: 24, price: 22000, dp: 11000, dps: 'paid', status: 'confirmed', fees: [] },
+    ],
+    feed: [{ id: 'AB-7815', date: '2026-11-27', guest: 'Nadine P.', pax: 15, price: 22000 }, { id: 'AB-7820', date: '2026-12-05', guest: 'Marco T.', pax: 16, price: 22000 }],
+    log: [{ t: 'Today 6:02 AM', m: 'Exported 5 direct bookings to Airbnb (dates blocked there)' }, { t: 'Yesterday 9:40 PM', m: 'Imported Airbnb booking AB-7802 · Fri, Nov 20 blocked on your booking page' }],
+    chat: [],
+  });
+  let S;
+  try { S = JSON.parse(localStorage.getItem(CFG.store)) || fresh(); } catch (e) { S = fresh(); }
+  const save = () => { try { localStorage.setItem(CFG.store, JSON.stringify(S)); } catch (e) {} };
+  const on = s => S.bookings.find(b => b.date === s && b.status !== 'cancelled');
+  const byId = id => S.bookings.find(b => b.id === id);
+  let toastT;
+  const toast = m => { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3600); };
+
+  $('brandname').textContent = CFG.name;
+  $('brandsub').textContent = CFG.sample ? `Sample resort · ${CFG.place} · live demo` : `${CFG.place} · concept demo by Purrfect Digitalization`;
+  $('notetext').textContent = `Demo: today is Wed, Nov 4, 2026. Nothing is sent or charged${CFG.sample ? '; the resort and figures are samples' : '; rates from the Airbnb listing, bookings are sample data'}.`;
+  document.title = `${CFG.short} · Private Resort Demo`;
+
+  // ---------- guest view ----------
+  const monthGrid = (month, cell, wdClass) => {
+    const first = P(month + '-01'), y = first.getUTCFullYear(), m = first.getUTCMonth();
+    const n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    let h = DAYS.map(d => `<span class="${wdClass}">${d[0]}</span>`).join('');
+    for (let i = 0; i < first.getUTCDay(); i++) h += '<span class="c blank"></span>';
+    for (let d = 1; d <= n; d++) h += cell(`${month}-${String(d).padStart(2, '0')}`, d);
+    return h;
+  };
+  const shiftMonth = (month, k) => { const d = P(month + '-01'); d.setUTCMonth(d.getUTCMonth() + k); return iso(d).slice(0, 7); };
+  const monthName = month => `${MONTHS[P(month + '-01').getUTCMonth()]} ${month.slice(0, 4)}`;
+
+  function renderGuest() {
+    const sel = S.sel, price = sel ? rate(sel) : 0, dp = price / 2;
+    const ready = sel && S.gname.trim() && S.gmobile.replace(/\D/g, '').length >= 10;
+    $('guest').innerHTML = `
+<section class="card" aria-label="Booking page">
+  <div class="hero"><img src="${CFG.photo}" alt="Resort pool and villa" width="900" height="600"><span class="tag">${CFG.sample ? 'Sample photo' : 'Photo placeholder'}</span>
+    <div class="ov"><h1>${esc(CFG.name)}</h1><span>Private, exclusive use · ${esc(CFG.place)}</span></div></div>
+  <div class="bk">
+    <div class="chips"><span>Up to ${CFG.maxPax} guests</span><span>Pool + jacuzzi</span><span>VIP room jacuzzi</span><span>Karaoke room</span><span>Billiards</span><span>Pet-friendly</span></div>
+    <div class="stay"><span><b>22-hour stay</b>: check-in 8:00 AM, check-out 6:00 AM next day</span><span>Mon–Thu <b class="num">${peso(CFG.weekday)}</b> · Fri–Sun <b class="num">${peso(CFG.weekend)}</b></span></div>
+    <div class="calhead"><h3>${monthName(S.gmonth)}</h3>
+      <button type="button" data-act="gmonth" data-k="-1" aria-label="Previous month" ${S.gmonth <= '2026-11' ? 'disabled' : ''}>‹</button>
+      <button type="button" data-act="gmonth" data-k="1" aria-label="Next month" ${S.gmonth >= '2026-12' ? 'disabled' : ''}>›</button></div>
+    <div class="cal" role="grid" aria-label="Pick your date">${monthGrid(S.gmonth, (s, d) => {
+      const b = on(s), past = s < TODAY, isSel = s === sel;
+      const cls = ['c', past ? 'past' : '', b ? 'booked' : '', isSel ? 'sel' : ''].join(' ');
+      const sub = past ? '' : b ? 'Booked' : `${rate(s) / 1000}k`;
+      return `<button type="button" class="${cls}" data-act="pick" data-d="${s}" ${past || b ? 'disabled' : ''} aria-label="${fd(s)}${b ? ', booked' : past ? '' : ', ' + peso(rate(s))}"><b>${d}</b><small>${sub}</small></button>`;
+    }, 'wd')}</div>
+    <div class="legend"><span><i style="background:var(--surface)"></i>Open</span><span><i style="background:var(--line)"></i>Booked (here or on Airbnb)</span><span><i style="background:var(--blue)"></i>Your date</span></div>
+    <div class="panel">
+      ${sel ? `<div class="row"><div class="grow"><b>${fd(sel)}</b> <span class="muted small">8:00 AM to 6:00 AM, ${fd(addD(sel, 1))}</span></div><span class="badge b-good">Available</span></div>` : '<div class="muted">Pick an open date to see the total.</div>'}
+      <div class="row"><span class="grow">Guests <span class="muted small">(declare the exact count; ${peso(CFG.extraFee)} per undeclared guest)</span></span>
+        <span class="step"><button type="button" data-act="pax" data-k="-1" aria-label="Fewer guests">−</button><output class="num" aria-live="polite">${S.pax}</output><button type="button" data-act="pax" data-k="1" aria-label="More guests">+</button></span></div>
+      <label class="row small"><input type="checkbox" id="gpets" ${S.pets ? 'checked' : ''}> Bringing pets (out of the pool and beds, diapers on)</label>
+      <div class="row"><label class="f grow">Your name<input id="gname" value="${esc(S.gname)}" autocomplete="name" placeholder="e.g. Ana Santos"></label>
+        <label class="f grow">Mobile number<input id="gmobile" value="${esc(S.gmobile)}" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label></div>
+      ${sel ? `<div class="sum num"><span>22-hour stay, ${fd(sel)}</span><span>${peso(price)}</span><span>Down payment now (50%, GCash)</span><span>${peso(dp)}</span><span class="t">Balance on arrival</span><span class="t">${peso(price - dp)}</span></div>` : ''}
+      <button class="btn pri" type="button" data-act="book" ${ready ? '' : 'disabled'}>Book and pay down payment</button>
+      <span class="muted small">Dates booked on Airbnb are blocked here automatically, and your booking blocks the date on Airbnb.</span>
+    </div>
+  </div>
+</section>
+<aside class="phone" aria-label="Messenger assistant">
+  <div class="ph-in">
+    <div class="ph-top"><img src="${CFG.photo}" alt=""><div><b>${esc(CFG.short)}</b><small>Replies instantly</small></div></div>
+    <div class="log" id="chatlog">${S.chat.map(msgHtml).join('')}</div>
+    <div class="qchips">${['Magkano po?', 'Available this Saturday?', 'Pwede pets?', 'Check-in time?', 'Saan kayo?', 'Ilang tao max?'].map(q => `<button type="button" data-act="chip">${q}</button>`).join('')}</div>
+    <form id="chatform" autocomplete="off"><input id="chatin" placeholder="Message ${esc(CFG.short)}…" aria-label="Message"><button type="submit" aria-label="Send">➤</button></form>
+  </div>
+  <p class="cap">Messenger assistant: try "available sa Nov 21?"</p>
+</aside>`;
+    const log = $('chatlog'); log.scrollTop = log.scrollHeight;
+    $('gname').addEventListener('input', e => { S.gname = e.target.value; save(); syncBookBtn(); });
+    $('gmobile').addEventListener('input', e => { S.gmobile = e.target.value; save(); syncBookBtn(); });
+    $('gpets').addEventListener('change', e => { S.pets = e.target.checked; save(); });
+    $('chatform').addEventListener('submit', e => { e.preventDefault(); const v = $('chatin').value.trim(); if (v) ask(v); });
+  }
+  function syncBookBtn() {
+    const ok = S.sel && S.gname.trim() && S.gmobile.replace(/\D/g, '').length >= 10;
+    document.querySelector('[data-act="book"]').disabled = !ok;
+  }
+  const msgHtml = m => `<div class="msg ${m.who}">${m.t}${m.act ? `<div class="act"><button class="btn sm blue" type="button" data-act="chatgo" data-d="${m.act.d || ''}">${esc(m.act.l)}</button></div>` : ''}</div>`;
+
+  // ---------- Messenger assistant ----------
+  const nextDow = k => { let s = TODAY; for (let i = 0; i < 8; i++) { if (dow(s) === k && s >= TODAY) return s; s = addD(s, 1); } return s; };
+  const freeAfter = (s, n) => { const out = []; let d = s; for (let i = 0; i < 40 && out.length < n; i++) { d = addD(d, 1); if (d >= TODAY && d <= '2026-12-31' && !on(d)) out.push(d); } return out; };
+  function reply(text) {
+    const q = text.toLowerCase();
+    let date = null;
+    const md = q.match(/(nov|dec)[a-z]*\.?\s*(\d{1,2})/);
+    if (md) date = `2026-${md[1] === 'nov' ? '11' : '12'}-${String(+md[2]).padStart(2, '0')}`;
+    else if (/\b(sat|saturday|sabado)\b/.test(q)) date = nextDow(6);
+    else if (/\b(sun|sunday|linggo)\b/.test(q)) date = nextDow(0);
+    else if (/\b(fri|friday|biyernes)\b/.test(q)) date = nextDow(5);
+    else if (/\b(bukas|tomorrow)\b/.test(q)) date = addD(TODAY, 1);
+    if (date) {
+      if (isNaN(P(date)) || date < TODAY) return { t: 'That date has passed po. Which date are you looking at?' };
+      if (!on(date)) return { t: `Yes po, <b>${fd(date)}</b> is open! 22-hour stay (8:00 AM to 6:00 AM) for <b>${peso(rate(date))}</b>, up to ${CFG.maxPax} guests. A 50% GCash down payment locks the date.`, act: { l: `Book ${fd(date)}`, d: date } };
+      const alt = freeAfter(date, 3);
+      return { t: `Sorry po, <b>${fd(date)}</b> is already booked. Open dates nearby: ${alt.map(d => `<b>${fd(d)}</b> (${peso(rate(d))})`).join(', ')}.`, act: alt[0] ? { l: `Book ${fd(alt[0])}`, d: alt[0] } : null };
+    }
+    if (/(magkano|\bhm\b|how much|price|rate|presyo|rates)/.test(q)) return { t: `Hi po! Our 22-hour stay (8:00 AM to 6:00 AM) is <b>${peso(CFG.weekday)}</b> Mon–Thu and <b>${peso(CFG.weekend)}</b> Fri–Sun, exclusive use for up to ${CFG.maxPax} guests. Pool with jacuzzi, VIP room jacuzzi, karaoke room and billiards are included.`, act: { l: 'See open dates' } };
+    if (/(pet|aso|dog|cat|pusa|fur)/.test(q)) return { t: `Yes po, we're pet-friendly! Pets stay out of the pool and beds and wear diapers. A ${peso(CFG.cleanFee)} cleaning fee applies if they relieve themselves inside.` };
+    if (/(check.?in|check.?out|oras|time|anong oras)/.test(q)) return { t: 'Check-in is after 8:00 AM and check-out is before 6:00 AM the next day (22 hours). Quiet time at the pool is 10 PM to 7 AM.' };
+    if (/(pax|guests|tao|ilan|max|capacity)/.test(q)) return { t: `Up to ${CFG.maxPax} guests po. Please declare the exact count at booking; undeclared guests are ${peso(CFG.extraFee)} each per day.` };
+    if (/(saan|where|location|direction|address|waze|map)/.test(q)) return { t: `We're in ${esc(CFG.place)} po. Once your booking is confirmed we send the exact pin, a Waze link and landmarks.` };
+    if (/(book|reserve|reserba|pa.?book)/.test(q)) return { t: 'Pick your date on our booking page po; the calendar shows open dates and the total.', act: { l: 'Open booking page' } };
+    if (/(salamat|thank)/.test(q)) return { t: 'Walang anuman po! See you soon. 😊' };
+    if (/^(hi|hello|good|kumusta|musta)/.test(q)) return { t: `Hello po! 👋 Ask me about rates, open dates, pets or check-in time, or tap a question below.` };
+    return { t: 'A team member will reply shortly po. Meanwhile, you can check open dates on our booking page.', act: { l: 'Open booking page' } };
+  }
+  function ask(text) {
+    S.chat.push({ who: 'me', t: esc(text) });
+    S.chat.push(Object.assign({ who: 'bot' }, reply(text)));
+    S.chat = S.chat.slice(-30); save(); renderGuest();
+    setTimeout(() => $('chatin')?.focus({ preventScroll: true }), 0);
+  }
+  if (!S.chat.length) S.chat.push({ who: 'bot', t: `Hi po! 👋 Thanks for messaging ${esc(CFG.short)}. Ask about rates, open dates, pets or check-in time; I reply right away.` });
+
+  // ---------- owner view ----------
+  const TABS = [['dash', 'Dashboard'], ['cal', 'Calendar + Airbnb'], ['book', 'Bookings'], ['ci', 'Check-in'], ['turn', 'Turnover'], ['rev', 'Reviews']];
+  const counts = () => ({
+    book: S.bookings.filter(b => b.dps === 'review').length,
+    ci: S.bookings.filter(b => (b.date === TODAY && b.status === 'confirmed') || b.status === 'in').length,
+    turn: S.bookings.filter(b => b.turn && !b.turn.ready).length,
+    rev: S.bookings.filter(b => b.review === 'due').length,
+  });
+  const chBadge = b => b.ch === 'air' ? '<span class="badge b-air">Airbnb</span>' : '<span class="badge b-dir">Direct</span>';
+  const stBadge = b => ({ pending: '<span class="badge b-warn">Down payment to check</span>', confirmed: '<span class="badge b-good">Confirmed</span>', in: '<span class="badge b-blue">Checked in</span>', out: '<span class="badge">Checked out</span>' }[b.status]);
+  const feesOf = b => (b.fees || []).reduce((a, f) => a + f.a, 0);
+
+  function renderOwner() {
+    const c = counts();
+    $('otabs').innerHTML = TABS.map(([k, l]) => `<button type="button" role="tab" data-act="otab" data-t="${k}" aria-selected="${S.otab === k}">${l}${c[k] ? `<span class="n">${c[k]}</span>` : ''}</button>`).join('');
+    $('opanel').innerHTML = ({ dash, cal, book, ci, turn, rev }[S.otab])();
+    document.querySelectorAll('[data-tick]').forEach(el => el.addEventListener('change', e => {
+      const [id, k] = e.target.dataset.tick.split(':'), b = byId(id);
+      b.turn.done = e.target.checked ? [...new Set([...b.turn.done, k])] : b.turn.done.filter(x => x !== k); save(); renderOwner();
+    }));
+    $('ciform')?.addEventListener('change', e => {
+      if (e.target.name === 'smoke') S.ci.smoke = e.target.checked;
+      if (e.target.name === 'pet') S.ci.pet = e.target.checked;
+      if (e.target.name === 'method') S.ci.method = e.target.value;
+      save(); renderOwner();
+    });
+  }
+
+  function dash() {
+    const nov = S.bookings.filter(b => b.date.startsWith('2026-11') && b.status !== 'cancelled');
+    const earned = nov.filter(b => b.status !== 'pending');
+    const inc = ch => earned.filter(b => b.ch === ch).reduce((a, b) => a + b.price + feesOf(b), 0);
+    const dir = inc('dir'), air = inc('air'), tot = dir + air, fees = earned.reduce((a, b) => a + feesOf(b), 0);
+    const nxt = S.bookings.filter(b => b.date >= TODAY && ['confirmed', 'pending'].includes(b.status)).sort((a, b) => a.date.localeCompare(b.date))[0];
+    const c = counts();
+    const todo = [
+      c.book && [`${c.book} down payment${c.book > 1 ? 's' : ''} to confirm`, 'book'],
+      S.bookings.filter(b => b.date === TODAY && b.status === 'confirmed').map(b => [`Check in ${b.guest} today, 8:00 AM`, 'ci'])[0],
+      S.bookings.filter(b => b.status === 'in').map(b => [`${b.guest} is checked in; check out by 6:00 AM`, 'ci'])[0],
+      c.turn && [`${c.turn} turnover checklist${c.turn > 1 ? 's' : ''} open`, 'turn'],
+      c.rev && [`${c.rev} thank-you + review request${c.rev > 1 ? 's' : ''} to send`, 'rev'],
+    ].filter(Boolean);
+    return `
+<div class="grid4">
+  <div class="card tile"><span>Bookings in November</span><b class="num">${nov.length}</b><small>${nov.filter(b => b.ch === 'dir').length} direct · ${nov.filter(b => b.ch === 'air').length} Airbnb</small></div>
+  <div class="card tile"><span>Occupancy, November</span><b class="num">${Math.round(nov.length / 30 * 100)}%</b><small>${nov.length} of 30 days</small></div>
+  <div class="card tile"><span>Income, November</span><b class="num">${peso(tot)}</b><small>confirmed stays + fees</small></div>
+  <div class="card tile"><span>Extra fees collected</span><b class="num">${peso(fees)}</b><small>undeclared guests, cleaning</small></div>
+</div>
+<div class="two">
+  <div class="card box"><h3>Income by channel</h3>
+    <div><div class="row small"><span class="grow">Direct (Facebook, Messenger, booking page)</span><b class="num">${peso(dir)}</b></div><div class="bar"><i style="width:${tot ? dir / tot * 100 : 0}%;background:var(--dir)"></i></div></div>
+    <div><div class="row small"><span class="grow">Airbnb</span><b class="num">${peso(air)}</b></div><div class="bar"><i style="width:${tot ? air / tot * 100 : 0}%;background:var(--air)"></i></div></div>
+    <span class="muted small">Airbnb amounts are listing prices; your payout is after Airbnb's fees. Direct bookings have no platform fee.</span>
+  </div>
+  <div class="card box"><h3>To do today</h3>
+    <div class="todo">${todo.length ? todo.map(([l, t]) => `<button type="button" data-act="otab" data-t="${t}"><span>${l}</span><span>Open</span></button>`).join('') : '<div class="empty">All caught up 🎉</div>'}</div>
+    ${nxt ? `<div class="prev"><b>Next arrival:</b> ${esc(nxt.guest)} · ${fd(nxt.date)}, 8:00 AM · ${nxt.pax} guests ${chBadge(nxt)}</div>` : ''}
+    <span class="muted small">Airbnb sync: on · ${esc(S.log[0].t)}</span>
+  </div>
+</div>`;
+  }
+
+  function cal() {
+    return `
+<div class="card box">
+  <div class="calhead"><h3>${monthName(S.omonth)}</h3>
+    <button type="button" data-act="omonth" data-k="-1" aria-label="Previous month" ${S.omonth <= '2026-11' ? 'disabled' : ''}>‹</button>
+    <button type="button" data-act="omonth" data-k="1" aria-label="Next month" ${S.omonth >= '2026-12' ? 'disabled' : ''}>›</button></div>
+  <div class="ocal">${monthGrid(S.omonth, (s, d) => {
+    const b = on(s), cls = ['c', b ? (b.ch === 'air' ? 'air' : 'dir') : '', b && b.status === 'pending' ? 'pen' : '', s === TODAY ? 'today' : ''].join(' ');
+    return `<div class="${cls}"><b>${d}</b>${b ? `<span class="g">${esc(b.guest)}</span><span class="muted">${b.pax} pax</span>` : (s >= TODAY ? `<span class="muted">${rate(s) / 1000}k open</span>` : '')}</div>`;
+  }, 'wd')}</div>
+  <div class="legend"><span><i style="background:var(--dir-soft);border-color:var(--dir)"></i>Direct</span><span><i style="background:var(--air-soft);border-color:var(--air)"></i>Airbnb</span><span><i style="border:2px dashed var(--warn)"></i>Waiting for down payment check</span><span><i style="outline:2px solid var(--blue)"></i>Today</span></div>
+</div>
+<div class="two">
+  <div class="card box"><h3>Airbnb calendar sync</h3>
+    <p class="small muted" style="margin:0">Airbnb bookings come in and block the date on your booking page; your direct bookings go out and block the date on Airbnb. One calendar, no date sold twice.</p>
+    <div class="row"><button class="btn blue" type="button" data-act="simab" ${S.feed.length ? '' : 'disabled'}>Simulate: new Airbnb booking arrives</button><span class="muted small">${S.feed.length} waiting in this demo</span></div>
+  </div>
+  <div class="card box"><h3>Sync log</h3><div class="loglist">${S.log.slice(0, 8).map(l => `<div><time>${esc(l.t)}</time><span>${esc(l.m)}</span></div>`).join('')}</div></div>
+</div>`;
+  }
+
+  function book() {
+    const rows = S.bookings.slice().sort((a, b) => a.date.localeCompare(b.date)).map(b => {
+      let act = '';
+      if (b.dps === 'review') act = `<button class="btn sm blue" type="button" data-act="confirm" data-id="${b.id}">Confirm down payment</button>`;
+      else if (b.status === 'confirmed' && b.date === TODAY) act = `<button class="btn sm" type="button" data-act="otab" data-t="ci">Check in</button>`;
+      else if (b.status === 'in') act = `<button class="btn sm" type="button" data-act="otab" data-t="ci">Check out</button>`;
+      const dpTxt = b.ch === 'air' ? '<span class="muted small">Paid on Airbnb</span>' : b.dps === 'review' ? `<span class="small">GCash ref ${esc(b.ref || '')}<br><span class="muted">proof uploaded</span></span>` : `<span class="small num">${peso(b.dp)} paid</span>`;
+      return `<tr><td class="num"><b>${fd(b.date)}</b><br><span class="muted small">${b.id}</span></td><td>${esc(b.guest)}<br><span class="muted small">${b.pax} guests${b.pets ? ' · pets' : ''}</span></td><td>${chBadge(b)}</td><td class="num">${peso(b.price)}</td><td>${dpTxt}</td><td>${stBadge(b)}</td><td>${act}</td></tr>`;
+    }).join('');
+    return `<div class="card box"><h3>All bookings</h3><div class="tblwrap"><table class="tbl"><thead><tr><th>Date</th><th>Guest</th><th>Channel</th><th>Rate</th><th>Down payment</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+<span class="muted small">Tip: book a date in Guest view, then confirm its down payment here.</span></div>`;
+  }
+
+  function ci() {
+    const arr = S.bookings.filter(b => b.date === TODAY && b.status === 'confirmed');
+    const inh = S.bookings.filter(b => b.status === 'in');
+    let h = '';
+    if (arr.length) {
+      const b = arr[0];
+      if (!S.ci || S.ci.id !== b.id) S.ci = { id: b.id, actual: b.pax, smoke: false, pet: false, method: 'Cash' };
+      const extra = Math.max(0, S.ci.actual - b.pax), fee = extra * CFG.extraFee + (S.ci.smoke ? CFG.cleanFee : 0) + (S.ci.pet ? CFG.cleanFee : 0);
+      const bal = b.ch === 'air' ? 0 : b.price - b.dp;
+      h += `<div class="card box"><h3>Arriving today: ${esc(b.guest)} ${chBadge(b)}</h3>
+<div class="ci"><img src="img/guest-checkin.webp" alt="Caretaker welcoming guests" width="1400" height="933">
+<form id="ciform" class="panel" onsubmit="return false">
+  <div class="row"><span class="grow">Declared at booking</span><b class="num">${b.pax} guests</b></div>
+  <div class="row"><span class="grow">Actual headcount at the gate</span><span class="step"><button type="button" data-act="actual" data-k="-1" aria-label="Fewer">−</button><output class="num">${S.ci.actual}</output><button type="button" data-act="actual" data-k="1" aria-label="More">+</button></span></div>
+  ${extra ? `<div class="row small"><span class="grow">${extra} undeclared guest${extra > 1 ? 's' : ''} × ${peso(CFG.extraFee)}</span><b class="num">${peso(extra * CFG.extraFee)}</b></div>` : ''}
+  <label class="row small"><input type="checkbox" name="smoke" ${S.ci.smoke ? 'checked' : ''}> Smoking in a no-smoking area (${peso(CFG.cleanFee)} cleaning fee)</label>
+  <label class="row small"><input type="checkbox" name="pet" ${S.ci.pet ? 'checked' : ''}> Pet accident inside (${peso(CFG.cleanFee)} cleaning fee)</label>
+  <div class="sum num"><span>Balance of the stay</span><span>${peso(bal)}</span><span>Extra fees</span><span>${peso(fee)}</span><span class="t">Collect now</span><span class="t">${peso(bal + fee)}</span></div>
+  <label class="f">Paid by<select name="method">${['Cash', 'GCash', 'Bank transfer'].map(m => `<option ${S.ci.method === m ? 'selected' : ''}>${m}</option>`).join('')}</select></label>
+  <button class="btn pri" type="button" data-act="checkin" data-id="${b.id}">Complete check-in</button>
+</form></div></div>`;
+    }
+    h += inh.map(b => `<div class="card box" style="margin-top:12px"><h3>In-house: ${esc(b.guest)} ${chBadge(b)}</h3>
+<div class="row"><span class="grow small">Checked in ${fd(b.date)} · ${b.actual || b.pax} guests · fees ${peso(feesOf(b))}. Check-out before 6:00 AM, ${fd(addD(b.date, 1))}.</span>
+<button class="btn blue" type="button" data-act="checkout" data-id="${b.id}">Check out + start turnover</button></div></div>`).join('');
+    return h || '<div class="card empty">No arrivals or in-house guests right now. The next arrival shows here on its check-in day.</div>';
+  }
+
+  function turn() {
+    const open = S.bookings.filter(b => b.turn && !b.turn.ready);
+    if (!open.length) return '<div class="card empty">All turnovers done. The next one opens when guests check out.</div>';
+    return open.map(b => {
+      const nxt = S.bookings.filter(x => x.date > b.date && x.status !== 'cancelled').sort((a, c) => a.date.localeCompare(c.date))[0];
+      const done = b.turn.done.length, all = CHECK.length;
+      return `<div class="card box" style="margin-bottom:12px"><div class="row"><h3 class="grow">After ${esc(b.guest)} (${fd(b.date)})</h3>${nxt ? `<span class="badge b-blue">Next guests: ${fd(nxt.date)}, 8:00 AM</span>` : ''}</div>
+<div class="bar"><i style="width:${done / all * 100}%;background:var(--good)"></i></div><span class="small muted">${done} of ${all} done</span>
+<div class="ck">${CHECK.map(([k, l]) => `<label class="${b.turn.done.includes(k) ? 'done' : ''}"><input type="checkbox" data-tick="${b.id}:${k}" ${b.turn.done.includes(k) ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+<button class="btn pri" type="button" data-act="ready" data-id="${b.id}" ${done === all ? '' : 'disabled'}>Ready for the next guests</button></div>`;
+    }).join('');
+  }
+
+  function rev() {
+    const due = S.bookings.filter(b => b.review === 'due'), sent = S.bookings.filter(b => b.review === 'sent');
+    const msg = b => b.ch === 'air'
+      ? `<b>Airbnb scheduled message</b><br>Hi ${esc(b.guest.split(' ')[0])}! Thank you for staying at ${esc(CFG.short)}. If you enjoyed it, a review on Airbnb helps us a lot. Safe travels!`
+      : `<b>Messenger</b><br>Salamat po for staying at ${esc(CFG.short)}, ${esc(b.guest)}! Mind leaving a recommendation on our Facebook page? As a returning guest, message us to book direct for your next stay.`;
+    return (due.length ? due.map(b => `<div class="card box" style="margin-bottom:12px"><div class="row"><h3 class="grow">${esc(b.guest)} · checked out ${fd(addD(b.date, 1))}</h3>${chBadge(b)}</div>
+<div class="prev">${msg(b)}</div><div class="row"><button class="btn blue" type="button" data-act="review" data-id="${b.id}">Send thank-you + review request</button></div></div>`).join('')
+      : '<div class="card empty">No review requests due. They appear here after each check-out.</div>')
+      + (sent.length ? `<div class="card box" style="margin-top:12px"><h3>Sent</h3>${sent.map(b => `<div class="row small"><span class="grow">${esc(b.guest)} · ${fd(b.date)}</span>${chBadge(b)}<span class="badge b-good">Sent</span></div>`).join('')}</div>` : '');
+  }
+
+  // ---------- dialog: GCash down payment ----------
+  const qr = () => { const on1 = [0, 1, 2, 4, 6, 7, 9, 13, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 37, 38, 40, 42, 44, 45, 46, 48]; return Array.from({ length: 49 }, (_, i) => `<i class="${on1.includes(i) ? '' : 'o'}"></i>`).join(''); };
+  let attached = false;
+  function openPay() {
+    const s = S.sel, price = rate(s), dp = price / 2; attached = false;
+    $('dlgbody').innerHTML = `<h2 id="dlgtitle">Pay the down payment</h2>
+<div class="gcash"><div class="q" aria-hidden="true">${qr()}</div><div><b class="num">${peso(dp)}</b> via GCash<br><span class="small">${CFG.sample ? 'GCash ' + CFG.gcash + ' (sample)' : 'Your GCash QR goes here'} · ${esc(CFG.short)}</span></div></div>
+<div class="sum num small"><span>${fd(s)}, 22-hour stay · ${S.pax} guests${S.pets ? ' · pets' : ''}</span><span>${peso(price)}</span><span>Balance on arrival</span><span>${peso(price - dp)}</span></div>
+<label class="f">GCash reference number<input id="gref" inputmode="numeric" placeholder="13 digits from your GCash receipt" maxlength="16"></label>
+<button class="btn" type="button" data-act="attach" id="attachbtn">📎 Attach payment screenshot</button>
+<div class="row"><button class="btn" type="button" data-act="closedlg">Cancel</button><button class="btn pri grow" type="button" data-act="paysubmit" id="paybtn" disabled>Submit for confirmation</button></div>
+<span class="muted small">Demo: no money moves. The owner confirms the payment in Owner view.</span>`;
+    $('gref').addEventListener('input', payReady);
+    $('dlg').showModal();
+  }
+  const payReady = () => { $('paybtn').disabled = !(attached && $('gref').value.replace(/\D/g, '').length >= 10); };
+
+  // ---------- actions ----------
+  const ACT = {
+    view: t => { S.view = t.dataset.v; save(); render(); window.scrollTo(0, 0); },
+    reset: () => { if (confirm('Reset the demo to its starting data?')) { S = fresh(); S.chat.push({ who: 'bot', t: `Hi po! 👋 Thanks for messaging ${esc(CFG.short)}. Ask about rates, open dates, pets or check-in time; I reply right away.` }); save(); render(); toast('Demo reset'); } },
+    gmonth: t => { S.gmonth = shiftMonth(S.gmonth, +t.dataset.k); save(); renderGuest(); },
+    omonth: t => { S.omonth = shiftMonth(S.omonth, +t.dataset.k); save(); renderOwner(); },
+    pick: t => { S.sel = t.dataset.d; save(); renderGuest(); },
+    pax: t => { S.pax = Math.min(CFG.maxPax, Math.max(1, S.pax + +t.dataset.k)); save(); renderGuest(); },
+    book: () => openPay(),
+    attach: t => { attached = true; t.textContent = '✅ payment-screenshot.jpg attached'; payReady(); },
+    closedlg: () => $('dlg').close(),
+    paysubmit: () => {
+      const s = S.sel, price = rate(s), id = 'DR-0' + S.nextId++;
+      S.bookings.push({ id, ch: 'dir', date: s, guest: S.gname.trim(), mobile: S.gmobile, pax: S.pax, pets: S.pets, price, dp: price / 2, dps: 'review', ref: $('gref').value.trim(), status: 'pending', fees: [] });
+      S.log.unshift({ t: 'Just now', m: `Exported ${id} · ${fd(s)} blocked on Airbnb` });
+      S.chat.push({ who: 'bot', t: `Thank you po, ${esc(S.gname.trim().split(' ')[0])}! We received your down payment proof for <b>${fd(s)}</b> (ref ${id}). We'll confirm shortly and send house rules, the map pin and directions here.` });
+      S.sel = null; save(); $('dlg').close(); render();
+      toast(`Booking ${id} sent. ${fd(s)} is now blocked here and on Airbnb.`);
+    },
+    chip: t => ask(t.textContent),
+    chatgo: t => {
+      if (t.dataset.d) { S.sel = t.dataset.d; S.gmonth = t.dataset.d.slice(0, 7); }
+      save(); renderGuest();
+      document.querySelector('.cal')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+    otab: t => { S.otab = t.dataset.t; S.view = 'owner'; save(); render(); },
+    confirm: t => { const b = byId(t.dataset.id); b.dps = 'paid'; b.status = 'confirmed'; save(); renderOwner(); toast(`Confirmed ${b.id}: receipt, house rules and directions sent to ${b.guest}`); },
+    actual: t => { S.ci.actual = Math.max(1, S.ci.actual + +t.dataset.k); save(); renderOwner(); },
+    checkin: t => {
+      const b = byId(t.dataset.id), extra = Math.max(0, S.ci.actual - b.pax);
+      if (extra) b.fees.push({ l: `${extra} undeclared guest${extra > 1 ? 's' : ''}`, a: extra * CFG.extraFee });
+      if (S.ci.smoke) b.fees.push({ l: 'Smoking cleaning fee', a: CFG.cleanFee });
+      if (S.ci.pet) b.fees.push({ l: 'Pet cleaning fee', a: CFG.cleanFee });
+      b.actual = S.ci.actual; b.status = 'in'; b.paidBy = S.ci.method; S.ci = null; save(); renderOwner();
+      toast(`${b.guest} checked in · ${peso(feesOf(b))} in fees recorded`);
+    },
+    checkout: t => { const b = byId(t.dataset.id); b.status = 'out'; b.turn = { done: [], ready: false }; b.review = 'due'; S.otab = 'turn'; save(); renderOwner(); toast(`${b.guest} checked out · turnover checklist opened`); },
+    ready: t => { const b = byId(t.dataset.id); b.turn.ready = true; save(); renderOwner(); toast('Resort marked ready for the next guests'); },
+    review: t => { const b = byId(t.dataset.id); b.review = 'sent'; save(); renderOwner(); toast(`Thank-you + review request sent to ${b.guest}`); },
+    simab: () => {
+      const f = S.feed.shift(); if (!f) return;
+      if (on(f.date)) { S.log.unshift({ t: 'Just now', m: `Skipped ${f.id}: ${fd(f.date)} already booked` }); }
+      else {
+        S.bookings.push({ id: f.id, ch: 'air', date: f.date, guest: f.guest, pax: f.pax, price: f.price, dp: 0, dps: 'airbnb', status: 'confirmed', fees: [] });
+        S.log.unshift({ t: 'Just now', m: `Imported Airbnb booking ${f.id} · ${fd(f.date)} blocked on your booking page` });
+        S.omonth = f.date.slice(0, 7);
+      }
+      save(); renderOwner(); toast(`New Airbnb booking: ${fd(f.date)} is now blocked on your booking page`);
+    },
+  };
+  document.addEventListener('click', e => { const t = e.target.closest('[data-act]'); if (t && !t.disabled && ACT[t.dataset.act]) ACT[t.dataset.act](t, e); });
+
+  function render() {
+    document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.view)));
+    $('guest').hidden = S.view !== 'guest'; $('owner').hidden = S.view !== 'owner';
+    if (S.view === 'guest') renderGuest(); else renderOwner();
+  }
+  render();
+})();
+</script>
+</body>
+</html>
