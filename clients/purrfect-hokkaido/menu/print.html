@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- client: purrfect-hokkaido --><script>(function(){var m=location.hash.match(/^#ph-carry=([A-Za-z0-9_-]+)/);if(!m)return;var h='';try{var o=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));h=o.h||'';var s=o.ls||{};for(var k in s)if(/^(ph|pos)-/.test(k)&&localStorage.getItem(k)===null)localStorage.setItem(k,s[k]);}catch(e){}history.replaceState(null,'',location.pathname+location.search+h);})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Order Printer · Purrfect Hokkaido</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#122565">
+<link rel="icon" href="img/cat-mark.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wdth,wght@75..125,400..700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAEAEA;--navy:#122565;--teal:#108092;--green:#448F18;--orange:#EA6010;--ink:#1A2A44;--muted:#5b6474;--yellow:#FCF41C;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lockup{display:flex;align-items:center;gap:10px}
+.lockup img{height:48px;width:auto}
+.w1{font-weight:700;font-size:26px;line-height:.9;color:var(--navy)}
+.w2{font-weight:700;font-size:18px;line-height:1;color:var(--teal);display:flex;justify-content:space-between}
+.w2 span:last-child{color:var(--green)}
+h1{font:700 14px/1 Montserrat,sans-serif;letter-spacing:.2em;color:var(--orange)}
+.state{margin-top:16px;border-radius:18px;padding:18px;background:#fff;display:grid;gap:12px}
+.light{display:flex;align-items:center;gap:12px;font-weight:700;font-size:22px;color:var(--navy)}
+.light i{width:18px;height:18px;border-radius:50%;background:#b9bfcc;flex:none}
+.light.on i{background:var(--green);box-shadow:0 0 0 6px rgba(68,143,24,.2)}
+.light.bad i{background:#d23}
+.sub{font-size:15px;color:var(--muted);line-height:1.4}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:700 18px/1 Fredoka,system-ui,sans-serif;border:0;border-radius:14px;height:54px;padding:0 22px;color:#fff;background:var(--navy);cursor:pointer}
+button.alt{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+button.go{background:var(--green);font-size:21px;height:62px;flex:1}
+select{font:inherit;font-size:16px;padding:10px;border:2px solid #cfd5e3;border-radius:12px;background:#fff}
+label{font-weight:600;font-size:15px;color:var(--navy);display:flex;gap:8px;align-items:center}
+h2{margin-top:22px;font-size:20px;color:var(--navy)}
+.list{margin-top:10px;display:grid;gap:10px}
+.o{background:#fff;border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.o b{font-size:22px;color:var(--navy)}
+.o .meta{font-size:14px;color:var(--muted)}
+.o .items{grid-column:1/-1;font-size:15px;white-space:pre-line}
+.o .tag{font-size:13px;font-weight:700;border-radius:99px;padding:4px 10px;background:#d9ead3;color:#1d5a0c}
+.o .tag.wait{background:#fff2cc;color:#6b4e00}
+.o button{height:40px;font-size:15px;padding:0 14px}
+.err{background:#fde7d9;color:#8a2c00;border-radius:12px;padding:12px;font-weight:600}
+.help{margin-top:22px;font-size:14px;color:var(--muted);line-height:1.5}
+.help ol{padding-left:20px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div class="lockup"><img src="img/cat-mark.webp" alt="" width="48" height="48"><div><div class="w1">PURRFECT</div><div class="w2"><span>H</span><span>O</span><span>K</span><span>K</span><span>A</span><span>I</span><span>D</span><span>O</span></div></div></div>
+    <h1>ORDER PRINTER</h1>
+  </div>
+  <section class="state">
+    <div class="light" id="light"><i></i><span id="lt">Not started</span></div>
+    <p class="sub" id="ls">Tap Start. Every online order marked paid on the order sheet prints here once. Keep this screen open.</p>
+    <p class="err" id="err" hidden></p>
+    <div class="row"><button class="go" id="start">Start printing</button></div>
+    <div class="row">
+      <button class="alt" id="test">Test print</button>
+      <label>Paper <select id="paper"><option value="32">58 mm</option><option value="48">80 mm</option></select></label>
+      <label>Copies <select id="copies"><option>1</option><option>2</option></select></label>
+    </div>
+  </section>
+  <h2>Paid orders today</h2>
+  <div class="list" id="list"><p class="sub">Nothing yet.</p></div>
+  <div class="help">
+    <p><b>One-time setup on this tablet</b></p>
+    <ol>
+      <li>Install <b>RawBT</b> and <b>Server for RawBT</b> from the Play Store. In RawBT, pick the Bluetooth receipt printer and print its test page.</li>
+      <li>Open <b>Server for RawBT</b> once so it runs in the background, and let it ignore battery optimisation.</li>
+      <li>Open this page from the bookmark, tap <b>Start printing</b>, allow access to devices on the local network if Chrome asks, then tap <b>Test print</b>.</li>
+    </ol>
+    <p>The tablet screen should stay on with this page open (it asks Chrome to keep the screen awake). Orders paid while it was closed print when you open it again.</p>
+  </div>
+</main>
+<script>
+const DATA = {"url": "https://script.google.com/macros/s/AKfycbzOB4gUkuWzD5L4ECpIFeCc_D-4tmtCuEkKWf5mIACTYsxx09jv8g1vN0PO77zvRhA/exec"};
+const WS = 'ws://127.0.0.1:40213/';
+const POLL_MS = 8000;
+const $ = s => document.querySelector(s);
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+
+// The key arrives once in the bookmark (?k=...); keep it and take it out of the address bar.
+const qk = new URLSearchParams(location.search).get('k');
+if (qk) { store.set('ph-print-key', qk); history.replaceState(null, '', location.pathname); }
+const KEY = store.get('ph-print-key');
+$('#paper').value = store.get('ph-print-paper') || '32';
+$('#copies').value = store.get('ph-print-copies') || '1';
+$('#paper').onchange = () => store.set('ph-print-paper', $('#paper').value);
+$('#copies').onchange = () => store.set('ph-print-copies', $('#copies').value);
+
+// Printed order ids (code@placed time) with when they printed; ids older than 2 days are dropped.
+let printed = store.get('ph-printed') || {};
+const savePrinted = () => {
+  const cut = Date.now() - 2 * 864e5;
+  Object.keys(printed).forEach(k => { if (printed[k] < cut) delete printed[k]; });
+  store.set('ph-printed', printed);
+};
+
+const light = (cls, title, sub) => {
+  $('#light').className = 'light ' + cls; $('#lt').textContent = title;
+  if (sub != null) $('#ls').textContent = sub;
+};
+const fail = msg => { const e = $('#err'); e.textContent = msg || ''; e.hidden = !msg; };
+
+// ---- ESC/POS receipt ------------------------------------------------------------------------------
+// Thermal printers have no peso sign or curly quotes: everything is folded to plain ASCII first.
+const ascii = s => String(s).replace(/₱/g, 'P').replace(/×/g, 'x').replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+  .replace(/[–—]/g, '-').replace(/·/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e\n]/g, '');
+const wrap = (s, w) => ascii(s).split('\n').flatMap(line => {
+  const out = []; let cur = '';
+  for (const word of line.split(' ')) {
+    if ((cur + (cur ? ' ' : '') + word).length <= w) cur += (cur ? ' ' : '') + word;
+    else { if (cur) out.push(cur); cur = word.length > w ? word.slice(0, w) : word; }
+  }
+  out.push(cur); return out;
+});
+const lr = (l, r, w) => ascii(l).slice(0, w - ascii(r).length - 1).padEnd(w - ascii(r).length) + ascii(r);
+const peso = n => 'P' + Number(n).toLocaleString('en-PH');
+
+function receipt(o, w) {
+  const ESC = '\x1b', GS = '\x1d';
+  const init = ESC + '@', center = ESC + 'a1', left = ESC + 'a0', big = GS + '!\x11', tall = GS + '!\x01', norm = GS + '!\x00';
+  const boldOn = ESC + 'E1', boldOff = ESC + 'E0', rule = '-'.repeat(w) + '\n';
+  let t = init + center + big + 'PURRFECT\nHOKKAIDO\n' + norm + 'ONLINE ORDER\n\n' + big + ascii(o.code) + '\n' + norm;
+  t += tall + boldOn + ascii(o.paidBy ? 'PAID - ' + o.paidBy.toUpperCase() : 'NOT PAID') + boldOff + norm + '\n\n' + left;
+  t += wrap('Name: ' + o.name, w).join('\n') + '\n';
+  t += wrap('Pickup: ' + o.pickup, w).join('\n') + '\n';
+  t += 'Placed: ' + ascii(o.placed) + '\n' + rule;
+  t += boldOn + o.items.split('\n').map(line => wrap(line, w).join('\n')).join('\n') + boldOff + '\n' + rule;
+  t += tall + boldOn + lr('TOTAL', peso(o.total), w) + boldOff + norm + '\n';
+  if (o.receipt) t += wrap('Loyverse: ' + o.receipt, w).join('\n') + '\n';
+  const notes = String(o.notes || '').replace(/^PAY: [^.]*\.\s*/, '');
+  if (notes) t += rule + wrap('Notes: ' + notes, w).join('\n') + '\n';
+  t += '\n' + center + 'Thank you!\n' + '\n\n\n\n' + GS + 'V\x42\x00';
+  return new TextEncoder().encode(t);   // pure ASCII, so UTF-8 bytes = the printer's bytes
+}
+
+// One WebSocket per job to Server for RawBT; resolves once the bytes are handed over.
+function send(bytes) {
+  return new Promise((resolve, reject) => {
+    let ws;
+    try { ws = new WebSocket(WS); } catch (e) { return reject(e); }
+    ws.binaryType = 'arraybuffer';
+    const t = setTimeout(() => { try { ws.close(); } catch (e) {} reject(new Error('timeout')); }, 6000);
+    ws.onopen = () => { ws.send(bytes); setTimeout(() => { clearTimeout(t); ws.close(1000, 'done'); resolve(); }, 300); };
+    ws.onerror = () => { clearTimeout(t); reject(new Error('no server')); };
+  });
+}
+
+async function printOrder(o) {
+  const w = Number($('#paper').value), n = Number($('#copies').value);
+  for (let i = 0; i < n; i++) await send(receipt(o, w));
+}
+
+// ---- Polling --------------------------------------------------------------------------------------
+let running = false, timer = null, wake = null, last = [];
+function beep() {
+  try {
+    const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.value = .15; o.start(); o.stop(a.currentTime + .25);
+  } catch (e) {}
+}
+function render() {
+  $('#list').innerHTML = last.length ? last.map(o => `<div class="o">
+    <div><b>${esc(o.code)}</b> <span class="meta">${esc(o.name)} · ${esc(o.placed)} · ${esc(o.paidBy)} · ₱${o.total}</span></div>
+    <div class="row"><span class="tag ${printed[o.id] ? '' : 'wait'}">${printed[o.id] ? 'Printed' : 'Waiting'}</span>
+      <button class="alt" data-id="${esc(o.id)}">Reprint</button></div>
+    <div class="items">${esc(o.items)}</div></div>`).join('') : '<p class="sub">Nothing yet.</p>';
+}
+$('#list').addEventListener('click', async ev => {
+  const id = ev.target.dataset && ev.target.dataset.id; if (!id) return;
+  const o = last.find(x => x.id === id); if (!o) return;
+  try { await printOrder(o); printed[o.id] = Date.now(); savePrinted(); fail(''); }
+  catch (e) { fail("Couldn't reach the printer. Open the Server for RawBT app, then tap Reprint again."); }
+  render();
+});
+
+async function poll() {
+  clearTimeout(timer);
+  if (!running) return;
+  try {
+    const r = await (await fetch(`${DATA.url}?paid=${encodeURIComponent(KEY)}`, { cache: 'no-store' })).json();
+    if (!r.ok) throw new Error(r.error || 'bad');
+    last = r.orders || [];
+    let printerDown = false;
+    for (const o of last.slice().reverse()) {       // oldest first
+      if (printed[o.id]) continue;
+      try { await printOrder(o); printed[o.id] = Date.now(); savePrinted(); beep(); }
+      catch (e) { printerDown = true; break; }
+    }
+    render();
+    if (printerDown) {
+      light('bad', 'Printer not reachable', 'Open the Server for RawBT app on this tablet and check the printer is on. Unprinted orders will print as soon as it answers.');
+      fail('');
+    } else {
+      light('on', 'Printing is on', 'Checked ' + new Date().toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Manila' }) + '. Paid online orders print here automatically.');
+      fail('');
+    }
+  } catch (e) {
+    light('bad', 'No connection to the order sheet', 'Check the Wi-Fi. It keeps trying every few seconds.');
+    if (String(e.message).includes('Wrong key')) { running = false; fail('This page needs the printer link with its key. Open it from the bookmark.'); }
+  }
+  if (running) timer = setTimeout(poll, POLL_MS);
+}
+
+async function keepAwake() {
+  try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && running) { keepAwake(); poll(); } });
+
+$('#start').onclick = async () => {
+  if (!KEY) return fail('This page needs the printer link with its key. Open it from the bookmark.');
+  if (running) { running = false; clearTimeout(timer); $('#start').textContent = 'Start printing'; return light('', 'Paused', 'Tap Start printing to turn it back on.'); }
+  running = true; $('#start').textContent = 'Pause printing'; store.set('ph-print-on', true);
+  light('', 'Starting…', 'Checking the order sheet…');
+  keepAwake(); poll();
+};
+$('#test').onclick = async () => {
+  try {
+    await printOrder({ code: 'TEST', paidBy: 'GCash', name: 'Printer test', pickup: 'Now', placed: new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' }),
+      items: '1× Matcha Belgian Cone (Buy 1 Take 1)\n1× Chicken Poppers (100g)', total: 230, receipt: '', notes: 'PAY: GCash QR online. This is a test.' });
+    fail('');
+  } catch (e) { fail("Couldn't reach the printer. Install and open Server for RawBT (and RawBT with the printer chosen), then try again."); }
+};
+if (!KEY) fail('This page needs the printer link with its key. Open it from the bookmark.');
+</script>
+</body>
+</html>

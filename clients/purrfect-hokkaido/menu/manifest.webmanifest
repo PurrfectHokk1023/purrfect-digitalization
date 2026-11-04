@@ -1,0 +1,57 @@
+{
+ "name": "Purrfect Hokkaido",
+ "short_name": "Purrfect Hokkaido",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "description": "Purrfect Hokkaido menu and prices, and pickup orders you pay for with GCash or at the counter.",
+ "background_color": "#EAEAEA",
+ "theme_color": "#122565",
+ "lang": "en-PH",
+ "categories": [
+  "food"
+ ],
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Order for pickup",
+   "url": "order.html",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Menu",
+   "url": "./",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  }
+ ]
+}

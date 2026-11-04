@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- client: purrfect-hokkaido --><script>(function(){var m=location.hash.match(/^#ph-carry=([A-Za-z0-9_-]+)/);if(!m)return;var h='';try{var o=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));h=o.h||'';var s=o.ls||{};for(var k in s)if(/^(ph|pos)-/.test(k)&&localStorage.getItem(k)===null)localStorage.setItem(k,s[k]);}catch(e){}history.replaceState(null,'',location.pathname+location.search+h);})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Purrfect Hokkaido Admin</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#122565">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Purrfect Hokkaido Admin">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wdth,wght@75..125,400..700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAEAEA;--card:#fff;--navy:#122565;--teal:#108092;--green:#448F18;--orange:#EA6010;--ink:#1A2A44;--yellow:#FCF41C;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:440px;margin:0 auto;padding:22px 16px calc(28px + env(safe-area-inset-bottom))}
+.lockup{display:flex;align-items:center;gap:10px;justify-content:center}
+.lockup img{height:52px;width:auto}
+.w1{font-weight:700;font-size:28px;line-height:.9;color:var(--navy)}
+.w2{font-weight:700;font-size:19.5px;line-height:1;color:var(--teal);display:flex;justify-content:space-between}
+.w2 span:last-child{color:var(--green)}
+h1{margin-top:14px;text-align:center;font:700 14px/1 Montserrat,sans-serif;letter-spacing:.2em;color:var(--orange)}
+.clock{margin-top:6px;text-align:center;font-weight:700;font-size:54px;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums}
+.date{text-align:center;font-size:16px;margin-top:4px}
+.card{margin-top:18px;background:var(--card);border-radius:18px;padding:16px;display:grid;gap:12px}
+label{font-weight:600;font-size:15px;color:var(--navy);display:grid;gap:6px}
+select,input{font:inherit;font-size:20px;padding:12px;border:2px solid #cfd5e3;border-radius:12px;background:#fff;color:var(--ink);width:100%}
+input{letter-spacing:.4em;text-align:center}
+select:focus,input:focus{outline:none;border-color:var(--navy)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+button{font:700 19px/1.1 Fredoka,system-ui,sans-serif;border:0;border-radius:14px;height:64px;color:#fff;cursor:pointer}
+button[disabled]{opacity:.5}
+.in{background:var(--green)} .out{background:var(--navy)} .bo,.bi{background:var(--teal)}
+.msg{margin-top:14px;border-radius:16px;padding:16px;text-align:center}
+.msg.ok{background:var(--navy);color:#fff}
+.msg.ok b{display:block;font-size:24px;color:var(--yellow)}
+.msg.ok .t{display:block;font-size:44px;font-weight:700;margin-top:4px}
+.msg.err{background:#fde7d9;color:#8a2c00;font-weight:600;font-size:17px}
+.foot{margin-top:16px;text-align:center;font-size:13px;color:#555}
+button.mine{grid-column:1/-1;height:50px;background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.hist{margin-top:14px;background:var(--card);border-radius:18px;padding:16px}
+.hist .hh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hist h2{font-size:20px;color:var(--navy)}
+.hist .per{font-size:14px;color:#555}
+.tot{margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tot div{background:#eef1f8;border-radius:12px;padding:10px 12px}
+.tot b{display:block;font-size:24px;color:var(--navy);line-height:1.1}
+.tot span{font-size:13px;color:#444}
+.tot .ok{background:#e3f1da} .tot .ok b{color:#2f6b0f}
+.tot .wait{background:#fff2cc} .tot .wait b{color:#6b4e00}
+.day{margin-top:10px;border-top:1px solid #e3e6ee;padding-top:10px}
+.day .d{display:flex;justify-content:space-between;font-weight:700;color:var(--navy);font-size:16px}
+.day .t{margin-top:4px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:14px}
+.day .t i{display:block;font-style:normal;font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.04em}
+.day .x{margin-top:4px;font-size:13px;color:#555}
+.tagok{color:#2f6b0f;font-weight:700} .tagwait{color:#8a5a00;font-weight:700}
+.hb{display:flex;gap:10px;margin-top:14px}
+.hb button{flex:1;height:46px;font-size:16px;background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.hb button.close{background:var(--navy);color:#fff}
+.ot{margin-top:14px;background:var(--card);border-radius:18px;padding:16px;border:3px solid var(--orange)}
+.ot h2{font-size:20px;color:var(--orange)}
+.ot .sub{font-size:14px;color:#555;margin-top:2px}
+.oti{margin-top:12px;border-top:1px solid #e3e6ee;padding-top:10px}
+.oti .who{display:flex;justify-content:space-between;font-weight:700;color:var(--navy);font-size:16px}
+.oti .x{font-size:13.5px;color:#555;margin-top:2px}
+.oti .ab{display:flex;gap:8px;margin-top:8px}
+.oti .ab button{flex:1;height:44px;font-size:16px}
+.oti .yes{background:var(--green)} .oti .no{background:#fff;color:#a12;border:2px solid #a12}
+.okmsg{margin-top:10px;font-weight:600;color:#2f6b0f;font-size:15px}
+.getapp{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 0;height:44px;padding:0 18px 0 8px;border:2px solid var(--navy);border-radius:99px;background:#fff;color:var(--navy);font:600 16px/1 Fredoka,system-ui,sans-serif;width:auto}
+.getapp img{border-radius:8px}
+.appnote{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:420px;margin:0 auto;background:var(--navy);color:#fff;border-radius:16px;padding:16px;font-size:16px;line-height:1.35;box-shadow:0 8px 28px rgba(0,0,0,.3)}
+.appnote b{color:var(--yellow)}
+.appnote button{display:block;margin:12px 0 0 auto;height:38px;padding:0 22px;border-radius:99px;background:var(--yellow);color:var(--navy);font-size:16px;width:auto}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="lockup"><img src="img/cat-mark.webp" alt="" width="52" height="52"><div><div class="w1">PURRFECT</div><div class="w2"><span>H</span><span>O</span><span>K</span><span>K</span><span>A</span><span>I</span><span>D</span><span>O</span></div></div></div>
+  <h1>STAFF TIME CLOCK</h1>
+  <div class="clock" id="clock">--:--</div>
+  <div class="date" id="date"></div>
+  <form class="card" id="form" autocomplete="off">
+    <label>Your name<select id="name" required><option value="">Loading…</option></select></label>
+    <label>PIN<input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" required></label>
+    <label>Branch<select id="branch"></select></label>
+    <div class="btns">
+      <button type="button" class="in" data-a="Time In">Time In</button>
+      <button type="button" class="out" data-a="Time Out">Time Out</button>
+      <button type="button" class="bo" data-a="Break Out">Break Out</button>
+      <button type="button" class="bi" data-a="Break In">Break In</button>
+      <button type="button" class="mine" data-a="View">My hours</button>
+    </div>
+  </form>
+  <div class="msg" id="msg" hidden></div>
+  <section class="ot" id="ot" hidden aria-live="polite"></section>
+  <section class="hist" id="hist" hidden aria-live="polite"></section>
+  <p class="foot">The time saved is the system time (Manila), not your phone's. Your PIN is personal: never share it.</p>
+  <button type="button" class="getapp" id="getapp" hidden><img src="icons/icon-192.png" alt="" width="28" height="28">Install the Admin app</button>
+</main>
+<div class="appnote" id="appnote" hidden role="dialog"><p id="appnote-text"></p><button type="button" id="appnote-ok">OK</button></div>
+<script>
+const DATA = {"url": "https://script.google.com/macros/s/AKfycbzOB4gUkuWzD5L4ECpIFeCc_D-4tmtCuEkKWf5mIACTYsxx09jv8g1vN0PO77zvRhA/exec"};
+const $ = s => document.querySelector(s);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const tick = () => {
+  const n = new Date();
+  $('#clock').textContent = n.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' });
+  $('#date').textContent = n.toLocaleDateString('en-PH', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Manila' });
+};
+tick(); setInterval(tick, 1000);
+let timer = null;
+const show = (html, ok) => {
+  const m = $('#msg'); m.className = 'msg ' + (ok ? 'ok' : 'err'); m.innerHTML = html; m.hidden = false;
+  clearTimeout(timer); timer = setTimeout(() => { m.hidden = true; }, ok ? 9000 : 7000);
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let staff = [];
+async function load() {
+  if (!DATA.url) { $('#name').innerHTML = '<option value="">Not set up yet</option>'; return; }
+  try {
+    const r = await (await fetch(DATA.url + '?staff=1')).json();
+    staff = r.staff || [];
+    $('#name').innerHTML = '<option value="">Choose your name</option>' + staff.map(s => `<option>${esc(s.name)}</option>`).join('');
+    $('#branch').innerHTML = (r.branches || []).map(b => `<option>${esc(b)}</option>`).join('');
+    const b = store.get('ph-clock-branch'); if (b) $('#branch').value = b;
+  } catch (e) {
+    $('#name').innerHTML = '<option value="">No connection. Pull down to retry.</option>';
+  }
+}
+$('#name').addEventListener('change', () => {
+  const s = staff.find(x => x.name === $('#name').value);
+  if (s && s.branch && !store.get('ph-clock-branch')) $('#branch').value = s.branch;
+  $('#pin').focus();
+});
+$('#branch').addEventListener('change', () => store.set('ph-clock-branch', $('#branch').value));
+// My hours: the person's own log for one cutoff. Kept on screen for 90 s at most (shared phone), and the PIN is
+// held in memory only while it is open, for the Previous cutoff button.
+let me = null, histTimer = null;
+const hm = min => { min = Math.round(min || 0); const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`; };
+function closeHist() { $('#hist').hidden = true; $('#hist').innerHTML = ''; $('#ot').hidden = true; $('#ot').innerHTML = ''; me = null; clearTimeout(histTimer); }
+// Managers (Vince) get the overtime waiting for approval with every tap / My hours, and approve or reject it here.
+function showOT(list, msg) {
+  const items = list.map(o => `<div class="oti"><div class="who"><span>${esc(o.name)}</span><span>OT ${hm(o.over)}</span></div>
+    <p class="x">${esc(o.date)} · in ${esc(o.tin)} · out ${esc(o.tout)} · ${esc(o.shift)}</p>
+    <div class="ab"><button type="button" class="yes" data-k="${esc(o.key)}" data-d="Approve">Approve</button><button type="button" class="no" data-k="${esc(o.key)}" data-d="Reject">Reject</button></div></div>`).join('');
+  $('#ot').innerHTML = `<h2>Overtime to approve (${list.length})</h2><p class="sub">Only approved overtime is paid (125%).</p>
+    ${msg ? `<p class="okmsg">${esc(msg)}</p>` : ''}${items || '<p class="x" style="margin-top:10px">Nothing waiting. All overtime is decided.</p>'}`;
+  $('#ot').hidden = false;
+  clearTimeout(histTimer); histTimer = setTimeout(closeHist, 90000);
+}
+$('#ot').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-k]');
+  if (!b || !me) return;
+  $('#ot').querySelectorAll('button').forEach(x => x.disabled = true);
+  try {
+    const r = await (await fetch(DATA.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ clock: 1, name: me.name, pin: me.pin, action: b.dataset.d, key: b.dataset.k }) })).json();
+    if (r.ok) showOT(r.pending || [], r.decided); else { show(esc(r.error || 'Could not save.')); $('#ot').querySelectorAll('button').forEach(x => x.disabled = false); }
+  } catch (e) { show("Couldn't save. Check the internet."); $('#ot').querySelectorAll('button').forEach(x => x.disabled = false); }
+});
+function showHist(h, name) {
+  const t = h.totals || {};
+  const rows = (h.days || []).map(d => `<div class="day"><div class="d"><span>${esc(d.date)}</span><span>${d.hours ? d.hours.toFixed(2) + ' h' : ''}</span></div>
+    <div class="t"><span><i>In</i>${esc(d.tin || '–')}</span><span><i>Break out</i>${esc(d.bout || '–')}</span><span><i>Break in</i>${esc(d.bin || '–')}</span><span><i>Out</i>${esc(d.tout || '–')}</span></div>
+    <p class="x">${esc(d.shift || '')}${d.branch ? ' · ' + esc(d.branch) : ''}${d.late ? ' · late ' + hm(d.late) : ''}${d.over ? ' · OT ' + hm(d.over) + (d.otOk ? ' <span class="tagok">approved</span>' : /^Rejected/.test(d.otBy || '') ? ' <span class="tagwait">rejected</span>' : ' <span class="tagwait">awaiting Vince’s approval</span>') : ''}${!d.tout && d.tin ? ' · <span class="tagwait">no time out yet</span>' : ''}</p></div>`).join('');
+  $('#hist').innerHTML = `<div class="hh"><h2>${esc(name.split(' ')[0])}'s hours</h2><span class="per">${esc(h.label)}</span></div>
+    <div class="tot"><div><b>${t.days || 0}</b><span>days worked</span></div><div><b>${(t.hours || 0).toFixed(2)}</b><span>hours worked</span></div>
+    <div class="ok"><b>${hm(t.otOk)}</b><span>approved OT</span></div><div class="wait"><b>${hm(t.otPending)}</b><span>OT awaiting approval</span></div></div>
+    ${rows || '<p class="x" style="margin-top:12px">No time records in this cutoff.</p>'}
+    <div class="hb"><button type="button" id="prev">${h.back ? 'Earlier cutoff' : 'Previous cutoff'}</button>${h.back ? '<button type="button" id="next">Newer</button>' : ''}<button type="button" class="close" id="hclose">Done</button></div>`;
+  $('#hist').hidden = false;
+  $('#hclose').onclick = closeHist;
+  $('#prev').onclick = () => loadHist(h.back + 1);
+  if ($('#next')) $('#next').onclick = () => loadHist(h.back - 1);
+  clearTimeout(histTimer); histTimer = setTimeout(closeHist, 90000);
+}
+async function loadHist(back) {
+  if (!me) return closeHist();
+  try {
+    const r = await (await fetch(DATA.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ clock: 1, name: me.name, pin: me.pin, action: 'View', back }) })).json();
+    if (r.ok && r.history) showHist(r.history, me.name); else show(esc(r.error || 'Could not load your hours.'));
+  } catch (e) { show("Couldn't load your hours. Check the internet."); }
+}
+let busy = false;
+document.querySelectorAll('.btns button').forEach(btn => btn.addEventListener('click', async () => {
+  if (busy) return;
+  closeHist();
+  const name = $('#name').value, pin = $('#pin').value.trim();
+  if (!name) return show('Choose your name first.');
+  if (!/^\d{4}$/.test(pin)) return show('Type your 4-digit PIN.'), $('#pin').focus();
+  busy = true; document.querySelectorAll('.btns button').forEach(b => b.disabled = true);
+  try {
+    const res = await fetch(DATA.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ clock: 1, name, pin, action: btn.dataset.a, branch: $('#branch').value }) });
+    const r = await res.json();
+    if (r.ok) {
+      if (!r.view) show(`<b>${esc(r.message)}</b>${esc(r.action)} · ${esc(r.date)}<span class="t">${esc(r.time)}</span>${r.note ? esc(r.note) : ''}`, true);
+      if (r.history) { me = { name, pin }; showHist(r.history, name); }
+      if (Array.isArray(r.pending)) { me = { name, pin }; showOT(r.pending); }
+      $('#pin').value = ''; $('#name').value = '';
+    } else show(esc(r.error || 'Something went wrong. Try again.'));
+  } catch (e) {
+    show("Couldn't reach the time clock. Check the internet and try again, or tell a manager.");
+  }
+  busy = false; document.querySelectorAll('.btns button').forEach(b => b.disabled = false);
+}));
+load();
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+// Install button: Chrome/Android gives its own prompt; iPhone needs Share -> Add to Home Screen.
+(() => {
+  if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
+  const btn = $('#getapp'), note = $('#appnote');
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !/Android/.test(ua));
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|TikTok/i.test(ua);
+  let ask = null;
+  const say = html => { $('#appnote-text').innerHTML = html; note.hidden = false; };
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); ask = e; btn.hidden = false; });
+  addEventListener('appinstalled', () => { btn.hidden = true; say('Installed! Open <b>Purrfect Hokkaido Admin</b> from the home screen.'); });
+  if (ios || inApp) btn.hidden = false;
+  btn.addEventListener('click', async () => {
+    if (ask) { ask.prompt(); const c = await ask.userChoice; ask = null; if (c.outcome === 'accepted') btn.hidden = true; }
+    else if (inApp) say('Open this page in <b>' + (ios ? 'Safari' : 'Chrome') + '</b> first: tap the <b>⋯</b> menu, then <b>Open in browser</b>.');
+    else if (ios) say('Tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>, then <b>Add</b>.');
+  });
+  $('#appnote-ok').addEventListener('click', () => { note.hidden = true; });
+})();
+</script>
+</body>
+</html>

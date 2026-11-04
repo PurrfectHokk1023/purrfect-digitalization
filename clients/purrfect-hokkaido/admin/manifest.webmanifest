@@ -1,0 +1,33 @@
+{
+ "name": "Purrfect Hokkaido Admin",
+ "short_name": "Purrfect Hokkaido Admin",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#EAEAEA",
+ "theme_color": "#122565",
+ "description": "Staff time in, breaks and time out for Purrfect Hokkaido.",
+ "lang": "en-PH",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

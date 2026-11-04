@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- client: purrfect-hokkaido --><script>(function(){var m=location.hash.match(/^#ph-carry=([A-Za-z0-9_-]+)/);if(!m)return;var h='';try{var o=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));h=o.h||'';var s=o.ls||{};for(var k in s)if(/^(ph|pos)-/.test(k)&&localStorage.getItem(k)===null)localStorage.setItem(k,s[k]);}catch(e){}history.replaceState(null,'',location.pathname+location.search+h);})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Purrfect Hokkaido Sales Report</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#122565">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  Real-time Sales Report (Vince, 3 Nov): same look as the Claude "Purrfect Hokkaido Sales Report" dashboard, but it reads
+  live data straight from the Online Orders web app (apps-script/PosReport.gs, GET ?pos=report) every time it opens and
+  every 60 seconds, so it needs no Claude run. Admin login only (the POS session, shared on this site).
+-->
+<style>
+:root{--navy:#122565;--teal:#108092;--green:#448F18;--orange:#EA6010;--ink:#1A2A44;--bg:#E8E8E8;--card:#fff;--muted:#5B6578;--line:#D5D8E0;
+  --grid:#E6E8EE;--axis:#B4BAC8;--exp:#9AA4C2;--ok:#448F18;--bad:#D0480A;--warn:#C24E06;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 Montserrat,system-ui,sans-serif}
+h1,h2,h3,.big,.seg button,.fred{font-family:Fredoka,ui-rounded,system-ui,sans-serif}
+.wrap{max-width:1400px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left)) 40px max(16px,env(safe-area-inset-right));display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+.brand{display:flex;gap:14px;align-items:center;min-width:0}
+.brand img{width:76px;height:76px;border-radius:14px;flex:none}
+h1{font-size:30px;font-weight:700;color:var(--navy);line-height:1.1}
+.brand p{color:var(--muted);margin-top:4px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:6px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(68,143,24,.6);animation:pulse 2s infinite}
+.live.stale i{background:var(--warn);animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(68,143,24,.5)}70%{box-shadow:0 0 0 7px rgba(68,143,24,0)}100%{box-shadow:0 0 0 0 rgba(68,143,24,0)}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.seg button{font-size:13px;font-weight:600;padding:7px 14px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+select,.btn{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:7px 10px;color:var(--navy);font-weight:600}
+.btn{cursor:pointer;font-family:Fredoka,system-ui,sans-serif}
+.btn:focus-visible,.seg button:focus-visible,select:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.period{color:var(--muted)}.period b{color:var(--ink);font-weight:600}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.tile{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:8px;padding:16px;display:grid;gap:4px}
+.tile:nth-child(2){border-top-color:var(--orange)}.tile:nth-child(3){border-top-color:var(--teal)}.tile:nth-child(4){border-top-color:var(--green)}
+.tile h3{font-size:14px;font-weight:600;color:var(--teal)}
+.big{font-size:30px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.15}
+.chg{font-size:12px;color:var(--muted)}.chg .good{color:var(--ok)}.chg .bad{color:var(--bad)}
+.since{color:var(--muted)}.since b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.grid{display:grid;gap:14px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:stretch}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.wide{grid-column:1/-1}
+.card h2{font-size:18px;font-weight:600;color:var(--navy)}
+.note{font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}.legend i{width:11px;height:11px;border-radius:2px}
+.chart{position:relative;flex:1 1 auto;min-height:300px}
+.chart svg{position:absolute;inset:0;width:100%;height:100%}
+.tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgb(0 0 0/.12);padding:6px 10px;font-size:12px;white-space:nowrap;z-index:2;font-variant-numeric:tabular-nums}
+.tip .d{color:var(--muted);margin-bottom:2px}.tip .r{display:flex;justify-content:space-between;gap:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:right;font-weight:600;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td.neg{color:var(--bad)}tr.warn td{color:var(--warn);font-weight:600}tr.total td{font-weight:600}
+tr.sub td:first-child{padding-left:20px;color:var(--muted)}tr.grp td{font-family:Fredoka,sans-serif;font-weight:600;color:var(--teal);padding-top:10px}
+td.wrap{text-align:left;white-space:normal}
+.prod{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr))}
+.p{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.p.top{border-color:var(--orange)}
+.p img,.p .ph{width:56px;height:56px;border-radius:10px;object-fit:cover}
+.p .ph{display:grid;place-items:center;background:#e3f1f3;color:var(--teal);font:700 18px Fredoka,sans-serif}
+.p .nm{min-width:0;display:grid;gap:2px}.p .nm b{font-weight:600;overflow-wrap:anywhere}.p .nm span{font-size:12px;color:var(--muted)}
+.p .ct{text-align:right}.p .ct b{display:block;font:600 24px/1 Fredoka,sans-serif;color:var(--navy)}.p .ct span{font-size:12px;color:var(--muted)}
+.rk{color:var(--orange);font-family:Fredoka,sans-serif;font-weight:700;margin-right:4px}
+.vsum{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.vsum div{border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:8px;padding:10px 14px;display:grid}
+.vsum span{font-size:12px;color:var(--muted)}.vsum b{font:600 26px Fredoka,sans-serif;color:var(--navy)}
+.tbox{max-height:420px;overflow:auto}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+.warnbar{background:#fff4e5;border:1px solid #f3c58b;color:#8a4b00;border-radius:8px;padding:10px 14px;font-size:13px}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line)}
+.tabs button{font:600 15px Fredoka,sans-serif;color:var(--muted);background:none;border:0;padding:8px 16px;margin-bottom:-2px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--navy);border-bottom-color:var(--orange)}
+.tabs .badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--bad);color:#fff;font-size:12px;line-height:20px}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:8px 14px;display:grid;min-width:120px;cursor:pointer;text-align:left;font:inherit}
+.chip b{font:600 24px Fredoka,sans-serif;color:var(--navy)}.chip span{font-size:12px;color:var(--muted)}
+.chip.red{border-left:4px solid var(--bad)}.chip.red b{color:var(--bad)}.chip.amber{border-left:4px solid var(--orange)}.chip.okc{border-left:4px solid var(--green)}
+.chip[aria-pressed=true]{outline:2px solid var(--navy)}
+.inv{display:grid;gap:8px}
+.ir{display:grid;grid-template-columns:48px minmax(0,1.6fr) minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.ir.low{border-left:5px solid var(--orange);background:#fff7f0}.ir.out{border-left:5px solid var(--bad);background:#fff1ee}
+.ir img,.ir .ph{width:48px;height:48px;border-radius:8px;object-fit:cover}.ir .ph{display:grid;place-items:center;background:#e3f1f3;color:var(--teal);font:700 16px Fredoka,sans-serif}
+.ir .nm b{font-weight:600}.ir .nm>span{display:block;font-size:12px;color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:#eceef2;overflow:hidden}.bar i{display:block;height:100%;background:var(--green)}
+.ir.low .bar i{background:var(--orange)}.ir.out .bar i{background:var(--bad)}
+.lv{font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}.lv b{color:var(--ink);font-size:14px}
+.flag{display:inline-flex;align-items:center;gap:4px;font:600 12px Fredoka,sans-serif;color:#fff;background:var(--bad);border-radius:10px;padding:1px 8px;margin-left:6px}
+.flag.amber{background:var(--orange)}
+.dlg select{font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:6px}.dlg form{max-height:90vh;overflow:auto}
+.acts{display:flex;gap:6px}.acts .btn{padding:6px 10px}
+.dlg{position:fixed;inset:0;background:rgb(0 0 0/.4);display:grid;place-items:center;z-index:40;padding:16px}
+.dlg form{background:#fff;border-radius:10px;padding:18px;width:min(460px,100%);display:grid;gap:10px}
+.dlg h3{font:600 18px Fredoka,sans-serif;color:var(--navy)}.dlg label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.dlg input{font:inherit;font-size:16px;padding:9px;border:1px solid var(--line);border-radius:6px}
+.dlg .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:700px){.ir{grid-template-columns:44px 1fr;}.ir .stock,.ir .acts{grid-column:1/-1}}
+.login{position:fixed;inset:0;z-index:30;background:linear-gradient(160deg,#122565,#108092);display:grid;place-items:center;padding:16px}
+.login form{background:#fff;border-radius:10px;width:min(380px,100%);padding:24px 20px;display:grid;gap:12px}
+.login img{width:84px;height:84px;border-radius:16px;justify-self:center}
+.login h2{text-align:center;color:var(--navy);font-size:22px}
+.login label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.login input{font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:6px}
+.login .go{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:12px;font:600 16px Fredoka,sans-serif;cursor:pointer}
+.err{color:var(--bad);font-size:13px}
+.hide-narrow{}@media (max-width:640px){.hide-narrow{display:none}}
+</style>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <form id="lgForm">
+    <img src="img/logo.webp" alt="">
+    <h2>Sales Report</h2>
+    <p class="note" style="text-align:center">Admin login (the same one as PH Point of Sale)</p>
+    <label>Username <input id="lgUser" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+    <label>Password <input id="lgPass" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lgErr"></p>
+    <button class="go" id="lgBtn" type="submit">Log in</button>
+  </form>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <img src="img/logo.webp" alt="Purrfect Hokkaido logo">
+      <div>
+        <h1>Purrfect <span style="color:var(--teal)">Hokkaid</span><span style="color:var(--green)">o</span> Sales Report</h1>
+        <p>Live from the branch inventory sheet, Loyverse and PH Point of Sale.</p>
+        <span class="live" id="live"><i></i><span id="liveTxt">Loading…</span></span>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="day" aria-pressed="true">Daily</button>
+        <button type="button" data-view="week" aria-pressed="false">Weekly</button>
+        <button type="button" data-view="month" aria-pressed="false">Monthly</button>
+      </div>
+      <div class="seg" role="group" aria-label="Branch">
+        <button type="button" data-branch="Dasma" aria-pressed="true">Dasma</button>
+        <button type="button" data-branch="Bayanan" aria-pressed="false">Bayanan</button>
+        <button type="button" data-branch="All" aria-pressed="false">Both</button>
+      </div>
+      <select id="pick" aria-label="Pick a period"></select>
+      <button class="btn" id="refresh" type="button">Refresh</button>
+      <a class="btn" href="./" style="text-decoration:none">POS</a>
+    </div>
+  </header>
+
+  <div class="warnbar" id="warn" hidden></div>
+
+  <nav class="tabs" role="tablist" aria-label="Pages">
+    <button type="button" role="tab" id="tabSales" aria-selected="true" data-tab="sales">Sales</button>
+    <button type="button" role="tab" id="tabInv" aria-selected="false" data-tab="inventory">Inventory<span class="badge" id="invBadge" hidden></span></button>
+  </nav>
+
+  <section id="pageInv" hidden style="display:grid;gap:14px">
+    <div class="seg" role="group" aria-label="Inventory view" style="width:max-content">
+      <button type="button" data-iview="supplies" aria-pressed="true">Supplies</button>
+      <button type="button" data-iview="recipes" aria-pressed="false">Recipes</button>
+    </div>
+    <p class="note" id="invNote"></p>
+    <div class="chips" id="invChips"></div>
+    <div class="controls" style="visibility:visible"><input id="invQ" type="search" placeholder="Search" style="font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;min-width:220px"><button class="btn" type="button" id="addSupply">+ Add supply</button></div>
+    <div class="inv" id="invList"></div>
+  </section>
+
+  <section id="pageSales" style="display:grid;gap:18px">
+
+  <p class="period" id="period">—</p>
+  <div class="tiles">
+    <div class="tile"><h3>Gross sales</h3><div class="big" id="tGross">—</div><div class="chg" id="cGross"></div></div>
+    <div class="tile"><h3>Expenses</h3><div class="big" id="tExp">—</div><div class="chg" id="cExp"></div></div>
+    <div class="tile"><h3>Net sales</h3><div class="big" id="tNet">—</div><div class="chg" id="cNet"></div></div>
+    <div class="tile"><h3>Net margin (net ÷ gross)</h3><div class="big" id="tMargin">—</div><div class="chg" id="cMargin"></div></div>
+  </div>
+  <p class="since" id="since">—</p>
+
+  <div class="grid">
+    <section class="card" id="trend">
+      <h2 id="trendTitle">Sales by day</h2>
+      <p class="note">Click a bar to pick that period. Each bar is the gross sales, written on top. The dark part is expenses and the coloured part on top is net sales. Orange shows expenses that went over that period's sales.</p>
+      <div class="legend"><span><i style="background:var(--teal)"></i>Net sales</span><span><i style="background:var(--exp)"></i>Expenses</span><span><i style="background:var(--orange)"></i>Expenses over sales</span></div>
+      <div class="chart" id="chart"></div>
+    </section>
+    <section class="card" id="cashup">
+      <h2 id="cashTitle">Dasma cash-up</h2>
+      <p class="note" id="cashNote"></p>
+      <table><thead><tr><th>Item</th><th>Amount</th></tr></thead><tbody id="cashBody"></tbody></table>
+    </section>
+    <section class="card wide" id="products">
+      <h2>Products sold</h2>
+      <p class="note">From Loyverse receipts at the Dasma counter for the period picked above; refunds taken off. Most sold first; the top three are outlined in orange.</p>
+      <p class="since" id="psum">—</p>
+      <div class="prod" id="prod"></div>
+    </section>
+    <section class="card wide" id="voids">
+      <h2>Refunds &amp; voids</h2>
+      <p class="note">Voids and refunds made in PH Point of Sale for the period picked above, by the date they were done.</p>
+      <div class="vsum"><div><span>Refunded</span><b id="vRef">—</b><span id="vRefN"></span></div><div><span>Voided</span><b id="vVoid">—</b><span id="vVoidN"></span></div></div>
+      <div class="tbox"><table><thead><tr><th>Date</th><th>Type</th><th>Receipt</th><th>Amount</th><th class="hide-narrow">Reason</th><th class="hide-narrow">Items</th></tr></thead><tbody id="vBody"></tbody></table></div>
+    </section>
+  </div>
+  </section>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzOB4gUkuWzD5L4ECpIFeCc_D-4tmtCuEkKWf5mIACTYsxx09jv8g1vN0PO77zvRhA/exec';
+const REFRESH_MS = 60000;
+const $ = s => document.querySelector(s);
+const jget = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const peso = n => (n < 0 ? '−₱' : '₱') + Math.abs(Math.round(n * 100) / 100).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pct = n => (n * 100).toFixed(1) + '%';
+const r2 = n => Math.round(n * 100) / 100;
+const kPhp = v => (Math.abs(v) >= 1000 ? (Math.round(v / 100) / 10) + 'K' : String(Math.round(v))) + ' Php';
+const short = v => '₱' + (Math.abs(v) >= 1000 ? (Math.round(v / 100) / 10) + 'k' : Math.round(v));
+const D = s => new Date((s.length === 7 ? s + '-01' : s) + 'T00:00:00Z');
+const fmt = (o, d) => d.toLocaleDateString('en-US', {timeZone: 'UTC', ...o});
+const label = (view, start, isShort) => {
+  const d = D(start);
+  if (view === 'day') return isShort ? fmt({month: 'short', day: 'numeric'}, d) : fmt({weekday: 'short', month: 'short', day: 'numeric'}, d);
+  if (view === 'month') return isShort ? fmt({month: 'short'}, d) : fmt({month: 'long', year: 'numeric'}, d);
+  const e = new Date(d); e.setUTCDate(e.getUTCDate() + 6);
+  return isShort ? fmt({month: 'short', day: 'numeric'}, d) : fmt({month: 'short', day: 'numeric'}, d) + ' – ' + fmt({month: 'short', day: 'numeric'}, e);
+};
+const bucket = (view, day) => {
+  if (view === 'day') return day;
+  if (view === 'month') return day.slice(0, 7);
+  const t = new Date(day + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7));
+  return t.toISOString().slice(0, 10);
+};
+const tidy = n => {
+  let s = String(n).trim(), size = '';
+  const m = s.match(/^\((G|M)\)\s*(.*)$/); if (m) { size = m[1] === 'G' ? 'Grande' : 'Mediano'; s = m[2]; }
+  s = s.replace(/^\(BW\)\s*/, 'Belgian Waffle ');
+  if (s === s.toUpperCase()) s = s.toLowerCase().replace(/\b([a-z])/g, c => c.toUpperCase()).replace(/\bB1t1\b/g, 'B1T1');
+  return {name: s, size};
+};
+const el = (tag, props = {}, kids = []) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
+
+const state = {view: 'day', branch: 'Dasma', period: null, data: null, at: null};
+let session = jget('pos-session');
+
+// ---- data -------------------------------------------------------------------------------------------
+function periods() {
+  const out = [];
+  const rows = state.data.daily.filter(r => state.branch === 'All' || r.branch === state.branch);
+  const m = new Map();
+  for (const r of rows) {
+    const k = bucket(state.view, r.date);
+    const g = m.get(k) || {start: k, gross: 0, expenses: 0, net: 0, days: new Set()};
+    g.gross += r.gross; g.expenses += r.expenses; g.net += r.net; g.days.add(r.date); m.set(k, g);
+  }
+  [...m.keys()].sort().forEach((k, i, ks) => {
+    const g = m.get(k), p = i ? m.get(ks[i - 1]) : null;
+    out.push({...g, gross: r2(g.gross), expenses: r2(g.expenses), net: r2(g.net), days: g.days.size, margin: g.gross ? g.net / g.gross : null,
+      prev: p ? {gross: r2(p.gross), expenses: r2(p.expenses), net: r2(p.net), margin: p.gross ? p.net / p.gross : null} : null});
+  });
+  return out;
+}
+const selected = ps => ps.find(p => p.start === state.period) || ps[ps.length - 1] || null;
+const rangeOf = p => {
+  if (state.view === 'day') return [p.start, p.start];
+  if (state.view === 'month') return [p.start + '-01', p.start + '-31'];
+  const e = new Date(p.start + 'T00:00:00Z'); e.setUTCDate(e.getUTCDate() + 6); return [p.start, e.toISOString().slice(0, 10)];
+};
+
+// ---- draw -------------------------------------------------------------------------------------------
+function draw() {
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === state.view)));
+  document.querySelectorAll('[data-branch]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.branch === state.branch)));
+  if (!state.data) return;
+  const ps = periods(), sel = selected(ps);
+  const pick = $('#pick');
+  pick.replaceChildren(...[...ps].reverse().map((p, i) => new Option(label(state.view, p.start) + (i === 0 ? ' (latest)' : ''), p.start)));
+  if (sel) pick.value = sel.start;
+  $('#trendTitle').textContent = 'Sales by ' + state.view;
+  if (!sel) { $('#period').textContent = 'No sales yet for this branch.'; return; }
+  $('#period').replaceChildren((state.view === 'day' ? 'Day' : state.view === 'week' ? 'Week' : 'Month') + ': ',
+    el('b', {textContent: label(state.view, sel.start) + (state.view === 'day' ? '' : ' (' + sel.days + ' trading day' + (sel.days === 1 ? '' : 's') + ')')}), ' compared with the ' + state.view + ' before');
+  const chg = (id, now, before, upGood, isPct) => {
+    const e = $(id); e.replaceChildren();
+    if (before == null || now == null) { e.textContent = before == null ? 'No earlier period' : ''; return; }
+    const v = now - before;
+    if (Math.abs(v) < 0.005) { e.textContent = 'No change vs previous'; return; }
+    const s = el('span', {className: (v > 0) === upGood ? 'good' : 'bad', textContent: (v > 0 ? '▲ +' : '▼ −') + (isPct ? (Math.abs(v) * 100).toFixed(1) + ' pts' : peso(Math.abs(v)))});
+    e.append(s, ' vs previous');
+  };
+  $('#tGross').textContent = peso(sel.gross); chg('#cGross', sel.gross, sel.prev && sel.prev.gross, true);
+  $('#tExp').textContent = peso(sel.expenses); chg('#cExp', sel.expenses, sel.prev && sel.prev.expenses, false);
+  $('#tNet').textContent = peso(sel.net); chg('#cNet', sel.net, sel.prev && sel.prev.net, true);
+  $('#tMargin').textContent = sel.margin == null ? '—' : pct(sel.margin); chg('#cMargin', sel.margin, sel.prev && sel.prev.margin, true, true);
+  const all = state.data.daily.filter(r => state.branch === 'All' || r.branch === state.branch);
+  const days = new Set(all.map(r => r.date)).size, sum = k => r2(all.reduce((a, r) => a + r[k], 0)), first = all.map(r => r.date).sort()[0];
+  $('#since').replaceChildren('Since opening on ', el('b', {textContent: label('day', first, true)}), ': ', el('b', {textContent: peso(sum('gross'))}), ' gross, ',
+    el('b', {textContent: peso(sum('expenses'))}), ' expenses, ', el('b', {textContent: peso(sum('net'))}), ' net over ', el('b', {textContent: String(days)}),
+    ' trading days, an average of ', el('b', {textContent: peso(days ? sum('gross') / days : 0)}), ' gross a day.');
+  drawChart(ps, sel);
+  drawCash();
+  drawProducts(sel);
+  drawVoids(sel);
+}
+
+function drawChart(ps, sel) {
+  const box = $('#chart'); box.replaceChildren();
+  const W = Math.max(300, box.clientWidth), H = Math.max(280, box.clientHeight || 300), L = 46, R = 8, B = 26, T = 26;
+  const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const add = (tag, a, text) => { const n = document.createElementNS(NS, tag); for (const k in a) n.setAttribute(k, a[k]); if (text != null) n.textContent = text; svg.append(n); return n; };
+  const max = Math.max(1, ...ps.map(p => Math.max(p.gross, p.expenses)));
+  const step0 = Math.pow(10, Math.floor(Math.log10(max / 5))), nice = [1, 2, 2.5, 5, 10].map(f => f * step0).find(s => max / s <= 6) || step0 * 10;
+  const top = Math.ceil(max / nice) * nice, y = v => H - B - (v / top) * (H - B - T);
+  for (let v = 0; v <= top + 1e-9; v += nice) {
+    add('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: v ? 'var(--grid)' : 'var(--axis)'});
+    add('text', {x: L - 6, y: y(v) + 4, 'text-anchor': 'end', fill: 'var(--muted)', 'font-size': 11}, short(v));
+  }
+  const step = (W - L - R) / Math.max(1, ps.length), bw = Math.min(34, step * 0.72);
+  const tip = el('div', {className: 'tip', hidden: true}); box.append(svg, tip);
+  const every = Math.max(1, Math.ceil(ps.length * 48 / (W - L - R)));
+  ps.forEach((p, i) => {
+    const cx = L + step * i + step / 2, x = cx - bw / 2, inExp = Math.min(p.expenses, p.gross);
+    if (p === sel) add('rect', {x: x - 4, width: bw + 8, y: y(Math.max(p.gross, p.expenses)) - 4, height: y(0) - y(Math.max(p.gross, p.expenses)) + 4, rx: 5, fill: 'none', stroke: 'var(--navy)', 'stroke-dasharray': '3 2', 'stroke-width': 1.5});
+    if (inExp > 0) add('rect', {x, width: bw, y: y(inExp), height: y(0) - y(inExp), fill: 'var(--exp)'});
+    if (p.gross > p.expenses) add('rect', {x, width: bw, y: y(p.gross), height: y(p.expenses) - y(p.gross), fill: 'var(--teal)', rx: 2});
+    if (p.expenses > p.gross) add('rect', {x, width: bw, y: y(p.expenses), height: y(p.gross) - y(p.expenses), fill: 'var(--orange)', rx: 2});
+    if (step >= 44) add('text', {x: cx, y: y(Math.max(p.gross, p.expenses)) - 7, 'text-anchor': 'middle', 'font-size': step >= 56 ? 11 : 9.5, 'font-weight': 600, fill: 'var(--ink)'}, kPhp(p.gross));
+    if (i % every === 0 || i === ps.length - 1) add('text', {x: cx, y: H - 8, 'text-anchor': 'middle', fill: 'var(--muted)', 'font-size': 11}, label(state.view, p.start, true));
+    const hit = add('rect', {x: L + step * i, width: step, y: 0, height: H - B, fill: 'transparent', style: 'cursor:pointer'});
+    hit.addEventListener('mousemove', ev => {
+      const rows = [['Gross', peso(p.gross)], ['Expenses', peso(p.expenses)], ['Net', peso(p.net)], ['Margin', p.margin == null ? '—' : pct(p.margin)]];
+      tip.replaceChildren(el('div', {className: 'd', textContent: label(state.view, p.start)}), ...rows.map(([a, b]) => el('div', {className: 'r'}, [el('span', {textContent: a}), el('span', {textContent: b})])));
+      tip.hidden = false;
+      const r = box.getBoundingClientRect(), px = ev.clientX - r.left;
+      tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, px + 14 > r.width - tip.offsetWidth ? px - tip.offsetWidth - 14 : px + 14)) + 'px';
+      tip.style.top = Math.max(0, ev.clientY - r.top - tip.offsetHeight - 8) + 'px';
+    });
+    hit.addEventListener('mouseleave', () => { tip.hidden = true; });
+    hit.addEventListener('click', () => { state.period = p.start; draw(); });
+  });
+}
+
+function drawCash() {
+  const br = state.branch === 'All' ? ['Dasma', 'Bayanan'] : [state.branch];
+  $('#cashTitle').textContent = (state.branch === 'All' ? 'Dasma and Bayanan' : state.branch) + ' cash-up';
+  $('#cashNote').textContent = state.branch === 'Dasma' ? 'From the summary block of the Daily Sales Dasma tab. Missing amount = net sales − receivables − payables − petty cash − cash on hand − BPI − GCash net.'
+    : 'From the summary block of the Daily Sales ' + (state.branch === 'All' ? 'Dasma and Bayanan tabs.' : 'Bayanan tab.');
+  const tb = $('#cashBody'); tb.replaceChildren();
+  for (const b of br) {
+    if (br.length > 1) tb.append(el('tr', {className: 'grp'}, [el('td', {colSpan: 2, textContent: b})]));
+    for (const r of state.data.cashup.filter(x => x.branch === b)) {
+      const v = r.amount == null ? null : Number(r.amount);
+      tb.append(el('tr', {className: r.kind === 'check' ? 'warn' : r.kind === 'sales' ? 'total' : r.kind === 'gcash' ? 'sub' : ''},
+        [el('td', {textContent: r.item}), el('td', {textContent: v == null ? '' : peso(v), className: v != null && v < 0 ? 'neg' : ''})]));
+    }
+  }
+}
+
+function drawProducts(sel) {
+  const [a, b] = rangeOf(sel), box = $('#prod'); box.replaceChildren();
+  const m = new Map();
+  for (const r of state.data.products) if (r.date >= a && r.date <= b) {
+    const g = m.get(r.item) || {item: r.item, category: r.category, sold: 0, sales: 0}; g.sold += r.sold; g.sales += r.sales; m.set(r.item, g);
+  }
+  const rows = [...m.values()].filter(r => r.sold > 0).sort((x, y) => y.sold - x.sold || y.sales - x.sales);
+  const tot = rows.reduce((t, r) => ({sold: t.sold + r.sold, sales: t.sales + r.sales}), {sold: 0, sales: 0});
+  $('#psum').replaceChildren(el('b', {textContent: String(tot.sold)}), ' items sold across ', el('b', {textContent: String(rows.length)}), ' products, worth ', el('b', {textContent: peso(tot.sales)}), '.');
+  if (!rows.length) { box.append(el('p', {className: 'empty', textContent: 'No product sales recorded in Loyverse for this period.'})); return; }
+  rows.forEach((r, i) => {
+    const t = tidy(r.item), src = state.data.images[r.item];
+    const pic = src ? el('img', {src, alt: '', loading: 'lazy'}) : el('div', {className: 'ph', textContent: t.name.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()});
+    if (src) pic.onerror = () => pic.replaceWith(el('div', {className: 'ph', textContent: t.name.slice(0, 2).toUpperCase()}));
+    const nm = el('div', {className: 'nm'}, [el('b', {}, [...(i < 3 ? [el('span', {className: 'rk', textContent: '#' + (i + 1)})] : []), t.name]), el('span', {textContent: [t.size, r.category].filter(Boolean).join(' · ')})]);
+    box.append(el('div', {className: 'p' + (i < 3 ? ' top' : '')}, [pic, nm, el('div', {className: 'ct'}, [el('b', {textContent: String(r.sold)}), el('span', {textContent: 'sold · ' + peso(r.sales)})])]));
+  });
+}
+
+function drawVoids(sel) {
+  const [a, b] = rangeOf(sel), rows = state.data.voids.filter(v => v.date >= a && v.date <= b).sort((x, y) => (y.date + y.time).localeCompare(x.date + x.time));
+  const sum = t => rows.filter(v => (t === 'Void') === (v.type === 'Void'));
+  const ref = sum('Refund'), vd = sum('Void');
+  $('#vRef').textContent = peso(ref.reduce((s, v) => s + v.amount, 0)); $('#vRefN').textContent = ref.length + (ref.length === 1 ? ' refund' : ' refunds');
+  $('#vVoid').textContent = peso(vd.reduce((s, v) => s + v.amount, 0)); $('#vVoidN').textContent = vd.length + (vd.length === 1 ? ' void' : ' voids');
+  const tb = $('#vBody'); tb.replaceChildren();
+  if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 6, className: 'wrap', textContent: 'No refunds or voids in this period.', style: 'color:var(--muted)'})])); return; }
+  for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.type}), el('td', {textContent: v.receipt}),
+    el('td', {className: 'neg', textContent: peso(v.amount)}), el('td', {className: 'wrap hide-narrow', textContent: v.reason}), el('td', {className: 'wrap hide-narrow', textContent: v.items})]));
+}
+
+// ---- inventory (supplies + recipes) ---------------------------------------------------------------
+// Stock is kept per supply (cups, lids, powders, syrups...). Each menu item has a recipe (how much of each supply one
+// serving uses); every Loyverse sale takes its recipe off the supplies. A supply is flagged at or under its low level
+// (20% of full by default); a menu item is flagged when a supply in its recipe is.
+const inv = {data: null, view: 'supplies', filter: 'all', rfilter: 'all'};
+async function loadInv() {
+  if (!session || session.role !== 'admin') return;
+  try {
+    const r = await fetch(API + '?pos=inventory&token=' + encodeURIComponent(session.token), {cache: 'no-store'}).then(x => x.json());
+    if (r.ok) { inv.data = r; drawInv(); }
+  } catch (e) {}
+}
+const INV_CAT = 'Dasma Branch';
+const fmtQ = n => String(Math.round(n * 100) / 100);
+const unitOf = s => (s && s.unit) || 'units';
+const initials = t => t.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+async function invSave(body, err, go) {
+  try {
+    const res = await fetch(API, {method: 'POST', body: JSON.stringify(Object.assign({token: session.token}, body))}).then(x => x.json());
+    if (!res.ok) { err.textContent = res.error || 'Could not save.'; if (go) go.disabled = false; return false; }
+    inv.data = res; drawInv(); return true;
+  } catch (er) { err.textContent = 'No internet connection.'; if (go) go.disabled = false; return false; }
+}
+function dialog(title, note, fields, okText, onOk, extra) {
+  const wrap = el('div', {className: 'dlg'}), f = el('form');
+  const err = el('p', {className: 'err'}), go = el('button', {className: 'go btn', type: 'submit', textContent: okText, style: 'background:var(--navy);color:#fff'});
+  const cancel = el('button', {className: 'btn', type: 'button', textContent: 'Cancel'}); cancel.onclick = () => wrap.remove();
+  f.append(el('h3', {textContent: title}), ...(note ? [el('p', {className: 'note', textContent: note})] : []), ...fields, ...(extra || []), err, el('div', {className: 'row'}, [cancel, go]));
+  f.onsubmit = async e => { e.preventDefault(); go.disabled = true; err.textContent = ''; if (await onOk(err, go)) wrap.remove(); };
+  wrap.append(f); wrap.onclick = e => { if (e.target === wrap) wrap.remove(); };
+  document.body.append(wrap); setTimeout(() => { const i = f.querySelector('input,select'); if (i) i.focus(); }, 50);
+  return wrap;
+}
+function chipsFor(defs, cur, set) {
+  $('#invChips').replaceChildren(...defs.map(([key, label, count, cls]) => {
+    const b = el('button', {className: 'chip ' + cls, type: 'button'}, [el('b', {textContent: String(count)}), el('span', {textContent: label})]);
+    b.setAttribute('aria-pressed', String(cur === key)); b.onclick = () => { set(key); drawInv(); }; return b;
+  }));
+}
+function drawInv() {
+  if (!inv.data) return;
+  const sup = inv.data.rows, n = s => sup.filter(r => r.status === s).length;
+  const badge = $('#invBadge'); badge.hidden = !(n('Low') + n('Out')); badge.textContent = n('Low') + n('Out');
+  document.querySelectorAll('[data-iview]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.iview === inv.view)));
+  $('#addSupply').hidden = inv.view !== 'supplies';
+  $('#invQ').placeholder = inv.view === 'supplies' ? 'Search supplies' : 'Search menu items';
+  if (inv.view === 'supplies') drawSupplies(); else drawRecipes();
+}
+function drawSupplies() {
+  const rows = inv.data.rows, n = s => rows.filter(r => r.status === s).length;
+  $('#invNote').innerHTML = 'Every sale takes its recipe amounts off these supplies (refunds put them back). A supply is flagged when what is left is at or under its low level (20% of full by default). Tap <b>Restock</b> when a delivery arrives, <b>Count</b> after counting the shelf.';
+  chipsFor([['attention', 'Need restock (low + out)', n('Low') + n('Out'), 'red'], ['Out', 'Out of stock', n('Out'), 'red'], ['Low', 'Running low', n('Low'), 'amber'],
+    ['OK', 'In stock', n('OK'), 'okc'], ['Not counted', 'Not counted yet', n('Not counted'), ''], ['all', 'All supplies', rows.length, '']], inv.filter, k => { inv.filter = k; });
+  const q = $('#invQ').value.trim().toLowerCase();
+  const list = rows.filter(r => (inv.filter === 'all' || (inv.filter === 'attention' ? (r.status === 'Low' || r.status === 'Out') : r.status === inv.filter))
+    && (!q || r.supply.toLowerCase().includes(q)))
+    .sort((a, b) => a.supply.localeCompare(b.supply, undefined, {sensitivity: 'base'}));   // A-Z (Vince, 3 Nov)
+  const box = $('#invList'); box.replaceChildren();
+  if (!rows.length) { box.append(el('p', {className: 'empty', textContent: 'No supplies yet. Tap + Add supply.'})); return; }
+  if (!list.length) { box.append(el('p', {className: 'empty', textContent: inv.filter === 'attention' ? 'No supply needs a restock right now.' : 'No supplies here.'})); return; }
+  for (const r of list) {
+    const flag = r.status === 'Out' ? el('span', {className: 'flag', textContent: '⚑ OUT OF STOCK'}) : r.status === 'Low' ? el('span', {className: 'flag', textContent: '⚑ RESTOCK'}) : null;
+    const usedIn = r.usedBy.length ? 'used in ' + r.usedBy.length + ' item' + (r.usedBy.length > 1 ? 's' : '') : 'not in any recipe yet';
+    const nm = el('div', {className: 'nm'}, [el('b', {}, [r.supply, ...(flag ? [flag] : [])]), el('span', {textContent: unitOf(r) + ' · ' + usedIn, title: r.usedBy.map(i => tidy(i).name).join(', ')})]);
+    const stock = el('div', {className: 'stock'});
+    if (r.tracked) {
+      const pctv = Math.max(0, Math.min(1, r.pct || 0));
+      stock.append(el('div', {className: 'bar'}, [el('i', {style: 'width:' + (pctv * 100).toFixed(0) + '%'})]),
+        el('div', {className: 'lv'}, [el('b', {textContent: fmtQ(r.left)}), ' ' + unitOf(r) + ' left of ' + fmtQ(r.full) + ' · ' + Math.round(pctv * 100) + '% · used ' + fmtQ(r.used) + ' since count · low at ' + r.low + '%']));
+    } else stock.append(el('div', {className: 'lv', textContent: 'Not counted yet. Tap Count to start tracking.'}));
+    const restock = el('button', {className: 'btn', type: 'button', textContent: 'Restock'}), count = el('button', {className: 'btn', type: 'button', textContent: 'Count'});
+    const edit = el('button', {className: 'btn', type: 'button', textContent: 'Edit', title: 'Unit / remove'});
+    restock.onclick = () => stockDialog(r, 'restock'); count.onclick = () => stockDialog(r, 'count'); edit.onclick = () => supplyDialog(r);
+    if (!r.tracked) restock.hidden = true;
+    box.append(el('div', {className: 'ir' + (r.status === 'Low' ? ' low' : r.status === 'Out' ? ' out' : '')}, [el('div', {className: 'ph', textContent: initials(r.supply)}), nm, stock, el('div', {className: 'acts'}, [restock, count, edit])]));
+  }
+}
+function stockDialog(r, mode) {
+  const u = unitOf(r);
+  const qty = el('input', {type: 'number', min: 0, step: 'any', required: true, inputMode: 'decimal', value: mode === 'count' && r.tracked ? Math.max(0, r.left) : ''});
+  const full = el('input', {type: 'number', min: 0, step: 'any', placeholder: 'same as count', value: mode === 'count' && r.tracked ? r.full : ''});
+  const low = el('input', {type: 'number', min: 1, max: 99, step: 1, value: r.low || 20});
+  dialog((mode === 'restock' ? 'Restock ' : 'Count ') + r.supply,
+    mode === 'restock' ? 'How much arrived (in ' + u + ')? It is added to the ' + fmtQ(r.left || 0) + ' left, and the new total becomes "full".' : 'How much is on hand right now (in ' + u + ')? Sales from this moment on come off this number.',
+    [el('label', {}, [mode === 'restock' ? 'Received (' + u + ')' : 'On hand (' + u + ')', qty]),
+      ...(mode === 'count' ? [el('div', {className: 'row'}, [el('label', {}, ['Full stock (' + u + ')', full]), el('label', {}, ['Flag at or under (%)', low])])] : [])],
+    mode === 'restock' ? 'Add to stock' : 'Save count',
+    (err, go) => invSave({pos: 'stock', items: [{supply: r.supply, mode, qty: Number(qty.value), full: mode === 'count' && full.value !== '' ? Number(full.value) : undefined, low: mode === 'count' ? Number(low.value) : undefined}]}, err, go));
+}
+function supplyDialog(r) {
+  const name = el('input', {required: true, maxLength: 120, value: r ? r.supply : '', placeholder: 'e.g. Cups 8oz', readOnly: !!r});
+  const unit = el('input', {maxLength: 20, value: r ? r.unit : '', placeholder: 'pcs, g, ml, pack…'});
+  const extra = [];
+  if (r) {
+    const rm = el('button', {className: 'btn', type: 'button', textContent: 'Remove this supply', style: 'color:var(--bad)'});
+    rm.onclick = async () => {
+      if (!confirm('Remove ' + r.supply + '? Recipes that use it stop counting it.')) return;
+      const err = rm.closest('form').querySelector('.err');
+      if (await invSave({pos: 'stock', items: [{supply: r.supply, mode: 'remove'}]}, err)) rm.closest('.dlg').remove();
+    };
+    extra.push(rm);
+  }
+  dialog(r ? 'Edit ' + r.supply : 'Add a supply', 'The unit is what you count and what recipes use (pieces, grams, ml, packs…).',
+    [el('label', {}, ['Supply', name]), el('label', {}, ['Unit', unit])], r ? 'Save' : 'Add supply',
+    (err, go) => invSave({pos: 'stock', items: [{supply: name.value.trim(), mode: 'add', unit: unit.value.trim()}]}, err, go), extra);
+}
+function drawRecipes() {
+  const items = inv.data.items || {}, menu = (inv.data.menu || []).filter(m => m.cat === INV_CAT);   // Dasma Branch products only (Vince, 3 Nov)
+  const st = m => items[m.item] ? items[m.item].status : 'No recipe';
+  const n = s => menu.filter(m => st(m) === s).length;
+  $('#invNote').innerHTML = 'A recipe says how much of each supply one serving uses. Every sale of the item takes those amounts off the supplies. An item is flagged when a supply in its recipe runs low; <b>can make</b> is how many more servings the counted supplies cover.';
+  chipsFor([['all', 'All Dasma Branch items', menu.length, ''], ['No recipe', 'No recipe yet', n('No recipe'), 'amber'], ['attention', 'Low or out', n('Low') + n('Out'), 'red'],
+    ['OK', 'Enough supplies', n('OK'), 'okc']], inv.rfilter, k => { inv.rfilter = k; });
+  const q = $('#invQ').value.trim().toLowerCase(), order = {Out: 0, Low: 1, 'No recipe': 2, 'Not counted': 3, OK: 4};
+  const list = menu.filter(m => (inv.rfilter === 'all' || (inv.rfilter === 'attention' ? (st(m) === 'Low' || st(m) === 'Out') : st(m) === inv.rfilter))
+    && (!q || (m.item + ' ' + tidy(m.item).name + ' ' + m.cat).toLowerCase().includes(q)))
+    .sort((a, b) => order[st(a)] - order[st(b)] || a.item.localeCompare(b.item));
+  const box = $('#invList'); box.replaceChildren();
+  if (!list.length) { box.append(el('p', {className: 'empty', textContent: 'No menu items here.'})); return; }
+  const bySup = Object.fromEntries(inv.data.rows.map(r => [r.supply, r]));
+  for (const m of list) {
+    const t = tidy(m.item), it = items[m.item], s = st(m);
+    const pic = m.image ? el('img', {src: m.image, alt: '', loading: 'lazy'}) : el('div', {className: 'ph', textContent: initials(t.name)});
+    const flag = s === 'Out' ? el('span', {className: 'flag', textContent: '⚑ OUT'}) : s === 'Low' ? el('span', {className: 'flag', textContent: '⚑ LOW'}) : null;
+    const nm = el('div', {className: 'nm'}, [el('b', {}, [t.name, ...(flag ? [flag] : [])]), el('span', {textContent: [t.size, m.cat].filter(Boolean).join(' · ')})]);
+    const rec = el('div', {className: 'stock'});
+    if (it) {
+      rec.append(el('div', {className: 'lv', textContent: it.recipe.map(x => fmtQ(x.qty) + ' ' + unitOf(bySup[x.supply]) + ' ' + x.supply).join(' · ')}));
+      if (it.canMake != null) rec.append(el('div', {className: 'lv'}, [el('b', {textContent: String(it.canMake)}), ' more can be made' + (it.short && s !== 'OK' ? ' · short on ' + it.short : '')]));
+      else rec.append(el('div', {className: 'lv', textContent: 'Count its supplies to see how many can be made.'}));
+    } else rec.append(el('div', {className: 'lv', textContent: 'No recipe yet. Sales of this item do not use up any supplies.'}));
+    const edit = el('button', {className: 'btn', type: 'button', textContent: it ? 'Edit recipe' : 'Add recipe'}); edit.onclick = () => recipeDialog(m);
+    box.append(el('div', {className: 'ir' + (s === 'Low' ? ' low' : s === 'Out' ? ' out' : '')}, [pic, nm, rec, el('div', {className: 'acts'}, [edit])]));
+  }
+}
+function recipeDialog(m) {
+  const sup = inv.data.rows, items = inv.data.items || {};
+  const lines = el('div', {style: 'display:grid;gap:6px'});
+  const dl = el('datalist', {id: 'supList'}, [...sup].sort((x, y) => x.supply.localeCompare(y.supply)).map(s => el('option', {value: s.supply})));
+  const addLine = (supply, qty) => {
+    const s = el('input', {value: supply || '', placeholder: 'Supply', required: true, maxLength: 120}); s.setAttribute('list', 'supList');
+    const q = el('input', {type: 'number', min: 0, step: 'any', value: qty != null ? qty : '', placeholder: 'Qty', required: true, inputMode: 'decimal', style: 'width:90px'});
+    const u = el('span', {className: 'note', style: 'min-width:44px'}); const setU = () => { const r = sup.find(x => x.supply === s.value.trim()); u.textContent = r ? unitOf(r) : ''; }; s.oninput = setU; setU();
+    const x = el('button', {className: 'btn', type: 'button', textContent: '×', title: 'Remove line'});
+    const row = el('div', {className: 'rl', style: 'display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center'}, [s, q, u, x]);
+    x.onclick = () => row.remove(); lines.append(row);
+  };
+  (items[m.item] ? items[m.item].recipe : []).forEach(x => addLine(x.supply, x.qty));
+  if (!lines.children.length) addLine();
+  const more = el('button', {className: 'btn', type: 'button', textContent: '+ Add a supply line'}); more.onclick = () => addLine();
+  const others = Object.keys(items).filter(k => k !== m.item).sort();
+  const copy = el('select', {}, [el('option', {value: '', textContent: others.length ? 'Copy from another item…' : 'No other recipes to copy yet'}), ...others.map(k => el('option', {value: k, textContent: tidy(k).name}))]);
+  copy.onchange = () => { if (!copy.value) return; lines.replaceChildren(); items[copy.value].recipe.forEach(x => addLine(x.supply, x.qty)); copy.value = ''; };
+  dialog('Recipe: ' + tidy(m.item).name, 'How much of each supply ONE serving uses, in that supply\'s unit. New supply names are added to the Supplies list.',
+    [dl, copy, lines, more], 'Save recipe', async (err, go) => {
+      const rows = [...lines.querySelectorAll('.rl')].map(r => { const [s, q] = r.querySelectorAll('input'); return {supply: s.value.trim(), qty: Number(q.value)}; }).filter(x => x.supply && x.qty > 0);
+      const fresh = [...new Set(rows.map(x => x.supply).filter(s => !sup.some(r => r.supply === s)))];
+      if (fresh.length && !(await invSave({pos: 'stock', items: fresh.map(s => ({supply: s, mode: 'add'}))}, err, go))) return false;
+      return invSave({pos: 'recipe', item: m.item, lines: rows}, err, go);
+    });
+}
+document.querySelectorAll('[data-iview]').forEach(b => b.onclick = () => { inv.view = b.dataset.iview; $('#invQ').value = ''; drawInv(); });
+$('#addSupply').onclick = () => supplyDialog(null);
+document.querySelectorAll('.tabs [data-tab]').forEach(b => b.onclick = () => {
+  const inv1 = b.dataset.tab === 'inventory';
+  document.querySelectorAll('.tabs [data-tab]').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  $('#pageInv').hidden = !inv1; $('#pageSales').hidden = inv1;
+  document.querySelector('.controls').style.visibility = inv1 ? 'hidden' : '';
+  if (inv1) loadInv(); else draw();
+});
+$('#invQ').oninput = drawInv;
+
+// ---- load -------------------------------------------------------------------------------------------
+let loading = false;
+async function load(fresh) {
+  if (loading) return;
+  if (!session || session.role !== 'admin' || session.until < Date.now()) { showLogin(session && session.role !== 'admin' ? 'Log in as Admin to see the Sales Report.' : ''); return; }
+  loading = true; $('#liveTxt').textContent = 'Updating…';
+  try {
+    const r = await fetch(API + '?pos=report&token=' + encodeURIComponent(session.token) + (fresh ? '&fresh=1' : ''), {cache: 'no-store'}).then(x => x.json());
+    if (r.relogin) { session = null; localStorage.removeItem('pos-session'); showLogin(r.error); return; }
+    if (!r.ok) throw new Error(r.error || 'no data');
+    state.data = r; state.at = new Date(r.at);
+    $('#warn').hidden = !(r.warnings && r.warnings.length); $('#warn').textContent = (r.warnings || []).join(' · ');
+    $('#live').classList.remove('stale');
+    draw();
+    loadInv();
+  } catch (e) {
+    $('#live').classList.add('stale');
+    $('#warn').hidden = false; $('#warn').textContent = 'Could not update: ' + (e.message || 'no internet') + '. Showing the last numbers.';
+  } finally {
+    loading = false;
+    if (state.at) $('#liveTxt').textContent = 'Live · updated ' + state.at.toLocaleTimeString('en-PH', {timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit'}) + ' · refreshes every minute';
+  }
+}
+
+function showLogin(msg) { $('#login').hidden = false; $('#lgErr').textContent = msg || ''; $('#lgUser').value = localStorage.getItem('pos-user') || ''; }
+$('#lgForm').onsubmit = async e => {
+  e.preventDefault();
+  $('#lgBtn').disabled = true; $('#lgErr').textContent = '';
+  try {
+    const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'login', user: $('#lgUser').value, pass: $('#lgPass').value})}).then(x => x.json());
+    if (!r.ok) { $('#lgErr').textContent = r.error || 'Could not log in.'; return; }
+    if (r.role !== 'admin') { $('#lgErr').textContent = 'The Sales Report needs the Admin password.'; return; }
+    session = {role: r.role, token: r.token, until: r.until}; jset('pos-session', session);
+    try { localStorage.setItem('pos-user', $('#lgUser').value.trim()); } catch (er) {}
+    $('#lgPass').value = ''; $('#login').hidden = true; load(true);
+  } catch (er) { $('#lgErr').textContent = 'No internet connection.'; }
+  finally { $('#lgBtn').disabled = false; }
+};
+
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { state.view = b.dataset.view; state.period = null; draw(); });
+document.querySelectorAll('[data-branch]').forEach(b => b.onclick = () => { state.branch = b.dataset.branch; draw(); });
+$('#pick').onchange = () => { state.period = $('#pick').value; draw(); };
+$('#refresh').onclick = () => load(true);
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(draw, 150); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(false); });
+setInterval(() => { if (!document.hidden) load(false); }, REFRESH_MS);
+load(false);
+</script>
+</body>
+</html>
