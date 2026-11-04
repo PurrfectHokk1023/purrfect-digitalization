@@ -278,6 +278,33 @@ footer .logo img{height:30px}
 :root[data-theme="dark"] .logo-l{display:none!important}
 :root[data-theme="dark"] .logo-d{display:block!important}
 @media (max-width:400px){.logo img{height:32px}}
+/* footer + contact (Nov 4) */
+.site-footer{padding-block:44px 28px;font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface)}
+.site-footer .fgrid{display:grid;align-items:start;grid-template-columns:1.6fr 1fr 1.3fr 1fr;gap:28px}
+.fcol{display:grid;gap:9px;align-content:start;min-width:0}
+.fcol b{color:var(--ink);font-size:14px;letter-spacing:.02em}
+.fcol a{color:var(--muted);text-decoration:none;overflow-wrap:anywhere}
+.fcol a:hover{color:var(--accent)}
+.fbrand p{margin:6px 0 4px;max-width:36ch}
+.social{display:flex;gap:10px}
+.social a{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);color:var(--ink);background:var(--bg)}
+.social a:hover{color:#fff;background:var(--accent);border-color:var(--accent)}
+.social svg{width:20px;height:20px}
+.site-footer .fbottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:13px}
+.site-footer span:last-child{margin-left:0}
+@media (max-width:860px){.site-footer .fgrid{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.site-footer .fgrid{grid-template-columns:1fr}}
+.contact .ccards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.ccard{padding:22px;display:grid;gap:6px;text-decoration:none;color:var(--ink);transition:transform .15s}
+.ccard:hover{transform:translateY(-2px)}
+.ccard .cic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);font-size:20px;margin-bottom:6px;color:var(--accent)}
+.ccard .cic.fb{background:#1877f2;color:#fff}.ccard .cic.ig{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af);color:#fff}
+.ccard .cic svg{width:22px;height:22px}
+.ccard span{color:var(--muted);font-size:14.5px}
+.ccard .mail{overflow-wrap:anywhere;font-size:13.5px}
+.ccard em{font-style:normal;color:var(--accent);font-weight:600;font-size:14px;margin-top:4px}
+@media (max-width:960px){.contact .ccards{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.contact .ccards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -300,6 +327,7 @@ footer .logo img{height:30px}
       <li><a href="#flow">Order flow</a></li>
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
+      <li><a href="./#contact">Contact</a></li>
     </ul>
     <a class="btn btn-primary" href="./#seller">Book a demo</a>
   </div>
@@ -651,13 +679,38 @@ footer .logo img{height:30px}
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <a class="logo" href="./" style="font-size:16px;color:var(--ink)"><img class="logo-l" src="img/logo-light.png" alt="Purrfect Digitalization" width="720" height="173"><img class="logo-d" src="img/logo-dark.png" alt="" width="720" height="173" aria-hidden="true"></a>
-    <a href="./">All industries</a>
-    <a href="leasing.html">Leasing</a>
-    <span>© 2026 Purrfect Digitalization</span>
+<footer class="site-footer">
+  <div class="wrap fgrid">
+    <div class="fcol fbrand">
+      <a class="logo" href="./"><img class="logo-l" src="img/logo-light.png" alt="Purrfect Digitalization" width="720" height="173"><img class="logo-d" src="img/logo-dark.png" alt="" width="720" height="173" aria-hidden="true"></a>
+      <p>Digital tools for small businesses in the Philippines: orders, bookings, payments, stock and reports, set up in four weeks.</p>
+      <div class="social">
+        <a href="https://www.facebook.com/profile.php?id=61596084187287" target="_blank" rel="noopener" aria-label="Purrfect Digital on Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5h1.6V4.6c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.3H7.6V14h2.7v8z"/></svg></a>
+        <a href="https://www.instagram.com/purrfect.digital/" target="_blank" rel="noopener" aria-label="purrfect.digital on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+      </div>
+    </div>
+    <nav class="fcol" aria-label="Footer">
+      <b>Explore</b>
+      <a href="./">Home</a>
+      <a href="ecommerce.html">E-commerce</a>
+      <a href="leasing.html">Leasing</a>
+      <a href="demo.html">Seller live demo</a>
+      <a href="leasing-demo.html">Leasing live demo</a>
+    </nav>
+    <div class="fcol">
+      <b>Contact us</b>
+      <a href="tel:+639612931559">📞 0961 293 1559</a>
+      <a href="mailto:vinci.jr.amandacowzki@gmail.com">✉️ vinci.jr.amandacowzki@gmail.com</a>
+      <a href="https://www.facebook.com/profile.php?id=61596084187287" target="_blank" rel="noopener">💬 Message us on Facebook</a>
+      <a href="./#demo">🗓️ Book a free demo</a>
+    </div>
+    <div class="fcol">
+      <b>Follow us</b>
+      <a href="https://www.facebook.com/profile.php?id=61596084187287" target="_blank" rel="noopener">Facebook · Purrfect Digital</a>
+      <a href="https://www.instagram.com/purrfect.digital/" target="_blank" rel="noopener">Instagram · @purrfect.digital</a>
+    </div>
   </div>
+  <div class="wrap fbottom"><span>© 2026 Purrfect Digitalization</span><span>purrfectdigital.online</span></div>
 </footer>
 
 <script>
