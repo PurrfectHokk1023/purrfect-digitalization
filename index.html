@@ -388,6 +388,7 @@ footer span:last-child{margin-left:auto}
       <li><a href="#industries">Industries</a></li>
       <li><a href="#full360">360°</a></li>
       <li><a href="ecommerce.html">E-commerce</a></li>
+      <li><a href="leasing.html">Leasing</a></li>
       <li><a href="#solutions">Solutions</a></li>
       <li><a href="#case">Case study</a></li>
       <li><a href="#pricing">Pricing</a></li>
@@ -463,7 +464,8 @@ footer span:last-child{margin-left:auto}
       <article class="card ind">
         <div class="pic"><img src="img/commercial-viewing.webp" alt="A leasing agent shows a floor plan on a tablet to a couple viewing an empty commercial space" width="1400" height="933" loading="lazy"><span class="float">🏢 Unit G-3 · Viewing Sat 10 AM</span></div>
         <div class="body"><span class="who">Property leasing</span><h3>Commercial spaces, offices, stalls</h3>
-          <ul><li>Listings with photos, floor plans and a virtual tour</li><li>Online viewing schedule with reminders</li><li>Applications, digital lease, monthly rent billing</li></ul></div>
+          <ul><li>Listings with photos, floor plans and a virtual tour</li><li>Online viewing schedule with reminders</li><li>Applications, digital lease, monthly rent billing</li></ul>
+          <a href="leasing.html" style="font-weight:600;color:var(--accent);text-decoration:none">See how leasing works →</a></div>
       </article>
       <article class="card ind">
         <div class="pic"><img src="img/apartment-rent.webp" alt="A tenant shows her landlord on her phone that rent was paid" width="900" height="600" loading="lazy"><span class="float">💸 Rent for Unit 3B · Paid</span></div>
@@ -529,6 +531,7 @@ footer span:last-child{margin-left:auto}
       <span class="eyebrow">Spotlight · Commercial spaces</span>
       <h2>Lease your spaces from first inquiry to renewal, all online.</h2>
       <p class="lead">For building owners and leasing teams with stalls, offices or ground-floor units. Every step of the tenant journey has its own tool, and every peso of rent lands in one report.</p>
+      <a class="btn btn-primary" href="leasing.html" style="justify-self:start">See the leasing page →</a>
     </div>
     <div class="lease-grid">
       <figure class="shot" style="margin:0"><img src="img/commercial-viewing.webp" alt="A leasing agent walks a couple through an empty commercial unit" width="1400" height="933" loading="lazy"><figcaption>Viewings booked online, floor plan on the tablet</figcaption></figure>
@@ -923,6 +926,10 @@ footer span:last-child{margin-left:auto}
   sel.onchange = draw; draw();
 
   // coming from the e-commerce page (./#seller): preselect the e-commerce type and Founding Seller plan
+  if (location.hash === '#lessor') {        // coming from the leasing page
+    $('f-type').value = 'Commercial space or office leasing';
+    $('demo').scrollIntoView();
+  }
   if (location.hash === '#seller') {
     $('f-type').value = 'E-commerce (TikTok Shop, Shopee, Lazada)';
     $('f-plan').value = 'Founding Seller (free e-commerce pilot)';
