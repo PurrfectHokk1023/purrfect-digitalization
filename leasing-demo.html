@@ -107,6 +107,16 @@ main{padding-block:22px 60px}
 .bub.in{background:var(--bg);border:1px solid var(--line);border-bottom-left-radius:4px}
 .bub.out{justify-self:end;background:var(--teal);color:#fff;border-bottom-right-radius:4px}
 .bub.draft{justify-self:end;background:var(--teal-soft);color:var(--ink);border:1px dashed var(--teal);border-bottom-right-radius:4px}
+.tourcard{justify-self:end;width:min(300px,88%);display:grid;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--ink)}
+.tourcard.draft{border:1px dashed var(--teal)}
+.tourcard .pv{height:150px;background-size:auto 100%;background-repeat:repeat-x;position:relative;animation:pan 45s linear infinite}
+@keyframes pan{from{background-position:0 0}to{background-position:calc(var(--w) * -1) 0}}
+.tourcard .b360{position:absolute;top:8px;left:8px;background:rgba(10,14,18,.75);color:#fff;font:700 12px var(--body);padding:3px 8px;border-radius:999px}
+.tourcard .cap{padding:9px 12px;display:grid;font-size:13px}
+.tourcard .cap small{color:var(--muted);font-size:12px}
+.tourcard:hover .cap b{text-decoration:underline}
+.dlg .tourcard{justify-self:stretch;width:100%}
+@media (prefers-reduced-motion:reduce){.tourcard .pv{animation:none}}
 .docs{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;grid-column:1/-1}
 .docs span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
 .docs span.ok{background:var(--good-soft);border-color:transparent;color:var(--good)}
@@ -235,6 +245,10 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
   const daysTo = d => Math.round((new Date(d) - TODAY) / 864e5);
   const TOURS = ['203', '206', '304'];             // vacant units with a 360° photo (tour.html#u<unit>)
   const tourUrl = id => new URL('tour.html#u' + id, location.href).href;
+  const TOUR_RATIO = { '203': 2.9, '206': 1.93, '304': 1.93 };   // panorama width / height
+  const tourCard = (id, draft) => TOURS.includes(id) ? `<a class="tourcard${draft ? ' draft' : ''}" href="tour.html#u${id}" target="_blank" rel="noopener" aria-label="Open the 360 degree tour of Unit ${id}">
+      <span class="pv" style="background-image:url(img/tour-${id}.webp);--w:${Math.round(150 * TOUR_RATIO[id])}px"><span class="b360">360°</span></span>
+      <span class="cap"><b>${draft ? '✦ AI will attach: ' : ''}Unit ${id} · 360° virtual tour</b><small>Tap to look around the unit</small></span></a>` : '';
 
   // [unit, floor, sqm, tenant or '', lease end, commercial?]
   const UNITS = [
@@ -314,7 +328,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
       if (l.stage === 'Viewing booked') acts = `<button class="btn sm tl" data-a="attended" data-id="${l.id}" type="button">Attended → send application</button><button class="btn sm" data-a="noshow" data-id="${l.id}" type="button">No-show</button>`;
       if (l.stage === 'No-show') acts = `<button class="btn sm" data-a="rebook" data-id="${l.id}" type="button">Follow up + rebook</button>`;
       return `<article class="card item"><div><b>${l.name}</b> · ${l.biz} <span class="pill p-vw">${l.src}</span><small>${l.stage}${l.slot ? ' · ' + l.slot : ''} · Unit ${u.id}, ${u.sqm} sqm</small></div><div class="acts">${acts}</div>
-        <div class="chat"><span class="bub in">${l.msg}</span>${l.stage === 'New' ? `<span class="bub draft">✦ AI draft: ${l.reply}</span>` : `<span class="bub out">${l.reply}</span>`}${l.followup ? `<span class="bub out">${l.followup}</span>` : ''}</div></article>`;
+        <div class="chat"><span class="bub in">${l.msg}</span>${l.stage === 'New' ? `<span class="bub draft">✦ AI draft: ${l.reply}</span>` : `<span class="bub out">${l.reply}</span>`}${tourCard(l.unit, l.stage === 'New')}${l.followup ? `<span class="bub out">${l.followup}</span>` : ''}</div></article>`;
     }).join('') : '<div class="empty">No inquiries yet. Press “Simulate a new inquiry”.</div>';
 
     // apps
@@ -357,7 +371,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     const u = S.units.find(x => x.floor === p.floor && x.status === 'Vacant') || S.units.find(x => x.status === 'Vacant');
     if (!u) { toast('No vacant units left. Reset the demo to try again.'); return; }
     S.seq.lead++;
-    const reply = `Hi ${p.name.split(' ')[0]}! Yes po, Unit ${u.id} on ${u.floor} is available: ${u.sqm} sqm at ${peso(u.rate)}/sqm, so ${peso(rent(u))}/month plus CUSA ${peso(u.sqm * CUSA)}. 2 months advance + 2 months deposit. ${TOURS.includes(u.id) ? ' 360° tour: ' + tourUrl(u.id) + ' ·' : ''} Want to view it? Sat 10 AM or 2 PM po.`;
+    const reply = `Hi ${p.name.split(' ')[0]}! Yes po, Unit ${u.id} on ${u.floor} is available: ${u.sqm} sqm at ${peso(u.rate)}/sqm, so ${peso(rent(u))}/month plus CUSA ${peso(u.sqm * CUSA)}. 2 months advance + 2 months deposit. ${TOURS.includes(u.id) ? 'Here’s a 360° tour para makita niyo po ang loob 👇' : ''} Want to view it? Sat 10 AM or 2 PM po.`;
     S.leads.push({ id: S.seq.lead, name: p.name, biz: p.biz, src: p.src, msg: p.msg, unit: u.id, stage: 'New', reply });
     log(`New inquiry from ${p.name} (${p.src}) · AI drafted a reply for Unit ${u.id}`); save(); render(); show('leads');
   };
@@ -431,7 +445,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     if (u.status !== 'Occupied') {
       body.innerHTML = `<div class="top2"><span>Public listing</span><button class="btn sm" id="x" type="button">Close</button></div><h3>Unit ${u.id} · ${u.sqm} sqm · ${u.floor}</h3>
         <dl class="terms"><dt>Rate</dt><dd>${peso(u.rate)}/sqm</dd><dt>Monthly rent</dt><dd>${peso(rent(u))}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}</dd><dt>Status</dt><dd>${u.status}</dd></dl>
-        ${TOURS.includes(u.id) ? `<div class="row"><a class="btn sm tl" href="tour.html#u${u.id}" target="_blank" rel="noopener">🔄 Open 360° tour</a><button class="btn sm" id="copyTour" type="button">Copy tour link</button></div><p class="muted" id="tourNote" style="margin:0;font-size:12.5px">Send this link to a prospect by Messenger or Viber: they look around the unit and book a viewing.</p>` : ''}
+        ${tourCard(u.id)}${TOURS.includes(u.id) ? `<div class="row"><a class="btn sm tl" href="tour.html#u${u.id}" target="_blank" rel="noopener">🔄 Open 360° tour</a><button class="btn sm" id="copyTour" type="button">Copy tour link</button></div><p class="muted" id="tourNote" style="margin:0;font-size:12.5px">Send this link to a prospect by Messenger or Viber: they look around the unit and book a viewing.</p>` : ''}
         <p class="muted" style="margin:0;font-size:13.5px">This listing is on the website, Facebook and the QR sign on the unit door. Inquiries go to the Inquiries tab.</p>`;
     } else {
       body.innerHTML = `<div class="top2"><span>Tenant portal · what ${u.tenant} sees</span><button class="btn sm" id="x" type="button">Close</button></div>
