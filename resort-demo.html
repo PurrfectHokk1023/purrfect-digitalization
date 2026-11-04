@@ -73,7 +73,10 @@ h2{font-size:20px}h3{font-size:16px}
 .hero .tag{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:999px}
 .bk{padding:18px;display:grid;gap:16px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips span{border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.chips button:hover{border-color:var(--blue)}
+.chips button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.hero img{transition:opacity .25s ease}
 .stay{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
 .stay b{font-weight:700}
 .calhead{display:flex;align-items:center;gap:8px}
@@ -208,6 +211,11 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     weekday: 21000, weekend: 22000, maxPax: 24, extraFee: 500, cleanFee: 3000,
   };
   // ------------------------------------------------------------------
+  const PHOTOS = [['all', 'Overview', CFG.photo], ['pax', `Up to ${CFG.maxPax} guests`, 'img/rs-group.webp'], ['pool', 'Pool + jacuzzi', 'img/rs-pool.webp'],
+    ['vip', 'VIP room jacuzzi', 'img/rs-vip.webp'], ['kar', 'Karaoke room', 'img/rs-karaoke.webp'], ['bil', 'Billiards', 'img/rs-billiards.webp'], ['pet', 'Pet-friendly', 'img/rs-pet.webp']];
+  const photoOf = k => PHOTOS.find(p => p[0] === k) || PHOTOS[0];
+  const photoTag = k => `${CFG.sample ? 'Sample photo' : 'Sample photo, your photos go here'} · ${photoOf(k)[1]}`;
+  PHOTOS.forEach(p => { const im = new Image(); im.src = p[2]; });
   const TODAY = '2026-11-04';
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -227,7 +235,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
   const allKeys = CHECK.map(c => c[0]);
 
   const fresh = () => ({
-    view: 'guest', otab: 'dash', gmonth: '2026-11', omonth: '2026-11', sel: null, pax: 15, pets: false, gname: '', gmobile: '', nextId: 108, ci: null,
+    view: 'guest', otab: 'dash', photo: 'all', gmonth: '2026-11', omonth: '2026-11', sel: null, pax: 15, pets: false, gname: '', gmobile: '', nextId: 108, ci: null,
     bookings: [
       { id: 'DR-0101', ch: 'dir', date: '2026-11-01', guest: 'Garcia family', pax: 18, price: 22000, dp: 11000, dps: 'paid', status: 'out', fees: [{ l: '2 undeclared guests', a: 1000 }], turn: { done: allKeys.slice(), ready: true }, review: 'sent' },
       { id: 'AB-7781', ch: 'air', date: '2026-11-03', guest: 'Paolo R.', pax: 12, price: 21000, dp: 0, dps: 'airbnb', status: 'out', fees: [], turn: { done: ['b1', 'b2', 'b3', 'pool'], ready: false }, review: 'due' },
@@ -272,10 +280,10 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     const ready = sel && S.gname.trim() && S.gmobile.replace(/\D/g, '').length >= 10;
     $('guest').innerHTML = `
 <section class="card" aria-label="Booking page">
-  <div class="hero"><img src="${CFG.photo}" alt="Resort pool and villa" width="900" height="600"><span class="tag">${CFG.sample ? 'Sample photo' : 'Photo placeholder'}</span>
+  <div class="hero"><img id="heroimg" src="${photoOf(S.photo)[2]}" alt="${esc(photoOf(S.photo)[1])}" width="1400" height="933"><span class="tag" id="herotag">${esc(photoTag(S.photo))}</span>
     <div class="ov"><h1>${esc(CFG.name)}</h1><span>Private, exclusive use · ${esc(CFG.place)}</span></div></div>
   <div class="bk">
-    <div class="chips"><span>Up to ${CFG.maxPax} guests</span><span>Pool + jacuzzi</span><span>VIP room jacuzzi</span><span>Karaoke room</span><span>Billiards</span><span>Pet-friendly</span></div>
+    <div class="chips" role="group" aria-label="Show photos of">${PHOTOS.map(([k, l]) => `<button type="button" data-act="photo" data-k="${k}" aria-pressed="${(S.photo || 'all') === k}">${esc(l)}</button>`).join('')}</div>
     <div class="stay"><span><b>22-hour stay</b>: check-in 8:00 AM, check-out 6:00 AM next day</span><span>Mon–Thu <b class="num">${peso(CFG.weekday)}</b> · Fri–Sun <b class="num">${peso(CFG.weekend)}</b></span></div>
     <div class="calhead"><h3>${monthName(S.gmonth)}</h3>
       <button type="button" data-act="gmonth" data-k="-1" aria-label="Previous month" ${S.gmonth <= '2026-11' ? 'disabled' : ''}>‹</button>
@@ -530,6 +538,14 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     gmonth: t => { S.gmonth = shiftMonth(S.gmonth, +t.dataset.k); save(); renderGuest(); },
     omonth: t => { S.omonth = shiftMonth(S.omonth, +t.dataset.k); save(); renderOwner(); },
     pick: t => { S.sel = t.dataset.d; save(); renderGuest(); },
+    photo: t => {
+      S.photo = t.dataset.k; save();
+      const [, label, src] = photoOf(S.photo), img = $('heroimg');
+      document.querySelectorAll('[data-act="photo"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === S.photo)));
+      $('herotag').textContent = photoTag(S.photo);
+      img.style.opacity = 0;
+      setTimeout(() => { img.onload = () => (img.style.opacity = 1); img.src = src; img.alt = label; if (img.complete) img.style.opacity = 1; }, 180);
+    },
     pax: t => { S.pax = Math.min(CFG.maxPax, Math.max(1, S.pax + +t.dataset.k)); save(); renderGuest(); },
     book: () => openPay(),
     attach: t => { attached = true; t.textContent = '✅ payment-screenshot.jpg attached'; payReady(); },
