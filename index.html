@@ -409,6 +409,62 @@ footer .logo img{height:30px}
 .ccard em{font-style:normal;color:var(--accent);font-weight:600;font-size:14px;margin-top:4px}
 @media (max-width:960px){.contact .ccards{grid-template-columns:1fr 1fr}}
 @media (max-width:520px){.contact .ccards{grid-template-columns:1fr}}
+
+/* ===== High-tech dark theme (Nov 4): always dark, colours from the brand banner ===== */
+:root:not(#_){
+  --bg:#05101d; --surface:#0b1729; --ink:#f1f4fb; --muted:#97a3bb; --line:rgba(148,170,210,.15);
+  --accent:#ff6a1a; --accent-soft:rgba(255,106,26,.14); --teal:#38c6d9; --teal-soft:rgba(56,198,217,.14);
+  --good:#4fd18b; --warn:#f2b350; --paper:#0e1a2e; --tt:#e5e7eb; color-scheme:dark}
+::selection{background:rgba(255,106,26,.38);color:#fff}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 600px at 88% -8%,rgba(255,106,26,.10),transparent 60%),radial-gradient(800px 600px at -8% 30%,rgba(61,139,255,.08),transparent 60%)}
+.logo-l{display:none!important}.logo-d{display:block!important}
+.promo{background:linear-gradient(90deg,#e8500c,#ff7a2e 50%,#e8500c)}
+.nav{background:rgba(5,16,29,.72);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;justify-self:start;width:fit-content;padding:6px 12px;border:1px solid rgba(255,106,26,.32);border-radius:999px;background:rgba(255,106,26,.08);color:#ffa36b}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+h1 em,h2 em{font-style:normal;background:linear-gradient(90deg,#ff8a3d,#ff5a0a 55%,#ffb36b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn-primary{background:linear-gradient(135deg,#ff7a2e,#ee4d0a);box-shadow:0 10px 30px -10px rgba(255,106,26,.7),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-primary:hover{box-shadow:0 14px 38px -10px rgba(255,106,26,.85),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-ghost{background:rgba(255,255,255,.04);border-color:rgba(148,170,210,.24);backdrop-filter:blur(8px)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.45)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015)),var(--surface);border-color:var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 24px 48px -28px rgba(0,0,0,.75);transition:border-color .2s,box-shadow .2s}
+a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(255,106,26,.12),0 26px 56px -26px rgba(255,106,26,.28)}
+.hero{position:relative;overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(148,170,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,170,210,.07) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 25%,transparent 75%)}
+.hero::after{content:"";position:absolute;z-index:-1;width:1000px;height:1000px;right:-320px;top:-520px;border-radius:50%;background:radial-gradient(circle,rgba(255,106,26,.26),transparent 62%);pointer-events:none}
+.proof{background:rgba(255,255,255,.02)}
+.stat b{background:linear-gradient(180deg,#fff,#9fb0cc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.switch button[aria-pressed="true"],.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.hub,.hubc,.ai-dot,.bal{background:linear-gradient(135deg,#ff7a2e,#e2470a);color:#fff;box-shadow:0 0 40px -6px rgba(255,106,26,.55)}
+.phone{border-color:#1a2740;background:#1a2740}
+.qr{background:#fff;padding:4px;border-radius:6px;width:72px;height:72px}.qr i{background:#0b1324}
+.foods figure{background:var(--surface)}
+.cta{background:radial-gradient(60% 90% at 88% 0%,rgba(255,106,26,.22),transparent 60%),radial-gradient(50% 80% at 0% 100%,rgba(61,139,255,.14),transparent 60%),#07121f;color:var(--ink);border-block:1px solid var(--line)}
+.cta .lead,.cta .note{color:var(--muted)}
+.cta form{background:rgba(255,255,255,.04);border:1px solid rgba(148,170,210,.18);backdrop-filter:blur(12px);box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+.cta input,.cta select{color:var(--ink);border-color:rgba(148,170,210,.22);background:rgba(255,255,255,.03)}
+.cta input::placeholder{color:#7f8aa3}
+.cta .btn-ghost{color:var(--ink)}
+.site-footer{background:#040c17}
+
+/* banner hero + see-it-run band (Nov 4) */
+.hero .wrap{grid-template-columns:1fr 1fr;gap:40px}
+.hero h1{font-size:clamp(40px,5.8vw,70px)}
+.hero-sub{font:600 clamp(17px,1.8vw,21px) var(--body);color:var(--ink);letter-spacing:.01em}
+.hero-art{position:relative;min-width:0}
+.hero-art img{width:132%;max-width:none;margin-left:-8%;animation:floaty 7s ease-in-out infinite;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 92%,transparent),linear-gradient(180deg,transparent,#000 9%,#000 93%,transparent);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(90deg,transparent,#000 14%,#000 92%,transparent),linear-gradient(180deg,transparent,#000 9%,#000 93%,transparent);mask-composite:intersect}
+@keyframes floaty{50%{transform:translateY(-8px)}}
+.float-chip{position:absolute;display:grid;gap:2px;padding:10px 14px;border-radius:14px;font-size:12.5px;color:var(--muted);background:rgba(11,23,41,.72);border:1px solid rgba(148,170,210,.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 18px 40px -18px rgba(0,0,0,.8)}
+.float-chip b{font:700 20px var(--display);color:var(--ink);letter-spacing:-.01em}
+.float-chip.c1{left:2%;bottom:12%}
+.float-chip.c2{right:0;top:4%;display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600}
+.float-chip.c2 i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good)}
+.seeit-wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:center}
+.seeit .head{margin-bottom:0}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}.hero-art img{width:112%;margin-left:-6%}.seeit-wrap{grid-template-columns:1fr;gap:28px}}
+@media (max-width:520px){.float-chip.c2{top:-4%}.float-chip{font-size:11.5px;padding:8px 11px}.float-chip b{font-size:17px}}
 </style>
 </head>
 <body>
@@ -443,15 +499,40 @@ footer .logo img{height:30px}
   <div class="wrap">
     <div class="hero-copy">
       <span class="eyebrow">For small businesses in the Philippines</span>
-      <h1>Your whole business, <em>on one phone.</em></h1>
-      <p class="lead">Bookings, viewings, orders, payments, rent, stock and reports for cafés, commercial spaces, staycations, shops, salons and more. We set it up in four weeks, on accounts you own.</p>
+      <h1>Your whole business.<br> <em>One connected system.</em></h1>
+      <p class="hero-sub">Bookings. Orders. Payments. Reports.</p>
+      <p class="lead">Plus viewings, rent, stock and Messenger replies, for cafés, commercial spaces, staycations, shops, salons and more. We set it up in four weeks, on accounts you own.</p>
       <div class="cta-row">
         <a class="btn btn-primary" href="#demo">Book a free demo</a>
         <a class="btn btn-ghost" href="#industries">Find your industry</a>
       </div>
       <div class="fine"><span>80% off for the first 20 businesses</span><span>No expensive hardware</span><span>Taglish-friendly</span></div>
     </div>
+    <div class="hero-art">
+      <img src="img/hero-devices.webp" alt="The Purrfect Digitalization dashboard on a tablet and a phone: bookings, orders, payments and reports" width="944" height="762" fetchpriority="high">
+      <div class="float-chip c1" aria-hidden="true"><b>₱6,480</b><span>Today’s sales · ▲ 12%</span></div>
+      <div class="float-chip c2" aria-hidden="true"><i></i><span>Order P-014 paid via GCash</span></div>
+    </div>
+  </div>
+</header>
 
+<div class="proof">
+  <div class="wrap">
+    <p><b>Already running in a real business</b>: a two-branch food shop in Cavite.</p>
+    <div class="stat"><b>9</b><span>tools working together</span></div>
+    <div class="stat"><b>67</b><span>products online with photos</span></div>
+    <div class="stat"><b>11</b><span>FAQs answered automatically</span></div>
+    <div class="stat"><b>4 wks</b><span>from kickoff to live</span></div>
+  </div>
+</div>
+
+<section class="seeit" id="see-it-run">
+  <div class="wrap seeit-wrap">
+    <div class="head">
+      <span class="eyebrow">See it run</span>
+      <h2>One message in. <em>Everything updates.</em></h2>
+      <p class="lead">A customer asks on Messenger, books or orders, and the order, the stock count and today’s sales update on their own. Pick an industry and watch.</p>
+    </div>
     <div class="stage" aria-label="Example: a customer asks, books or orders, and the owner sees it in the report">
       <div class="switch" role="group" aria-label="Show an example for">
         <span>Example:</span>
@@ -482,17 +563,7 @@ footer .logo img{height:30px}
       <span class="ex">Sample figures for illustration.</span>
     </div>
   </div>
-</header>
-
-<div class="proof">
-  <div class="wrap">
-    <p><b>Already running in a real business</b>: a two-branch food shop in Cavite.</p>
-    <div class="stat"><b>9</b><span>tools working together</span></div>
-    <div class="stat"><b>67</b><span>products online with photos</span></div>
-    <div class="stat"><b>11</b><span>FAQs answered automatically</span></div>
-    <div class="stat"><b>4 wks</b><span>from kickoff to live</span></div>
-  </div>
-</div>
+</section>
 
 <section id="industries">
   <div class="wrap">
