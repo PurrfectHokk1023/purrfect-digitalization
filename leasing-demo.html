@@ -174,7 +174,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
       <div class="card pad" style="display:grid;gap:12px">
         <div class="row" style="justify-content:space-between"><h3>Unit board</h3><div class="legend"><span><i style="background:var(--teal)"></i>Occupied</span><span><i style="background:var(--accent)"></i>Viewing</span><span><i style="background:var(--good)"></i>Leasing</span><span><i style="border:1px solid var(--line)"></i>Vacant</span></div></div>
         <div class="board" id="boardMini"></div>
-        <p class="muted" style="font-size:12.5px;margin:0">Click any unit to open the tenant’s portal or the vacant unit’s listing.</p>
+        <p class="muted" style="font-size:12.5px;margin:0">Click any unit to open the tenant’s portal, or a vacant unit’s listing and its 360° tour.</p>
       </div>
       <div class="card pad" style="display:grid;gap:12px;align-content:start"><h3>Activity</h3><ul class="log" id="log"></ul></div>
     </div>
@@ -233,6 +233,8 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
   const RATE = { GF: 900, '2F': 650, '3F': 550 };
   const monthStr = d => new Date(d).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
   const daysTo = d => Math.round((new Date(d) - TODAY) / 864e5);
+  const TOURS = ['203', '206', '304'];             // vacant units with a 360° photo (tour.html#u<unit>)
+  const tourUrl = id => new URL('tour.html#u' + id, location.href).href;
 
   // [unit, floor, sqm, tenant or '', lease end, commercial?]
   const UNITS = [
@@ -355,7 +357,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     const u = S.units.find(x => x.floor === p.floor && x.status === 'Vacant') || S.units.find(x => x.status === 'Vacant');
     if (!u) { toast('No vacant units left. Reset the demo to try again.'); return; }
     S.seq.lead++;
-    const reply = `Hi ${p.name.split(' ')[0]}! Yes po, Unit ${u.id} on ${u.floor} is available: ${u.sqm} sqm at ${peso(u.rate)}/sqm, so ${peso(rent(u))}/month plus CUSA ${peso(u.sqm * CUSA)}. 2 months advance + 2 months deposit. Want to view it? Sat 10 AM or 2 PM po.`;
+    const reply = `Hi ${p.name.split(' ')[0]}! Yes po, Unit ${u.id} on ${u.floor} is available: ${u.sqm} sqm at ${peso(u.rate)}/sqm, so ${peso(rent(u))}/month plus CUSA ${peso(u.sqm * CUSA)}. 2 months advance + 2 months deposit. ${TOURS.includes(u.id) ? ' 360° tour: ' + tourUrl(u.id) + ' ·' : ''} Want to view it? Sat 10 AM or 2 PM po.`;
     S.leads.push({ id: S.seq.lead, name: p.name, biz: p.biz, src: p.src, msg: p.msg, unit: u.id, stage: 'New', reply });
     log(`New inquiry from ${p.name} (${p.src}) · AI drafted a reply for Unit ${u.id}`); save(); render(); show('leads');
   };
@@ -429,6 +431,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     if (u.status !== 'Occupied') {
       body.innerHTML = `<div class="top2"><span>Public listing</span><button class="btn sm" id="x" type="button">Close</button></div><h3>Unit ${u.id} · ${u.sqm} sqm · ${u.floor}</h3>
         <dl class="terms"><dt>Rate</dt><dd>${peso(u.rate)}/sqm</dd><dt>Monthly rent</dt><dd>${peso(rent(u))}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}</dd><dt>Status</dt><dd>${u.status}</dd></dl>
+        ${TOURS.includes(u.id) ? `<div class="row"><a class="btn sm tl" href="tour.html#u${u.id}" target="_blank" rel="noopener">🔄 Open 360° tour</a><button class="btn sm" id="copyTour" type="button">Copy tour link</button></div><p class="muted" id="tourNote" style="margin:0;font-size:12.5px">Send this link to a prospect by Messenger or Viber: they look around the unit and book a viewing.</p>` : ''}
         <p class="muted" style="margin:0;font-size:13.5px">This listing is on the website, Facebook and the QR sign on the unit door. Inquiries go to the Inquiries tab.</p>`;
     } else {
       body.innerHTML = `<div class="top2"><span>Tenant portal · what ${u.tenant} sees</span><button class="btn sm" id="x" type="button">Close</button></div>
@@ -439,6 +442,8 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
         <p class="muted" style="margin:0;font-size:12.5px">Buttons are shown for illustration in the demo.</p>`;
     }
     dlg.showModal(); $('x').onclick = () => dlg.close();
+    const ct = $('copyTour');
+    if (ct) ct.onclick = async () => { try { await navigator.clipboard.writeText(tourUrl(id)); $('tourNote').textContent = 'Tour link copied. Paste it in Messenger or Viber.'; } catch (e) { $('tourNote').textContent = tourUrl(id); } };
   }
 
   $('reset').onclick = () => { S = fresh(); save(); render(); show('dash'); toast('Demo reset'); };
