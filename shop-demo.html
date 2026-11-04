@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Shop Demo</title>
+<meta name="description" content="Try a working small-business system: catalog, Messenger answers, GCash payments, orders board, counter sales, stock and today's report.">
+<link rel="icon" type="image/png" sizes="64x64" href="img/mark-64.png">
+<link rel="apple-touch-icon" href="img/mark-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same shell as the resort demo (top bar + Guest/Owner switch); green = done/paid, orange = action, blue = selected. */
+:root{
+  --bg:#f4f6f8; --surface:#fff; --ink:#131c2a; --muted:#5d6876; --line:#e1e5ea;
+  --accent:#e8601a; --accent-soft:#fdeee5; --blue:#2563eb; --blue-soft:#e6eefc; --good:#1f8a4c; --good-soft:#e2f3e8;
+  --warn:#b7791f; --warn-soft:#f8efdc; --purple:#7c3aed; --purple-soft:#efe7fd;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222;
+  --warn:#f2b350; --warn-soft:#3a2f17; --purple:#b392ff; --purple-soft:#271a46; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222;
+  --warn:#f2b350; --warn-soft:#3a2f17; --purple:#b392ff; --purple-soft:#271a46; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0;line-height:1.15}
+h2{font-size:20px}h3{font-size:16px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:5px;font:600 12px var(--body);padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--bg);color:var(--muted)}
+.b-good{background:var(--good-soft);color:var(--good)}.b-warn{background:var(--warn-soft);color:var(--warn)}.b-blue{background:var(--blue-soft);color:var(--blue)}.b-acc{background:var(--accent-soft);color:var(--accent)}.b-pur{background:var(--purple-soft);color:var(--purple)}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:62px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;font-size:19px;flex:none}
+.brand b{display:block;font:800 16px var(--display);letter-spacing:-.01em}
+.brand small{display:block;color:var(--muted);font-size:12px}
+.seg{display:inline-flex;margin-left:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:999px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.note{background:var(--blue-soft);font-size:13.5px}
+.note .wrap{padding-block:8px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.note a{color:var(--blue);font-weight:600}
+.gview{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:20px;padding-block:20px 40px;align-items:start}
+.gview>*,.panel,.row .grow{min-width:0}
+.shop{padding:18px;display:grid;gap:16px}
+.shop h1{font-size:clamp(24px,3vw,32px)}
+.cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.item{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:8px;background:var(--bg)}
+.item .em{font-size:30px;line-height:1}
+.item b{font-size:15px;line-height:1.25}
+.item .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.step button{width:32px;height:32px;border:0;background:transparent;font-size:17px}
+.step output{min-width:24px;text-align:center;font-weight:700}
+.panel{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:12px;background:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row .grow{flex:1;min-width:140px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+label.f input,label.f select{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px;font-size:15px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.chips button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.sum{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.sum .t{font-weight:700;border-top:1px dashed var(--line);padding-top:6px}
+.phone{border:1px solid var(--line);border-radius:28px;background:var(--surface);padding:10px;position:sticky;top:78px}
+.ph-in{border-radius:20px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;height:min(620px,calc(100vh - 120px));min-width:0}
+.ph-top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ph-top .ic{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:17px}
+.ph-top b{display:block;font-size:14.5px}.ph-top small{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12px}
+.ph-top small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good)}
+.log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.msg{max-width:86%;padding:9px 12px;border-radius:16px;font-size:14px;line-height:1.45}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:5px}
+.msg .act{margin-top:8px}
+.qchips{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-top:1px solid var(--line);scrollbar-width:none}
+.qchips button{flex:none;border:1px solid var(--blue);color:var(--blue);background:transparent;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:600}
+.ph-in form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+.ph-in form input{flex:1;min-width:0;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px}
+.ph-in form button{width:40px;height:40px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:17px}
+.oview{padding-block:16px 40px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+.tabs button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs .n{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;line-height:17px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{padding:14px 16px}
+.tile span{font-size:13px;color:var(--muted)}
+.tile b{display:block;font:800 26px var(--display);letter-spacing:-.02em;margin-top:2px}
+.tile small{font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.box{padding:16px;display:grid;gap:12px;align-content:start}
+.bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:var(--accent)}
+.todo{display:grid;gap:8px}
+.todo button{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--ink)}
+.todo button span:last-child{margin-left:auto;color:var(--blue);font-weight:600;font-size:13px}
+.board{display:grid;grid-template-columns:repeat(var(--cols),minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;gap:10px;align-content:start;min-height:200px}
+.col h3{display:flex;justify-content:space-between;align-items:center;font-size:15px}
+.ocard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);display:grid;gap:6px;font-size:13.5px}
+.ocard .row{justify-content:space-between}
+.pos{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:12px}
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.keys button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:16px 12px;display:grid;gap:4px;text-align:left;font-weight:700;color:var(--ink)}
+.keys button span{font-size:26px}
+.keys button small{color:var(--muted);font-weight:600}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:12px;color:var(--muted);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(5,10,20,.55)}
+.dlg{padding:20px;display:grid;gap:14px}
+.gcash{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--blue-soft)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 14px 30px -10px rgba(0,0,0,.4);z-index:50;max-width:calc(100% - 32px)}
+@media (max-width:900px){.gview{grid-template-columns:minmax(0,1fr)}.phone{position:static}.ph-in{height:540px}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.two,.pos{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.seg{margin-left:0}.top .wrap{gap:8px}.cat{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="ic" id="bic" aria-hidden="true">☕</span><div><b id="bname"></b><small id="bsub"></small></div></div>
+    <div class="seg" role="group" aria-label="Switch view">
+      <button type="button" data-act="view" data-v="guest" aria-pressed="true">Customer view</button>
+      <button type="button" data-act="view" data-v="owner" aria-pressed="false">Owner view</button>
+    </div>
+    <button class="btn sm" type="button" data-act="reset">Reset demo</button>
+  </div>
+</header>
+<div class="note" role="note"><div class="wrap"><span id="ntext"></span><a href="https://purrfectdigital.online/#demo" id="nlink">Get this for your business</a></div></div>
+<main id="guest" class="wrap gview"></main>
+<main id="owner" class="wrap oview" hidden><nav class="tabs" role="tablist" aria-label="Owner sections" id="otabs"></nav><section id="opanel" aria-live="polite"></section></main>
+<dialog id="dlg" aria-labelledby="dlgtitle"><div class="dlg" id="dlgbody"></div></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  // ---- business settings: from the personalized link (#d=…, made by the demo booking on purrfectdigital.online) or a sample café ----
+  const KINDS = {
+    food: { ic: '☕', label: 'Café / food', noun: 'order', when: 'Pickup', steps: ['New', 'Paid', 'Preparing', 'Ready', 'Done'], em: ['☕', '🍳', '🍧', '🥐', '🍔'],
+      sample: ['Kape Kanto', [['Iced Spanish Latte', 110], ['Ube Cheese Pandesal', 45], ['Tapsilog', 150]]] },
+    shop: { ic: '🏪', label: 'Shop', noun: 'order', when: 'Pickup', steps: ['New', 'Paid', 'Packing', 'Done'], em: ['🛒', '🥤', '🍜', '🍞', '🧴'],
+      sample: ['Tindahan ni Aling Rosa', [['Coke 1.5L', 85], ['Pancit Canton', 18], ['Bread loaf', 75]]] },
+    seller: { ic: '🛍️', label: 'Online shop', noun: 'order', when: 'Delivery', steps: ['New', 'Paid', 'Packed', 'Shipped'], em: ['🛍️', '👗', '👜', '💄', '👟'],
+      sample: ['Bloom Studio PH', [['Linen Pants', 799], ['Ruched Blouse', 598], ['Woven Tote', 450]]] },
+    service: { ic: '💇', label: 'Services', noun: 'booking', when: 'Appointment', steps: ['Requested', 'Paid', 'Confirmed', 'Done'], em: ['💇', '🎨', '💅', '🧖', '✨'],
+      sample: ['Glow Salon', [['Haircut', 250], ['Hair color', 1500], ['Manicure', 200]]] },
+    other: { ic: '✨', label: 'Business', noun: 'order', when: 'Pickup', steps: ['New', 'Paid', 'In progress', 'Done'], em: ['⭐', '📦', '🧾', '🎁', '🔧'],
+      sample: ['Your Business', [['Product A', 250], ['Product B', 480], ['Service C', 900]]] },
+  };
+  const clean = (s, max) => String(s == null ? '' : s).replace(/[<>`]/g, '').trim().slice(0, max);
+  const P = (() => {
+    try {
+      const m = location.hash.match(/[#&]d=([\w-]+)/); if (!m) return null;
+      const o = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); return o && typeof o === 'object' ? o : null;
+    } catch (e) { return null; }
+  })();
+  const T = P && KINDS[P.t] ? P.t : 'food', K = KINDS[T];
+  const items0 = P && Array.isArray(P.i) ? P.i.map(x => [clean(x[0], 40), Math.max(1, Math.min(999999, Math.round(Number(x[1]) || 0)))]).filter(x => x[0] && x[1] > 1) : [];
+  const CFG = { name: clean(P && P.n, 60) || K.sample[0], items: (items0.length ? items0 : K.sample[1]).slice(0, 6), personal: !!(P && P.n), pains: P && Array.isArray(P.p) ? P.p : [] };
+  if (CFG.items.length < 3) {                              // top up to three with sample items they didn't already list
+    const have = new Set(CFG.items.map(x => x[0].toLowerCase()));
+    CFG.items = CFG.items.concat(K.sample[1].filter(x => !have.has(x[0].toLowerCase())).slice(0, 3 - CFG.items.length).map(x => [x[0] + ' (sample)', x[1]]));
+  }
+  // an icon that fits the item's name, else the business type's default
+  const EMO = [[/kape|coffee|latte|americano|espresso|cappuccino|mocha|macchiato/i, '☕'], [/tea|matcha|boba/i, '🧋'], [/coke|soda|juice|water|sprite|royal|drink/i, '🥤'],
+    [/halo|sundae|gelato|ice ?cream|shake|frap|ice/i, '🍧'], [/pandesal|bread|tinapay|ensaymada|croissant|pastry|donut|cake|muffin|cookie/i, '🥐'],
+    [/silog|rice|meal|adobo|sisig|chicken|liempo|ulam|bilao/i, '🍛'], [/pancit|noodle|canton|ramen|mami|lomi|pasta|spaghetti/i, '🍜'], [/burger|sandwich/i, '🍔'], [/pizza/i, '🍕'],
+    [/color|dye|rebond|keratin|highlight/i, '🎨'], [/cut|trim/i, '💇'], [/mani|pedi|nail/i, '💅'], [/massage|hilot/i, '💆'], [/facial|skin|spa/i, '🧖'], [/laundry|wash|fold/i, '🧺'],
+    [/dress/i, '👗'], [/pants|jeans|shorts|skirt/i, '👖'], [/shirt|blouse|top|tee/i, '👕'], [/bag|tote|pouch/i, '👜'], [/shoe|sandal|slipper/i, '👟'], [/soap|shampoo|lotion|perfume/i, '🧴']];
+  const IT = CFG.items.map((x, i) => ({ id: 'i' + i, name: x[0], price: x[1], em: (EMO.find(([re]) => re.test(x[0])) || [0, K.em[i % K.em.length]])[1] }));
+  const STORE = 'shopDemo:' + T + ':' + CFG.name;
+  const PLAT = ['TikTok Shop', 'Shopee', 'Facebook', 'Lazada'];
+  const TIMES = T === 'service' ? ['1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM'] : T === 'seller' ? ['Standard delivery', 'Same-day delivery', 'Pickup'] : ['In 15 min', 'In 30 min', 'In 1 hour'];
+
+  const peso = n => '₱' + Math.round(n).toLocaleString('en-PH');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = id => document.getElementById(id);
+  let toastT; const toast = m => { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3400); };
+
+  const fresh = () => {
+    const a = IT[0], b = IT[1] || IT[0], c = IT[2] || IT[0];
+    const o = (code, who, lines, st, extra) => Object.assign({ code, who, lines, st, gcash: st !== K.steps[0], when: TIMES[0], plat: T === 'seller' ? PLAT[code.charCodeAt(code.length - 1) % 4] : '' }, extra || {});
+    return {
+      view: 'guest', tab: 'dash', cart: {}, when: TIMES[0], who: '', mobile: '', next: 108, counter: [], chat: [],
+      stock: Object.fromEntries(IT.map((x, i) => [x.id, [14, 32, 48, 26, 40, 22][i]])),
+      orders: [
+        o('#105', 'Ana S.', [[a.id, 2], [b.id, 1]], K.steps[K.steps.length - 1], { when: TIMES[1] }),
+        o('#106', 'Mark D.', [[c.id, 1]], K.steps[2]),
+        o('#107', 'Liza P.', [[a.id, 1], [c.id, 1]], K.steps[0], { proof: true, ref: '5012 345 678 9' }),
+      ],
+    };
+  };
+  let S; try { S = JSON.parse(localStorage.getItem(STORE)) || fresh(); } catch (e) { S = fresh(); }
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
+  const item = id => IT.find(x => x.id === id) || IT[0];
+  const total = lines => lines.reduce((s, [id, q]) => s + item(id).price * q, 0);
+  const lineTxt = lines => lines.map(([id, q]) => `${q}× ${esc(item(id).name)}`).join(', ');
+
+  $('bic').textContent = K.ic; $('bname').textContent = CFG.name;
+  $('bsub').textContent = CFG.personal ? `Personalized demo · by Purrfect Digitalization` : `Sample ${K.label.toLowerCase()} · live demo`;
+  $('ntext').textContent = CFG.personal ? `Your demo, set up with ${CFG.name}'s items and prices. Orders shown are samples; nothing is sent or charged.` : 'Demo with sample items and orders. Nothing is sent or charged.';
+  document.title = `${CFG.name} · Demo`;
+
+  // ---------- customer view ----------
+  function renderGuest() {
+    const lines = Object.entries(S.cart).filter(([, q]) => q > 0), sum = total(lines);
+    const ready = lines.length && S.who.trim() && S.mobile.replace(/\D/g, '').length >= 10;
+    $('guest').innerHTML = `
+<section class="card shop" aria-label="Online ${K.noun} page">
+  <div><span class="badge b-acc">${K.ic} ${T === 'service' ? 'Book online' : 'Order online'}</span><h1 style="margin-top:8px">${esc(CFG.name)}</h1>
+  <p class="muted" style="margin:4px 0 0">${T === 'service' ? 'Pick your services and a time. Pay the deposit by GCash to lock your slot.' : T === 'seller' ? 'Order here or on TikTok Shop, Shopee and Facebook: one stock count for all.' : 'Order ahead, pay by GCash, and pick it up without waiting.'}</p></div>
+  <div class="cat">${IT.map(x => `<article class="item"><span class="em" aria-hidden="true">${x.em}</span><b>${esc(x.name)}</b>
+    <div class="row"><span class="num">${peso(x.price)}</span><span class="step"><button type="button" data-act="q" data-id="${x.id}" data-k="-1" aria-label="Remove ${esc(x.name)}">−</button><output class="num">${S.cart[x.id] || 0}</output><button type="button" data-act="q" data-id="${x.id}" data-k="1" aria-label="Add ${esc(x.name)}">+</button></span></div></article>`).join('')}</div>
+  <div class="panel">
+    <b>Your ${K.noun}</b>
+    ${lines.length ? `<div class="sum num">${lines.map(([id, q]) => `<span>${q}× ${esc(item(id).name)}</span><span>${peso(item(id).price * q)}</span>`).join('')}<span class="t">Total</span><span class="t">${peso(sum)}</span></div>` : '<span class="muted small">Tap + to add items.</span>'}
+    <div><span class="small muted">${K.when}</span><div class="chips" style="margin-top:6px">${TIMES.map(w => `<button type="button" data-act="when" data-w="${esc(w)}" aria-pressed="${S.when === w}">${esc(w)}</button>`).join('')}</div></div>
+    <div class="row"><label class="f grow">Your name<input id="gwho" value="${esc(S.who)}" placeholder="e.g. Ana Santos" autocomplete="name"></label><label class="f grow">Mobile<input id="gmob" value="${esc(S.mobile)}" inputmode="tel" placeholder="09xx xxx xxxx" autocomplete="tel"></label></div>
+    <button class="btn pri" type="button" data-act="pay" ${ready ? '' : 'disabled'}>Pay ${lines.length ? peso(T === 'service' ? Math.ceil(sum / 2) : sum) : ''} by GCash${T === 'service' ? ' (50% deposit)' : ''}</button>
+  </div>
+</section>
+<aside class="phone" aria-label="Messenger assistant"><div class="ph-in">
+  <div class="ph-top"><span class="ic" aria-hidden="true">${K.ic}</span><div><b>${esc(CFG.name)}</b><small>Replies instantly</small></div></div>
+  <div class="log" id="log">${S.chat.map(m => `<div class="msg ${m.w}">${m.t}${m.a ? `<div class="act"><button class="btn sm blue" type="button" data-act="toorder">${esc(m.a)}</button></div>` : ''}</div>`).join('')}</div>
+  <div class="qchips">${['HM po?', 'Open pa po?', T === 'service' ? 'Pa-book po' : 'Pa-order po', T === 'service' ? 'May slot bukas?' : 'May delivery?', 'GCash po?'].map(q => `<button type="button" data-act="chip">${q}</button>`).join('')}</div>
+  <form id="cf" autocomplete="off"><input id="ci" placeholder="Message ${esc(CFG.name)}…" aria-label="Message"><button type="submit" aria-label="Send">➤</button></form>
+</div><p class="small muted" style="text-align:center;margin:8px 0 2px">Messenger assistant: try "magkano ${esc(IT[0].name.toLowerCase())}?"</p></aside>`;
+    const lg = $('log'); lg.scrollTop = lg.scrollHeight;
+    $('gwho').addEventListener('input', e => { S.who = e.target.value; save(); syncPay(); });
+    $('gmob').addEventListener('input', e => { S.mobile = e.target.value; save(); syncPay(); });
+    $('cf').addEventListener('submit', e => { e.preventDefault(); const v = $('ci').value.trim(); if (v) ask(v); });
+  }
+  const syncPay = () => { const lines = Object.entries(S.cart).filter(([, q]) => q > 0); document.querySelector('[data-act="pay"]').disabled = !(lines.length && S.who.trim() && S.mobile.replace(/\D/g, '').length >= 10); };
+  const menu = () => IT.map(x => `${esc(x.name)} <b>${peso(x.price)}</b>`).join(', ');
+  function reply(q) {
+    q = q.toLowerCase();
+    const hit = IT.find(x => q.includes(x.name.toLowerCase().split(' ')[0]) || q.includes(x.name.toLowerCase()));
+    if (hit && /(magkano|hm|how much|price|presyo)/.test(q)) return { t: `${esc(hit.name)} is <b>${peso(hit.price)}</b> po. ${T === 'service' ? 'Want to book a slot?' : 'Want to order?'}`, a: T === 'service' ? 'Book now' : 'Order now' };
+    if (/(magkano|\bhm\b|how much|price|presyo|menu|rates)/.test(q)) return { t: `Hi po! Here are our prices: ${menu()}.`, a: T === 'service' ? 'Book now' : 'Order now' };
+    if (/(open|bukas|oras|hours|time)/.test(q)) return { t: 'Open po kami today, 10 AM to 9 PM. You can also order or book here anytime.' };
+    if (/(order|book|reserve|reserba|slot)/.test(q)) return { t: T === 'service' ? 'Sure po! Pick your service and time here, then pay the 50% deposit by GCash to lock it.' : 'Sure po! Add your items here and pay by GCash; we start preparing once it’s confirmed.', a: T === 'service' ? 'Book now' : 'Order now' };
+    if (/(deliver|lalamove|grab|ship)/.test(q)) return { t: T === 'seller' ? 'Yes po, we ship nationwide. Same-day delivery is available in some areas.' : 'Pickup po by default; we can arrange delivery for bigger orders.' };
+    if (/(gcash|bank|pay|bayad)/.test(q)) return { t: 'Yes po, GCash or bank transfer. You get a reference number and receipt right after.' };
+    if (/(salamat|thank)/.test(q)) return { t: 'Walang anuman po! 😊' };
+    return { t: 'A team member will reply shortly po. Meanwhile, you can order or book here anytime.', a: T === 'service' ? 'Book now' : 'Order now' };
+  }
+  function ask(text) { S.chat.push({ w: 'me', t: esc(text) }); S.chat.push(Object.assign({ w: 'bot' }, reply(text))); S.chat = S.chat.slice(-30); save(); renderGuest(); setTimeout(() => { const c = $('ci'); if (c) c.focus({ preventScroll: true }); }, 0); }
+  if (!S.chat.length) S.chat.push({ w: 'bot', t: `Hi po! 👋 Thanks for messaging ${esc(CFG.name)}. Ask about prices, hours or ${T === 'service' ? 'open slots' : 'orders'}; I reply right away.` });
+
+  // ---------- owner view ----------
+  const TABS = [['dash', 'Today'], ['orders', T === 'service' ? 'Bookings' : 'Orders'], ['counter', 'Counter'], ['stock', T === 'service' ? 'Schedule' : 'Stock']];
+  const LOW = 15;
+  const sales = () => S.orders.filter(o => o.st !== K.steps[0]).reduce((s, o) => s + total(o.lines), 0) + S.counter.reduce((s, c) => s + c.amt, 0);
+  const sold = () => { const m = {}; S.orders.filter(o => o.st !== K.steps[0]).forEach(o => o.lines.forEach(([id, q]) => { m[id] = (m[id] || 0) + q; })); S.counter.forEach(c => c.lines.forEach(([id, q]) => { m[id] = (m[id] || 0) + q; })); return m; };
+  const toCheck = () => S.orders.filter(o => o.st === K.steps[0] && o.proof).length;
+  const lows = () => T === 'service' ? [] : IT.filter(x => (S.stock[x.id] || 0) <= LOW);
+  function renderOwner() {
+    const n = { orders: toCheck(), stock: lows().length };
+    $('otabs').innerHTML = TABS.map(([k, l]) => `<button type="button" role="tab" data-act="tab" data-t="${k}" aria-selected="${S.tab === k}">${l}${n[k] ? `<span class="n">${n[k]}</span>` : ''}</button>`).join('');
+    $('opanel').innerHTML = ({ dash, orders, counter, stock }[S.tab])();
+  }
+  function dash() {
+    const m = sold(), mx = Math.max(1, ...Object.values(m)), paid = S.orders.filter(o => o.st !== K.steps[0]).length + S.counter.length;
+    const todo = [toCheck() && [`${toCheck()} GCash payment${toCheck() > 1 ? 's' : ''} to confirm`, 'orders'], ...lows().map(x => [`Low stock: ${esc(x.name)} (${S.stock[x.id]} left)`, 'stock']),
+      S.orders.filter(o => o.st === K.steps[2]).length && [`${S.orders.filter(o => o.st === K.steps[2]).length} ${K.noun}${S.orders.filter(o => o.st === K.steps[2]).length > 1 ? 's' : ''} ${K.steps[2].toLowerCase()}`, 'orders']].filter(Boolean);
+    return `<div class="grid4">
+  <div class="card tile"><span>Sales today</span><b class="num">${peso(sales())}</b><small>online + counter</small></div>
+  <div class="card tile"><span>${T === 'service' ? 'Bookings' : 'Orders'} today</span><b class="num">${paid}</b><small>${S.counter.length} at the counter</small></div>
+  <div class="card tile"><span>Average ${K.noun}</span><b class="num">${peso(paid ? sales() / paid : 0)}</b><small>per customer</small></div>
+  <div class="card tile"><span>To do</span><b class="num">${todo.length}</b><small>${todo.length ? 'see the list' : 'all caught up'}</small></div></div>
+<div class="two"><div class="card box"><h3>Top ${T === 'service' ? 'services' : 'items'} today</h3>${IT.map(x => `<div><div class="row small"><span class="grow">${x.em} ${esc(x.name)}</span><b class="num">${m[x.id] || 0} sold</b></div><div class="bar"><i style="width:${(m[x.id] || 0) / mx * 100}%"></i></div></div>`).join('')}</div>
+<div class="card box"><h3>To do now</h3><div class="todo">${todo.length ? todo.map(([l, t]) => `<button type="button" data-act="tab" data-t="${t}"><span>${l}</span><span>Open</span></button>`).join('') : '<div class="empty">All caught up 🎉</div>'}</div>
+<span class="muted small">Every online ${K.noun} and counter sale lands here by itself. Sample figures.</span></div></div>`;
+  }
+  function orders() {
+    return `<div class="board" style="--cols:${K.steps.length}">${K.steps.map((st, si) => {
+      const list = S.orders.filter(o => o.st === st);
+      return `<div class="col"><h3>${st}<span class="badge">${list.length}</span></h3>${list.map(o => `<div class="ocard"><div class="row"><b>${o.code} · ${esc(o.who)}</b>${o.plat ? `<span class="badge b-pur">${o.plat}</span>` : ''}</div>
+        <span>${lineTxt(o.lines)}</span><div class="row"><span class="muted">${esc(o.when)}</span><b class="num">${peso(total(o.lines))}</b></div>
+        ${si === 0 && o.proof ? `<span class="badge b-warn">GCash proof · ref ${esc(o.ref || '')}</span>` : ''}
+        ${si < K.steps.length - 1 ? `<button class="btn sm ${si === 0 ? 'blue' : ''}" type="button" data-act="adv" data-c="${o.code}">${si === 0 ? 'Confirm payment' : 'Mark ' + K.steps[si + 1].toLowerCase()}</button>` : '<span class="badge b-good">Completed</span>'}</div>`).join('') || '<span class="muted small">Nothing here</span>'}</div>`;
+    }).join('')}</div><p class="muted small">Tip: place an ${K.noun} in Customer view, then confirm its payment here.</p>`;
+  }
+  function counter() {
+    const tk = S.ticket || [], sum = total(tk);
+    return `<div class="pos"><div class="card box"><h3>Tap to ring up a walk-in ${T === 'service' ? 'client' : 'sale'}</h3><div class="keys">${IT.map(x => `<button type="button" data-act="key" data-id="${x.id}"><span aria-hidden="true">${x.em}</span>${esc(x.name)}<small class="num">${peso(x.price)}</small></button>`).join('')}</div></div>
+<div class="card box"><h3>Ticket</h3>${tk.length ? `<div class="sum num">${tk.map(([id, q]) => `<span>${q}× ${esc(item(id).name)}</span><span>${peso(item(id).price * q)}</span>`).join('')}<span class="t">Total</span><span class="t">${peso(sum)}</span></div>` : '<span class="muted small">Tap items to add them.</span>'}
+<div class="row"><button class="btn pri" type="button" data-act="charge" data-m="Cash" ${tk.length ? '' : 'disabled'}>Cash</button><button class="btn blue" type="button" data-act="charge" data-m="GCash" ${tk.length ? '' : 'disabled'}>GCash QR</button><button class="btn" type="button" data-act="clear" ${tk.length ? '' : 'disabled'}>Clear</button></div>
+<span class="muted small">Each sale prints a receipt${T === 'service' ? '' : ', counts stock down'} and updates today’s report.</span></div></div>
+${S.counter.length ? `<div class="card box" style="margin-top:12px"><h3>Counter sales today</h3><table class="tbl"><thead><tr><th>Receipt</th><th>Items</th><th>Paid by</th><th>Amount</th></tr></thead><tbody>${S.counter.slice().reverse().map(c => `<tr><td class="num">${c.code}</td><td>${lineTxt(c.lines)}</td><td>${c.m}</td><td class="num">${peso(c.amt)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+  }
+  function stock() {
+    if (T === 'service') {
+      const appts = S.orders.filter(o => o.st !== K.steps[K.steps.length - 1]);
+      return `<div class="card box"><h3>Today’s appointments</h3><table class="tbl"><thead><tr><th>Time</th><th>Client</th><th>Services</th><th>Status</th></tr></thead><tbody>${appts.map(o => `<tr><td>${esc(o.when)}</td><td>${esc(o.who)}</td><td>${lineTxt(o.lines)}</td><td><span class="badge ${o.st === K.steps[0] ? 'b-warn' : 'b-good'}">${o.st}</span></td></tr>`).join('') || '<tr><td colspan="4" class="muted">No appointments yet</td></tr>'}</tbody></table>
+<span class="muted small">Clients get a reminder on Messenger the day before.</span></div>`;
+    }
+    return `<div class="card box"><h3>Stock</h3><table class="tbl"><thead><tr><th>Item</th><th>On hand</th><th>Status</th><th></th></tr></thead><tbody>${IT.map(x => { const s = S.stock[x.id] || 0, low = s <= LOW;
+      return `<tr><td>${x.em} ${esc(x.name)}</td><td class="num">${s}</td><td><span class="badge ${low ? 'b-warn' : 'b-good'}">${low ? 'Low: reorder' : 'OK'}</span></td><td>${low ? `<button class="btn sm" type="button" data-act="reorder" data-id="${x.id}">Reorder +50</button>` : ''}</td></tr>`; }).join('')}</tbody></table>
+<span class="muted small">Every online ${K.noun} and counter sale counts stock down; you get an alert at ${LOW} left.</span></div>`;
+  }
+
+  function openPay() {
+    const lines = Object.entries(S.cart).filter(([, q]) => q > 0), sum = total(lines), due = T === 'service' ? Math.ceil(sum / 2) : sum;
+    $('dlgbody').innerHTML = `<h2 id="dlgtitle">Pay by GCash</h2>
+<div class="gcash"><b class="num" style="font-size:22px">${peso(due)}</b><span class="small">to ${esc(CFG.name)} · scan the QR in your GCash app (demo)</span></div>
+<label class="f">GCash reference number<input id="gref" inputmode="numeric" placeholder="13 digits from your GCash receipt" maxlength="16"></label>
+<div class="row"><button class="btn" type="button" data-act="close">Cancel</button><button class="btn pri grow" type="button" data-act="paid" id="paybtn" disabled>Send payment proof</button></div>
+<span class="muted small">Demo: no money moves. The owner confirms it in Owner view.</span>`;
+    $('gref').addEventListener('input', e => { $('paybtn').disabled = e.target.value.replace(/\D/g, '').length < 10; });
+    $('dlg').showModal();
+  }
+
+  const ACT = {
+    view: t => { S.view = t.dataset.v; save(); render(); window.scrollTo(0, 0); },
+    reset: () => { if (confirm('Reset the demo to its starting data?')) { S = fresh(); S.chat.push({ w: 'bot', t: `Hi po! 👋 Thanks for messaging ${esc(CFG.name)}. Ask about prices, hours or ${T === 'service' ? 'open slots' : 'orders'}; I reply right away.` }); save(); render(); toast('Demo reset'); } },
+    q: t => { const id = t.dataset.id; S.cart[id] = Math.max(0, Math.min(20, (S.cart[id] || 0) + +t.dataset.k)); save(); renderGuest(); },
+    when: t => { S.when = t.dataset.w; save(); renderGuest(); },
+    pay: () => openPay(),
+    close: () => $('dlg').close(),
+    paid: () => {
+      const lines = Object.entries(S.cart).filter(([, q]) => q > 0).map(([id, q]) => [id, q]), code = '#' + S.next++;
+      S.orders.push({ code, who: S.who.trim(), lines, st: K.steps[0], proof: true, ref: $('gref').value.trim(), when: S.when, plat: T === 'seller' ? 'Website' : '' });
+      S.chat.push({ w: 'bot', t: `Thank you po, ${esc(S.who.trim().split(' ')[0])}! We received your GCash proof for ${K.noun} <b>${code}</b>. We'll confirm in a minute.` });
+      S.cart = {}; save(); $('dlg').close(); renderGuest(); toast(`${K.noun[0].toUpperCase() + K.noun.slice(1)} ${code} sent to the owner`);
+    },
+    chip: t => ask(t.textContent),
+    toorder: () => document.querySelector('.cat')?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+    tab: t => { S.tab = t.dataset.t; S.view = 'owner'; save(); render(); },
+    adv: t => {
+      const o = S.orders.find(x => x.code === t.dataset.c), i = K.steps.indexOf(o.st);
+      if (i === 0) o.lines.forEach(([id, q]) => { if (T !== 'service') S.stock[id] = Math.max(0, (S.stock[id] || 0) - q); });
+      o.st = K.steps[i + 1]; save(); renderOwner();
+      toast(i === 0 ? `Payment confirmed · receipt sent to ${o.who}` : `${o.code} → ${o.st}${o.st === K.steps[K.steps.length - 1] ? ' · thank-you message sent' : ''}`);
+    },
+    key: t => { const tk = S.ticket || (S.ticket = []), l = tk.find(x => x[0] === t.dataset.id); if (l) l[1]++; else tk.push([t.dataset.id, 1]); save(); renderOwner(); },
+    clear: () => { S.ticket = []; save(); renderOwner(); },
+    charge: t => {
+      const tk = S.ticket || [], amt = total(tk), code = 'R-' + String(150 + S.counter.length).padStart(4, '0');
+      S.counter.push({ code, lines: tk, amt, m: t.dataset.m }); if (T !== 'service') tk.forEach(([id, q]) => { S.stock[id] = Math.max(0, (S.stock[id] || 0) - q); });
+      S.ticket = []; save(); renderOwner(); toast(`${t.dataset.m} sale ${peso(amt)} · receipt ${code} printed`);
+    },
+    reorder: t => { S.stock[t.dataset.id] = (S.stock[t.dataset.id] || 0) + 50; save(); renderOwner(); toast('Reorder logged · +50 added'); },
+  };
+  document.addEventListener('click', e => { const t = e.target.closest('[data-act]'); if (t && !t.disabled && ACT[t.dataset.act]) ACT[t.dataset.act](t, e); });
+  function render() {
+    document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.view)));
+    $('guest').hidden = S.view !== 'guest'; $('owner').hidden = S.view !== 'owner';
+    if (S.view === 'guest') renderGuest(); else renderOwner();
+  }
+  render();
+})();
+</script>
+</body>
+</html>

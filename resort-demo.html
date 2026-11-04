@@ -211,6 +211,18 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     weekday: 21000, weekend: 22000, maxPax: 24, extraFee: 500, cleanFee: 3000,
   };
   // ------------------------------------------------------------------
+  // personalized link from the demo booking on the home page (#d=…): the lead's name, rates, stay type and guest cap.
+  // Only the public sample takes it; the Casa De Vera concept copy keeps its own settings.
+  const PD = (() => { try { const m = location.hash.match(/[#&]d=([\w-]+)/), o = m && JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); return o && o.t === 'stay' && o.n ? o : null; } catch (e) { return null; } })();
+  const STAYS = { '22-hour stay': ['22-hour stay', '8:00 AM', '6:00 AM', 1, '22 hours'], 'Day tour': ['Day tour', '8:00 AM', '5:00 PM', 0, '9 hours'],
+    Overnight: ['Overnight stay', '2:00 PM', '12:00 NN', 1, '22 hours'], 'Per night': ['Per-night stay', '2:00 PM', '12:00 NN', 1, ''] };
+  if (PD && CFG.sample) {
+    const s = PD.s || {}, amt = v => Math.max(500, Math.min(999999, Math.round(Number(v) || 0)));
+    const name = String(PD.n).replace(/[<>`]/g, '').trim().slice(0, 60);
+    Object.assign(CFG, { name, short: name, place: '', sample: false, personal: true, store: 'resortDemo:' + name, stay: STAYS[s.st] ? s.st : '22-hour stay',
+      weekday: amt(s.wd || s.we), weekend: amt(s.we || s.wd), maxPax: Math.max(2, Math.min(200, Math.round(Number(s.mx) || CFG.maxPax))) });
+  }
+  const [STAY, CI, CO, NEXT, HRS] = STAYS[CFG.stay] || STAYS['22-hour stay'];
   const PHOTOS = [['all', 'Overview', CFG.photo], ['pax', `Up to ${CFG.maxPax} guests`, 'img/rs-group.webp'], ['pool', 'Pool + jacuzzi', 'img/rs-pool.webp'],
     ['vip', 'VIP room jacuzzi', 'img/rs-vip.webp'], ['kar', 'Karaoke room', 'img/rs-karaoke.webp'], ['bil', 'Billiards', 'img/rs-billiards.webp'], ['pet', 'Pet-friendly', 'img/rs-pet.webp']];
   const photoOf = k => PHOTOS.find(p => p[0] === k) || PHOTOS[0];
@@ -234,7 +246,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     ['vip', 'VIP room jacuzzi cleaned'], ['kar', 'Karaoke room reset, mics charged'], ['kit', 'Kitchen, dining and griller area'], ['sup', 'Supplies: trash bags, tissue, soap']];
   const allKeys = CHECK.map(c => c[0]);
 
-  const fresh = () => ({
+  const fresh0 = () => ({
     view: 'guest', otab: 'dash', photo: 'all', gmonth: '2026-11', omonth: '2026-11', sel: null, pax: 15, pets: false, gname: '', gmobile: '', nextId: 108, ci: null,
     bookings: [
       { id: 'DR-0101', ch: 'dir', date: '2026-11-01', guest: 'Garcia family', pax: 18, price: 22000, dp: 11000, dps: 'paid', status: 'out', fees: [{ l: '2 undeclared guests', a: 1000 }], turn: { done: allKeys.slice(), ready: true }, review: 'sent' },
@@ -250,6 +262,8 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     log: [{ t: 'Today 6:02 AM', m: 'Exported 5 direct bookings to Airbnb (dates blocked there)' }, { t: 'Yesterday 9:40 PM', m: 'Imported Airbnb booking AB-7802 · Fri, Nov 20 blocked on your booking page' }],
     chat: [],
   });
+  // a personalized demo's sample bookings follow the lead's own rates and guest cap
+  const fresh = () => { const o = fresh0(); if (CFG.personal) { o.pax = Math.min(o.pax, CFG.maxPax); o.bookings.concat(o.feed).forEach(b => { b.price = rate(b.date); b.pax = Math.min(b.pax, CFG.maxPax); if (b.dp) b.dp = Math.round(b.price / 2); }); } return o; };
   let S;
   try { S = JSON.parse(localStorage.getItem(CFG.store)) || fresh(); } catch (e) { S = fresh(); }
   const save = () => { try { localStorage.setItem(CFG.store, JSON.stringify(S)); } catch (e) {} };
@@ -259,8 +273,8 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
   const toast = m => { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3600); };
 
   $('brandname').textContent = CFG.name;
-  $('brandsub').textContent = CFG.sample ? `Sample resort · ${CFG.place} · live demo` : `${CFG.place} · concept demo by Purrfect Digitalization`;
-  $('notetext').textContent = `Demo: today is Wed, Nov 4, 2026. Nothing is sent or charged${CFG.sample ? '; the resort and figures are samples' : '; rates from the Airbnb listing, bookings are sample data'}.`;
+  $('brandsub').textContent = CFG.personal ? 'Personalized demo by Purrfect Digitalization' : CFG.sample ? `Sample resort · ${CFG.place} · live demo` : `${CFG.place} · concept demo by Purrfect Digitalization`;
+  $('notetext').textContent = CFG.personal ? `Demo for ${CFG.name}: your rates are loaded, photos and bookings are samples. Today is Wed, Nov 4, 2026 in the demo; nothing is sent or charged.` : `Demo: today is Wed, Nov 4, 2026. Nothing is sent or charged${CFG.sample ? '; the resort and figures are samples' : '; rates from the Airbnb listing, bookings are sample data'}.`;
   document.title = `${CFG.short} · Private Resort Demo`;
 
   // ---------- guest view ----------
@@ -281,10 +295,10 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     $('guest').innerHTML = `
 <section class="card" aria-label="Booking page">
   <div class="hero"><img id="heroimg" src="${photoOf(S.photo)[2]}" alt="${esc(photoOf(S.photo)[1])}" width="1400" height="933"><span class="tag" id="herotag">${esc(photoTag(S.photo))}</span>
-    <div class="ov"><h1>${esc(CFG.name)}</h1><span>Private, exclusive use · ${esc(CFG.place)}</span></div></div>
+    <div class="ov"><h1>${esc(CFG.name)}</h1><span>Private, exclusive use${CFG.place ? ' · ' + esc(CFG.place) : ''}</span></div></div>
   <div class="bk">
     <div class="chips" role="group" aria-label="Show photos of">${PHOTOS.map(([k, l]) => `<button type="button" data-act="photo" data-k="${k}" aria-pressed="${(S.photo || 'all') === k}">${esc(l)}</button>`).join('')}</div>
-    <div class="stay"><span><b>22-hour stay</b>: check-in 8:00 AM, check-out 6:00 AM next day</span><span>Mon–Thu <b class="num">${peso(CFG.weekday)}</b> · Fri–Sun <b class="num">${peso(CFG.weekend)}</b></span></div>
+    <div class="stay"><span><b>${STAY}</b>: check-in ${CI}, check-out ${CO}${NEXT ? ' next day' : ''}</span><span>Mon–Thu <b class="num">${peso(CFG.weekday)}</b> · Fri–Sun <b class="num">${peso(CFG.weekend)}</b></span></div>
     <div class="calhead"><h3>${monthName(S.gmonth)}</h3>
       <button type="button" data-act="gmonth" data-k="-1" aria-label="Previous month" ${S.gmonth <= '2026-11' ? 'disabled' : ''}>‹</button>
       <button type="button" data-act="gmonth" data-k="1" aria-label="Next month" ${S.gmonth >= '2026-12' ? 'disabled' : ''}>›</button></div>
@@ -296,13 +310,13 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     }, 'wd')}</div>
     <div class="legend"><span><i style="background:var(--surface)"></i>Open</span><span><i style="background:var(--line)"></i>Booked (here or on Airbnb)</span><span><i style="background:var(--blue)"></i>Your date</span></div>
     <div class="panel">
-      ${sel ? `<div class="row"><div class="grow"><b>${fd(sel)}</b> <span class="muted small">8:00 AM to 6:00 AM, ${fd(addD(sel, 1))}</span></div><span class="badge b-good">Available</span></div>` : '<div class="muted">Pick an open date to see the total.</div>'}
+      ${sel ? `<div class="row"><div class="grow"><b>${fd(sel)}</b> <span class="muted small">${CI} to ${CO}, ${fd(addD(sel, NEXT))}</span></div><span class="badge b-good">Available</span></div>` : '<div class="muted">Pick an open date to see the total.</div>'}
       <div class="row"><span class="grow">Guests <span class="muted small">(declare the exact count; ${peso(CFG.extraFee)} per undeclared guest)</span></span>
         <span class="step"><button type="button" data-act="pax" data-k="-1" aria-label="Fewer guests">−</button><output class="num" aria-live="polite">${S.pax}</output><button type="button" data-act="pax" data-k="1" aria-label="More guests">+</button></span></div>
       <label class="row small"><input type="checkbox" id="gpets" ${S.pets ? 'checked' : ''}> Bringing pets (out of the pool and beds, diapers on)</label>
       <div class="row"><label class="f grow">Your name<input id="gname" value="${esc(S.gname)}" autocomplete="name" placeholder="e.g. Ana Santos"></label>
         <label class="f grow">Mobile number<input id="gmobile" value="${esc(S.gmobile)}" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label></div>
-      ${sel ? `<div class="sum num"><span>22-hour stay, ${fd(sel)}</span><span>${peso(price)}</span><span>Down payment now (50%, GCash)</span><span>${peso(dp)}</span><span class="t">Balance on arrival</span><span class="t">${peso(price - dp)}</span></div>` : ''}
+      ${sel ? `<div class="sum num"><span>${STAY}, ${fd(sel)}</span><span>${peso(price)}</span><span>Down payment now (50%, GCash)</span><span>${peso(dp)}</span><span class="t">Balance on arrival</span><span class="t">${peso(price - dp)}</span></div>` : ''}
       <button class="btn pri" type="button" data-act="book" ${ready ? '' : 'disabled'}>Book and pay down payment</button>
       <span class="muted small">Dates booked on Airbnb are blocked here automatically, and your booking blocks the date on Airbnb.</span>
     </div>
@@ -343,15 +357,15 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     else if (/\b(bukas|tomorrow)\b/.test(q)) date = addD(TODAY, 1);
     if (date) {
       if (isNaN(P(date)) || date < TODAY) return { t: 'That date has passed po. Which date are you looking at?' };
-      if (!on(date)) return { t: `Yes po, <b>${fd(date)}</b> is open! 22-hour stay (8:00 AM to 6:00 AM) for <b>${peso(rate(date))}</b>, up to ${CFG.maxPax} guests. A 50% GCash down payment locks the date.`, act: { l: `Book ${fd(date)}`, d: date } };
+      if (!on(date)) return { t: `Yes po, <b>${fd(date)}</b> is open! ${STAY} (${CI} to ${CO}) for <b>${peso(rate(date))}</b>, up to ${CFG.maxPax} guests. A 50% GCash down payment locks the date.`, act: { l: `Book ${fd(date)}`, d: date } };
       const alt = freeAfter(date, 3);
       return { t: `Sorry po, <b>${fd(date)}</b> is already booked. Open dates nearby: ${alt.map(d => `<b>${fd(d)}</b> (${peso(rate(d))})`).join(', ')}.`, act: alt[0] ? { l: `Book ${fd(alt[0])}`, d: alt[0] } : null };
     }
-    if (/(magkano|\bhm\b|how much|price|rate|presyo|rates)/.test(q)) return { t: `Hi po! Our 22-hour stay (8:00 AM to 6:00 AM) is <b>${peso(CFG.weekday)}</b> Mon–Thu and <b>${peso(CFG.weekend)}</b> Fri–Sun, exclusive use for up to ${CFG.maxPax} guests. Pool with jacuzzi, VIP room jacuzzi, karaoke room and billiards are included.`, act: { l: 'See open dates' } };
+    if (/(magkano|\bhm\b|how much|price|rate|presyo|rates)/.test(q)) return { t: `Hi po! Our ${STAY.toLowerCase()} (${CI} to ${CO}) is <b>${peso(CFG.weekday)}</b> Mon–Thu and <b>${peso(CFG.weekend)}</b> Fri–Sun, exclusive use for up to ${CFG.maxPax} guests. Pool with jacuzzi, VIP room jacuzzi, karaoke room and billiards are included.`, act: { l: 'See open dates' } };
     if (/(pet|aso|dog|cat|pusa|fur)/.test(q)) return { t: `Yes po, we're pet-friendly! Pets stay out of the pool and beds and wear diapers. A ${peso(CFG.cleanFee)} cleaning fee applies if they relieve themselves inside.` };
-    if (/(check.?in|check.?out|oras|time|anong oras)/.test(q)) return { t: 'Check-in is after 8:00 AM and check-out is before 6:00 AM the next day (22 hours). Quiet time at the pool is 10 PM to 7 AM.' };
+    if (/(check.?in|check.?out|oras|time|anong oras)/.test(q)) return { t: `Check-in is after ${CI} and check-out is before ${CO}${NEXT ? ' the next day' : ''}${HRS ? ` (${HRS})` : ''}.${NEXT ? ' Quiet time at the pool is 10 PM to 7 AM.' : ''}` };
     if (/(pax|guests|tao|ilan|max|capacity)/.test(q)) return { t: `Up to ${CFG.maxPax} guests po. Please declare the exact count at booking; undeclared guests are ${peso(CFG.extraFee)} each per day.` };
-    if (/(saan|where|location|direction|address|waze|map)/.test(q)) return { t: `We're in ${esc(CFG.place)} po. Once your booking is confirmed we send the exact pin, a Waze link and landmarks.` };
+    if (/(saan|where|location|direction|address|waze|map)/.test(q)) return { t: `${CFG.place ? `We're in ${esc(CFG.place)} po. ` : ''}Once your booking is confirmed we send the exact pin, a Waze link and landmarks.` };
     if (/(book|reserve|reserba|pa.?book)/.test(q)) return { t: 'Pick your date on our booking page po; the calendar shows open dates and the total.', act: { l: 'Open booking page' } };
     if (/(salamat|thank)/.test(q)) return { t: 'Walang anuman po! See you soon. 😊' };
     if (/^(hi|hello|good|kumusta|musta)/.test(q)) return { t: `Hello po! 👋 Ask me about rates, open dates, pets or check-in time, or tap a question below.` };
@@ -402,8 +416,8 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     const c = counts();
     const todo = [
       c.book && [`${c.book} down payment${c.book > 1 ? 's' : ''} to confirm`, 'book'],
-      S.bookings.filter(b => b.date === TODAY && b.status === 'confirmed').map(b => [`Check in ${b.guest} today, 8:00 AM`, 'ci'])[0],
-      S.bookings.filter(b => b.status === 'in').map(b => [`${b.guest} is checked in; check out by 6:00 AM`, 'ci'])[0],
+      S.bookings.filter(b => b.date === TODAY && b.status === 'confirmed').map(b => [`Check in ${b.guest} today, ${CI}`, 'ci'])[0],
+      S.bookings.filter(b => b.status === 'in').map(b => [`${b.guest} is checked in; check out by ${CO}`, 'ci'])[0],
       c.turn && [`${c.turn} turnover checklist${c.turn > 1 ? 's' : ''} open`, 'turn'],
       c.rev && [`${c.rev} thank-you + review request${c.rev > 1 ? 's' : ''} to send`, 'rev'],
     ].filter(Boolean);
@@ -422,7 +436,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
   </div>
   <div class="card box"><h3>To do today</h3>
     <div class="todo">${todo.length ? todo.map(([l, t]) => `<button type="button" data-act="otab" data-t="${t}"><span>${l}</span><span>Open</span></button>`).join('') : '<div class="empty">All caught up 🎉</div>'}</div>
-    ${nxt ? `<div class="prev"><b>Next arrival:</b> ${esc(nxt.guest)} · ${fd(nxt.date)}, 8:00 AM · ${nxt.pax} guests ${chBadge(nxt)}</div>` : ''}
+    ${nxt ? `<div class="prev"><b>Next arrival:</b> ${esc(nxt.guest)} · ${fd(nxt.date)}, ${CI} · ${nxt.pax} guests ${chBadge(nxt)}</div>` : ''}
     <span class="muted small">Airbnb sync: on · ${esc(S.log[0].t)}</span>
   </div>
 </div>`;
@@ -485,7 +499,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
 </form></div></div>`;
     }
     h += inh.map(b => `<div class="card box" style="margin-top:12px"><h3>In-house: ${esc(b.guest)} ${chBadge(b)}</h3>
-<div class="row"><span class="grow small">Checked in ${fd(b.date)} · ${b.actual || b.pax} guests · fees ${peso(feesOf(b))}. Check-out before 6:00 AM, ${fd(addD(b.date, 1))}.</span>
+<div class="row"><span class="grow small">Checked in ${fd(b.date)} · ${b.actual || b.pax} guests · fees ${peso(feesOf(b))}. Check-out before ${CO}, ${fd(addD(b.date, NEXT))}.</span>
 <button class="btn blue" type="button" data-act="checkout" data-id="${b.id}">Check out + start turnover</button></div></div>`).join('');
     return h || '<div class="card empty">No arrivals or in-house guests right now. The next arrival shows here on its check-in day.</div>';
   }
@@ -496,7 +510,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     return open.map(b => {
       const nxt = S.bookings.filter(x => x.date > b.date && x.status !== 'cancelled').sort((a, c) => a.date.localeCompare(c.date))[0];
       const done = b.turn.done.length, all = CHECK.length;
-      return `<div class="card box" style="margin-bottom:12px"><div class="row"><h3 class="grow">After ${esc(b.guest)} (${fd(b.date)})</h3>${nxt ? `<span class="badge b-blue">Next guests: ${fd(nxt.date)}, 8:00 AM</span>` : ''}</div>
+      return `<div class="card box" style="margin-bottom:12px"><div class="row"><h3 class="grow">After ${esc(b.guest)} (${fd(b.date)})</h3>${nxt ? `<span class="badge b-blue">Next guests: ${fd(nxt.date)}, ${CI}</span>` : ''}</div>
 <div class="bar"><i style="width:${done / all * 100}%;background:var(--good)"></i></div><span class="small muted">${done} of ${all} done</span>
 <div class="ck">${CHECK.map(([k, l]) => `<label class="${b.turn.done.includes(k) ? 'done' : ''}"><input type="checkbox" data-tick="${b.id}:${k}" ${b.turn.done.includes(k) ? 'checked' : ''}> ${l}</label>`).join('')}</div>
 <button class="btn pri" type="button" data-act="ready" data-id="${b.id}" ${done === all ? '' : 'disabled'}>Ready for the next guests</button></div>`;
@@ -521,7 +535,7 @@ dialog::backdrop{background:rgba(5,10,20,.55)}
     const s = S.sel, price = rate(s), dp = price / 2; attached = false;
     $('dlgbody').innerHTML = `<h2 id="dlgtitle">Pay the down payment</h2>
 <div class="gcash"><div class="q" aria-hidden="true">${qr()}</div><div><b class="num">${peso(dp)}</b> via GCash<br><span class="small">${CFG.sample ? 'GCash ' + CFG.gcash + ' (sample)' : 'Your GCash QR goes here'} · ${esc(CFG.short)}</span></div></div>
-<div class="sum num small"><span>${fd(s)}, 22-hour stay · ${S.pax} guests${S.pets ? ' · pets' : ''}</span><span>${peso(price)}</span><span>Balance on arrival</span><span>${peso(price - dp)}</span></div>
+<div class="sum num small"><span>${fd(s)}, ${STAY.toLowerCase()} · ${S.pax} guests${S.pets ? ' · pets' : ''}</span><span>${peso(price)}</span><span>Balance on arrival</span><span>${peso(price - dp)}</span></div>
 <label class="f">GCash reference number<input id="gref" inputmode="numeric" placeholder="13 digits from your GCash receipt" maxlength="16"></label>
 <button class="btn" type="button" data-act="attach" id="attachbtn">📎 Attach payment screenshot</button>
 <div class="row"><button class="btn" type="button" data-act="closedlg">Cancel</button><button class="btn pri grow" type="button" data-act="paysubmit" id="paybtn" disabled>Submit for confirmation</button></div>

@@ -149,11 +149,11 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
 </head>
 <body>
 
-<div class="banner"><div class="wrap"><span><b>Live demo</b> · A sample building with made-up units, tenants and amounts · Built by <a href="./" style="color:inherit;font-weight:600">Purrfect Digitalization</a></span><span class="row"><a class="btn sm" href="leasing.html">← Back to leasing</a><button class="btn sm" id="reset" type="button">Reset demo</button></span></div></div>
+<div class="banner"><div class="wrap"><span><b id="bmode">Live demo</b> · <span id="bnote">A sample building with made-up units, tenants and amounts</span> · Built by <a href="./" style="color:inherit;font-weight:600">Purrfect Digitalization</a></span><span class="row"><a class="btn sm" href="leasing.html">← Back to leasing</a><button class="btn sm" id="reset" type="button">Reset demo</button></span></div></div>
 
 <header class="top">
   <div class="wrap">
-    <div class="brand"><span class="bld" aria-hidden="true">🏢</span><div><b>Sampaguita Commercial Bldg</b><small>Sample building · 18 units · 3 floors</small></div></div>
+    <div class="brand"><span class="bld" aria-hidden="true">🏢</span><div><b id="bname">Sampaguita Commercial Bldg</b><small id="bsub">Sample building · 18 units · 3 floors</small></div></div>
     <span class="date">Demo date: Nov 4, 2026</span>
   </div>
   <div class="wrap">
@@ -260,6 +260,19 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     ['301', '3F', 40, 'Tutorial center', '2027-08-31'], ['302', '3F', 42, 'Law office', '2027-04-30'], ['303', '3F', 60, 'BPO team seats', '2027-11-30'],
     ['304', '3F', 45, '', ''], ['305', '3F', 30, 'Accounting firm', '2027-07-31'], ['306', '3F', 35, 'Photo studio', '2027-10-31']
   ];
+  // personalized link from the demo booking on the home page (#d=…): the lead's building name and rent level
+  const PD = (() => { try { const m = location.hash.match(/[#&]d=([\w-]+)/), o = m && JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); return o && o.t === 'lease' && o.n ? o : null; } catch (e) { return null; } })();
+  const BLDG = PD ? String(PD.n).replace(/[<>`&]/g, '').trim().slice(0, 60) : 'Sampaguita Commercial Bldg';
+  const STORE = PD ? 'leasingDemo:' + BLDG : 'leasingDemo';
+  if (PD) {
+    const l = PD.l || {}, avg = UNITS.reduce((a, u) => a + u[2] * RATE[u[1]], 0) / UNITS.length, f = Number(l.r) > 0 ? Math.max(.1, Math.min(10, l.r / avg)) : 1;
+    Object.keys(RATE).forEach(k => { RATE[k] = Math.max(5, Math.round(RATE[k] * f / 5) * 5); });
+    $('bname').textContent = BLDG;
+    $('bsub').textContent = `Personalized demo · ${Number(l.u) > 0 ? Math.round(l.u) + ' units' : 'your units'}${l.k ? ' · ' + String(l.k).replace(/[<>`]/g, '').slice(0, 40) : ''}`;
+    $('bmode').textContent = 'Personalized demo';
+    $('bnote').textContent = `Set up for ${BLDG}${l.r ? ', with rents scaled to yours' : ''}. Units and tenants are samples until we load your own`;
+    document.title = BLDG + ' · Leasing Demo';
+  }
   const PROSPECTS = [
     { name: 'Mika Santos', src: 'Facebook', biz: 'Nail salon', msg: 'Hi po! Available pa ba 2F? Magkano po per month?', floor: '2F' },
     { name: 'Ramon Cruz', src: 'Website', biz: 'Physical therapy clinic', msg: 'Good day, may 40+ sqm space po ba kayo sa 3F for a clinic?', floor: '3F' },
@@ -278,8 +291,8 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
     units: UNITS.map(u => ({ id: u[0], floor: u[1], sqm: u[2], rate: RATE[u[1]], tenant: u[3], end: u[4], status: u[3] ? 'Occupied' : 'Vacant', paidRecord: u[0] === '205' ? 'late twice' : 'on time' })),
     leads: [], apps: [], bills: [], billed: false, tix: [], offers: {}, log: [], seq: { lead: 0, app: 0, tix: 200 }
   });
-  try { S = JSON.parse(localStorage.getItem('leasingDemo')) || fresh(); } catch (e) { S = fresh(); }
-  const save = () => { try { localStorage.setItem('leasingDemo', JSON.stringify(S)); } catch (e) {} };
+  try { S = JSON.parse(localStorage.getItem(STORE)) || fresh(); } catch (e) { S = fresh(); }
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
   const unit = id => S.units.find(u => u.id === id);
   const rent = u => u.sqm * u.rate;
   const log = t => { S.log.unshift([now(), t]); S.log = S.log.slice(0, 80); };
@@ -434,7 +447,7 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
   function openLease(ap) {
     const u = unit(ap.unit), r = rent(u);
     body.innerHTML = `<div class="top2"><span>Lease contract · from your template</span><button class="btn sm" id="x" type="button">Close</button></div>
-      <h3>Lease: Unit ${u.id}, Sampaguita Commercial Bldg</h3>
+      <h3>Lease: Unit ${u.id}, ${BLDG}</h3>
       <dl class="terms"><dt>Lessee</dt><dd>${ap.name} (${ap.biz})</dd><dt>Area</dt><dd>${u.sqm} sqm, ${u.floor}</dd><dt>Term</dt><dd>2 years · Dec 1, 2026 to Nov 30, 2028</dd>
       <dt>Monthly rent</dt><dd>${peso(r)}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}/month</dd><dt>Escalation</dt><dd>5% per year</dd>
       <dt>Advance</dt><dd>2 months · ${peso(r * 2)}</dd><dt>Security deposit</dt><dd>2 months · ${peso(r * 2)}</dd><dt>Move-in total</dt><dd>${peso(r * 4)}</dd></dl>

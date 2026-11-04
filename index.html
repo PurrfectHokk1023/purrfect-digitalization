@@ -453,6 +453,58 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
 .seeit .head{margin-bottom:0}
 @media (max-width:900px){.hero .wrap{grid-template-columns:1fr}.hero-art img{width:112%;margin-left:-6%}.seeit-wrap{grid-template-columns:1fr;gap:28px}}
 @media (max-width:520px){.float-chip.c2{top:-4%}.float-chip{font-size:11.5px;padding:8px 11px}.float-chip b{font-size:17px}}
+
+/* demo wizard (Nov 5): step-by-step booking that collects what a personalized demo needs */
+@media (min-width:901px){.cta .wrap{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:start}}
+.wiz-why{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:10px;font-size:15.5px;color:var(--ink)}
+.wiz-why li{display:flex;gap:10px;align-items:baseline}
+.wiz-why li::before{content:"✓";color:var(--good);font-weight:800}
+.wiz{display:grid;gap:14px;padding:24px!important}
+.wiz fieldset{border:0;margin:0;padding:0;display:grid;gap:12px;min-width:0}
+.wiz legend{font:700 21px var(--display);letter-spacing:-.01em;margin-bottom:12px;padding:0;color:var(--ink)}
+.wiz-steps{display:flex;gap:6px;list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--muted);counter-reset:s}
+.wiz-steps li{flex:1;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wiz-steps li::before{counter-increment:s;content:counter(s);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);font-weight:700;font-size:12px;flex:none}
+.wiz-steps li.on{color:var(--ink);font-weight:600}
+.wiz-steps li.on::before{background:var(--accent);border-color:var(--accent);color:#fff}
+.wiz-steps li.done::before{content:"✓";background:var(--good);border-color:var(--good);color:#06121f}
+.wiz-bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.wiz-bar i{display:block;height:100%;width:25%;background:linear-gradient(90deg,#ff7a2e,#ee4d0a);transition:width .3s}
+.wiz-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wiz-types label{display:flex;gap:10px;align-items:center;padding:12px 14px;border:1px solid rgba(148,170,210,.22);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;font-size:14.5px;font-weight:600;line-height:1.3}
+.wiz-types label span:first-of-type{font-size:22px;flex:none}
+.wiz-types input,.wiz-chips input,.wiz-modes input,.wiz-days input,.wiz-times input{position:absolute;opacity:0;pointer-events:none}
+.wiz-types label:has(input:checked),.wiz-modes label:has(input:checked){border-color:var(--accent);background:rgba(255,106,26,.12)}
+.wiz-types label:has(input:focus-visible),.wiz-chips label:has(input:focus-visible),.wiz-modes label:has(input:focus-visible),.wiz-days label:has(input:focus-visible),.wiz-times label:has(input:focus-visible){outline:2px solid var(--teal);outline-offset:2px}
+.wiz-label{font-size:13.5px;color:var(--muted);margin:2px 0 -2px}
+.wiz-item,.wiz-two{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px}
+.wiz-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wiz-block{display:grid;gap:10px}
+.wiz textarea{border-radius:10px;border:1px solid rgba(148,170,210,.22);background:rgba(255,255,255,.03);color:var(--ink);padding:12px 14px;font:16px var(--body);width:100%;resize:vertical}
+.wiz textarea::placeholder{color:#7f8aa3}
+.wiz-check{display:flex;gap:10px;align-items:center;font-size:14.5px;color:var(--ink)}
+.wiz-check input{width:18px;height:18px;accent-color:var(--accent)}
+.wiz-chips{display:flex;flex-wrap:wrap;gap:8px}
+.wiz-chips label,.wiz-days label,.wiz-times label{border:1px solid rgba(148,170,210,.24);border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.03);color:var(--ink);user-select:none}
+.wiz-chips label:has(input:checked),.wiz-days label:has(input:checked),.wiz-times label:has(input:checked){background:var(--accent);border-color:var(--accent);color:#fff}
+.wiz-chips label:has(input:checked)::before{content:"✓ "}
+.wiz-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wiz-modes label{display:grid;gap:2px;padding:12px 14px;border:1px solid rgba(148,170,210,.22);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;font-weight:700;font-size:15px}
+.wiz-modes small{font-weight:500;color:var(--muted);font-size:12.5px}
+.wiz-days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.wiz-days label{flex:none;display:grid;text-align:center;border-radius:12px;padding:8px 12px;line-height:1.2}
+.wiz-days label small{font-weight:500;font-size:11.5px;opacity:.8}
+.wiz-times{display:flex;flex-wrap:wrap;gap:8px}
+.wiz-times label:has(input:disabled){opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.wiz-nav{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
+.wiz-nav .btn{min-width:120px;justify-content:center}
+.wiz-nav #wiz-next{margin-left:auto}
+.wiz-done{display:grid;gap:12px;text-align:left}
+.wiz-done h3{font:800 26px var(--display);color:var(--ink)}
+.wiz-done .slot{font-size:18px;color:var(--ink)}
+.wiz-done .row{display:flex;flex-wrap:wrap;gap:10px}
+.wiz-done p{color:var(--muted)}
+@media (max-width:560px){.wiz-types,.wiz-modes{grid-template-columns:1fr}.wiz-item{grid-template-columns:minmax(0,1fr) 110px}.wiz-steps li{font-size:0;gap:0;flex:none}.wiz-steps{justify-content:space-between}}
 </style>
 </head>
 <body>
@@ -878,19 +930,73 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
   <div class="wrap">
     <div class="head" style="margin:0">
       <span class="eyebrow">Free demo</span>
-      <h2>See a real business running on it.</h2>
-      <p class="lead">Scan a live catalog, place a test order or booking, and watch it land in the owner’s report. We’ll walk you through it in 15 minutes.</p>
+      <h2>Build your demo in 2 minutes.</h2>
+      <p class="lead">Tell us about your business and pick a time. We load your own items and prices into the system, so the call is just 15 minutes, and you can preview it right away.</p>
+      <ul class="wiz-why">
+        <li>Pick your own time: no back-and-forth</li>
+        <li>Your items and prices, already loaded</li>
+        <li>Preview your demo the moment you book</li>
+      </ul>
     </div>
-    <form id="demo-form" novalidate>
-      <input id="f-name" name="name" placeholder="Your name" autocomplete="name" required>
-      <input id="f-shop" name="shop" placeholder="Business name and city" required>
-      <select id="f-type" name="type" aria-label="Type of business"><option>Café or food business</option><option>E-commerce (TikTok Shop, Shopee, Lazada)</option><option>Commercial space or office leasing</option><option>Apartment, condo or boarding house</option><option>Staycation or rental</option><option>Laundry, car wash or services</option><option>Salon, spa or clinic</option><option>Shop or online seller</option><option>Events or catering</option><option>Classes or studio</option><option>Something else</option></select>
-      <input id="f-email" name="email" type="email" placeholder="Email address" autocomplete="email" required>
-      <input id="f-phone" name="phone" placeholder="Mobile number (09xx…)" inputmode="tel" autocomplete="tel" required>
-      <input id="f-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-      <select id="f-plan" name="plan" aria-label="Plan you're interested in"><option>Not sure yet</option><option>Starter</option><option>Growth</option><option>Pro</option><option>Founding Seller (free e-commerce pilot)</option></select>
-      <button class="btn btn-primary" type="submit" style="justify-content:center">Request my demo</button>
-      <p class="note" id="f-note" role="status"></p>
+    <form id="demo-form" class="wiz" novalidate>
+      <ol class="wiz-steps" aria-label="Steps"><li>Business</li><li>Details</li><li>Goals</li><li>Time</li></ol>
+      <div class="wiz-bar" aria-hidden="true"><i id="wiz-fill"></i></div>
+
+      <fieldset class="wiz-step" data-step="1">
+        <legend>What kind of business do you run?</legend>
+        <div class="wiz-types" id="wiz-types" role="radiogroup" aria-label="Type of business"></div>
+      </fieldset>
+
+      <fieldset class="wiz-step" data-step="2" hidden>
+        <legend>Tell us about it</legend>
+        <input id="f-shop" name="shop" placeholder="Business name" autocomplete="organization" maxlength="80">
+        <div class="wiz-block" data-for="food shop seller service other">
+          <p class="wiz-label" id="items-label">Your top items and prices</p>
+          <div class="wiz-item"><input name="in0" placeholder="Item" maxlength="40"><input name="ip0" placeholder="₱ Price" inputmode="decimal" maxlength="7"></div>
+          <div class="wiz-item"><input name="in1" placeholder="Item" maxlength="40"><input name="ip1" placeholder="₱ Price" inputmode="decimal" maxlength="7"></div>
+          <div class="wiz-item"><input name="in2" placeholder="Item" maxlength="40"><input name="ip2" placeholder="₱ Price" inputmode="decimal" maxlength="7"></div>
+        </div>
+        <div class="wiz-block" data-for="stay">
+          <div class="wiz-two"><input name="swd" placeholder="Weekday rate ₱" inputmode="decimal" maxlength="7"><input name="swe" placeholder="Weekend rate ₱" inputmode="decimal" maxlength="7"></div>
+          <div class="wiz-two"><select name="sst" aria-label="Type of stay"><option>22-hour stay</option><option>Day tour</option><option>Overnight</option><option>Per night</option></select><input name="smx" placeholder="Max guests" inputmode="numeric" maxlength="3"></div>
+          <label class="wiz-check"><input type="checkbox" name="sair"> We're also on Airbnb</label>
+        </div>
+        <div class="wiz-block" data-for="lease">
+          <div class="wiz-two"><input name="lu" placeholder="Number of units" inputmode="numeric" maxlength="4"><input name="lr" placeholder="Monthly rent ₱" inputmode="decimal" maxlength="8"></div>
+          <select name="lk" aria-label="Kind of property"><option>Commercial spaces</option><option>Offices</option><option>Apartments or condos</option><option>Stalls or kiosks</option><option>Boarding house</option></select>
+        </div>
+        <div class="wiz-block" data-for="other">
+          <textarea name="od" rows="2" maxlength="240" placeholder="In a sentence: what do you sell or offer?"></textarea>
+        </div>
+        <div class="wiz-two"><input id="f-link" name="link" placeholder="FB page or site (optional)" maxlength="160"><input id="f-br" name="branches" inputmode="numeric" maxlength="2" placeholder="Branches (1)" aria-label="Number of branches or locations"></div>
+      </fieldset>
+
+      <fieldset class="wiz-step" data-step="3" hidden>
+        <legend>What should the demo fix first?</legend>
+        <p class="wiz-label">Pick all that apply. We'll show these first.</p>
+        <div class="wiz-chips" id="wiz-pains"></div>
+      </fieldset>
+
+      <fieldset class="wiz-step" data-step="4" hidden>
+        <legend>Pick your demo time</legend>
+        <div class="wiz-modes" role="radiogroup" aria-label="Demo format">
+          <label><input type="radio" name="mode" value="Online (Google Meet)" checked> <span>💻 Online</span><small>Google Meet, 15 minutes</small></label>
+          <label><input type="radio" name="mode" value="On-site visit"> <span>📍 We visit you</span><small>At your shop, 30 minutes</small></label>
+        </div>
+        <div class="wiz-days" id="wiz-days" role="radiogroup" aria-label="Day"></div>
+        <div class="wiz-times" id="wiz-times" role="radiogroup" aria-label="Time"></div>
+        <div class="wiz-two"><input id="f-name" name="name" placeholder="Your name" autocomplete="name" maxlength="80"><input id="f-phone" name="phone" placeholder="Mobile (09xx…)" inputmode="tel" autocomplete="tel" maxlength="16"></div>
+        <input id="f-email" name="email" type="email" placeholder="Email address" autocomplete="email" maxlength="120">
+        <div class="wiz-two">
+          <select id="f-via" name="via" aria-label="Confirm my demo by"><option value="Messenger">Confirm by Messenger</option><option value="Viber">Confirm by Viber</option><option value="SMS">Confirm by SMS</option><option value="Email">Confirm by email</option></select>
+          <select id="f-plan" name="plan" aria-label="Plan you're interested in"><option>Not sure yet</option><option>Starter</option><option>Growth</option><option>Pro</option><option>Founding Seller (free e-commerce pilot)</option></select>
+        </div>
+        <input id="f-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      </fieldset>
+
+      <div class="wiz-nav"><button type="button" class="btn btn-ghost" id="wiz-back" hidden>Back</button><button type="button" class="btn btn-primary" id="wiz-next">Next</button></div>
+      <p class="note" id="f-note" role="status" aria-live="polite"></p>
+      <div class="wiz-done" id="wiz-done" hidden></div>
     </form>
   </div>
 </section>
@@ -1031,45 +1137,178 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
   $('minus').onclick = () => { br = Math.max(1, br - 1); draw(); };
   sel.onchange = draw; draw();
 
-  // coming from the e-commerce page (./#seller): preselect the e-commerce type and Founding Seller plan
-  if (location.hash === '#lessor') {        // coming from the leasing page
-    $('f-type').value = 'Commercial space or office leasing';
-    $('demo').scrollIntoView();
-  }
-  if (location.hash === '#seller') {
-    $('f-type').value = 'E-commerce (TikTok Shop, Shopee, Lazada)';
-    $('f-plan').value = 'Founding Seller (free e-commerce pilot)';
-    $('demo').scrollIntoView();
-  }
-
-  // plan buttons prefill the demo form
-  document.querySelectorAll('[data-plan]').forEach(a => a.addEventListener('click', () => { $('f-plan').value = a.dataset.plan; }));
-
-  // demo form: saved to the Purrfect Digitalization Leads sheet by its own Apps Script web app (apps-script/Leads.gs),
-  // which emails the requester a confirmation and the owner a notice
+  {
+  // demo wizard: collects what a personalized demo needs, lets the lead pick a free slot, and posts it to the Leads
+  // Apps Script (apps-script/Leads.gs), which stores it, emails both sides and blocks the slot. The lead gets a
+  // personalized demo link straight away; the owner's email carries a demo brief link to run the call from.
   const LEAD_API = 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';
-  $('demo-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const f = e.target, note = $('f-note'), btn = f.querySelector('button[type=submit]');
-    const miss = [...f.querySelectorAll('[required]')].find(i => !i.value.trim());
-    if (miss) { note.textContent = 'Please fill in your ' + miss.placeholder.toLowerCase().split(' (')[0] + '.'; miss.focus(); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) { note.textContent = 'Please enter a valid email address.'; f.email.focus(); return; }
-    if (!/^(09|\+639)\d{9}$/.test(f.phone.value.replace(/[\s-]/g, ''))) { note.textContent = 'Enter a PH mobile number like 0917 123 4567.'; f.phone.focus(); return; }
-    btn.disabled = true; btn.textContent = 'Sending…'; note.textContent = '';
-    const body = { name: f.name.value.trim(), shop: f.shop.value.trim(), type: f.type.value, email: f.email.value.trim(),
-      phone: f.phone.value.trim(), plan: f.plan.value, hp: f.hp.value, page: location.href.split('#')[0] };
+  const TYPES = [['food', '☕', 'Café, restaurant or food stall'], ['stay', '🏝️', 'Resort, staycation or rental'],
+    ['lease', '🏢', 'Commercial space, office or apartments'], ['seller', '🛍️', 'Online seller (TikTok, Shopee, Lazada, FB)'],
+    ['service', '💇', 'Salon, spa, clinic, laundry or services'], ['shop', '🏪', 'Shop or sari-sari store'], ['other', '✨', 'Something else']];
+  const ALL = TYPES.map(t => t[0]);
+  const PAINS = [['msg', 'Answering the same Messenger questions', ALL], ['book', 'Bookings and double bookings', ['stay', 'service', 'food', 'lease', 'other']],
+    ['air', 'Airbnb and Facebook calendars', ['stay']], ['pay', 'Checking GCash and bank payments', ALL],
+    ['order', 'Taking and tracking orders', ['food', 'shop', 'seller', 'other']], ['channel', 'Selling on many platforms', ['seller']],
+    ['stock', 'Stock running out', ['food', 'shop', 'seller', 'other']], ['rent', 'Rent billing and collections', ['lease']],
+    ['tenant', 'Tenant repairs and renewals', ['lease']], ['clean', 'Cleaning and turnover checklists', ['stay']],
+    ['cash', 'Daily cash-up that doesn’t match', ['food', 'shop', 'service', 'stay', 'other']], ['staff', 'Staff attendance and tasks', ['food', 'shop', 'service', 'stay', 'other']],
+    ['report', 'No clear sales report', ALL]];
+  const ITEMS = { food: ['Best-selling items and prices', ['Iced Spanish Latte', 'Tapsilog', 'Halo-halo']], shop: ['Fast-moving items and prices', ['Coke 1.5L', 'Pancit Canton', 'Bread loaf']],
+    seller: ['Best-selling products and prices', ['Product 1', 'Product 2', 'Product 3']], service: ['Top services and prices', ['Haircut', 'Hair color', 'Manicure']],
+    other: ['Main products or services and prices (optional)', ['Item 1', 'Item 2', 'Item 3']] };
+  const DEMO = { stay: 'resort-demo.html', lease: 'leasing-demo.html' };          // every other type uses shop-demo.html
+  const TIMES = [['10:00', '10 AM'], ['13:00', '1 PM'], ['15:00', '3 PM'], ['17:00', '5 PM'], ['19:00', '7 PM']];
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const form = $('demo-form'), note = $('f-note'), steps = [...form.querySelectorAll('.wiz-step')];
+  let step = 1, taken = [];
+  const val = n => (form.elements[n] && form.elements[n].value || '').trim();
+  const num = n => { const v = Number(val(n).replace(/[^\d.]/g, '')); return isFinite(v) && v > 0 ? Math.round(v) : 0; };
+  const checked = n => form.querySelector(`input[name=${n}]:checked`);
+  const type = () => (checked('wtype') || {}).value || '';
+  const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const pad2 = n => String(n).padStart(2, '0');
+  const isoDay = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const dayLabel = s => { const d = new Date(s + 'T00:00'); return `${DAYS[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`; };
+  const timeLabel = t => (TIMES.find(x => x[0] === t) || [t, t])[1];
+  const escH = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  $('wiz-types').innerHTML = TYPES.map(([k, ic, l]) => `<label><input type="radio" name="wtype" value="${k}"><span aria-hidden="true">${ic}</span><span>${l}</span></label>`).join('');
+  const days = [];
+  for (let d = new Date(), i = 0; days.length < 12 && i < 20; i++) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) days.push(isoDay(d)); }
+  $('wiz-days').innerHTML = days.map(s => { const d = new Date(s + 'T00:00'); return `<label><input type="radio" name="wday" value="${s}"><b>${DAYS[d.getDay()]}</b><small>${MON[d.getMonth()]} ${d.getDate()}</small></label>`; }).join('');
+  const drawTimes = () => {
+    const day = (checked('wday') || {}).value, cur = (checked('wtime') || {}).value;
+    $('wiz-times').innerHTML = TIMES.map(([t, l]) => {
+      const off = day && taken.includes(day + ' ' + t);
+      return `<label><input type="radio" name="wtime" value="${t}"${off ? ' disabled' : ''}${!off && cur === t ? ' checked' : ''}>${l}</label>`;
+    }).join('');
+  };
+  const drawType = () => {
+    const t = type();
+    form.querySelectorAll('.wiz-block').forEach(b => { b.hidden = !t || !b.dataset.for.split(' ').includes(t); });
+    if (ITEMS[t]) { $('items-label').textContent = ITEMS[t][0]; ITEMS[t][1].forEach((p, i) => { form.elements['in' + i].placeholder = p; }); }
+    const was = new Set([...form.querySelectorAll('input[name=wpain]:checked')].map(i => i.value));
+    $('wiz-pains').innerHTML = PAINS.filter(p => p[2].includes(t)).map(([k, l]) => `<label><input type="checkbox" name="wpain" value="${k}"${was.has(k) ? ' checked' : ''}>${l}</label>`).join('');
+  };
+  const loadTaken = async () => {
+    try { const r = await fetch(LEAD_API + '?slots=1').then(x => x.json()); if (Array.isArray(r.taken)) { taken = r.taken; drawTimes(); } } catch (e) {}
+  };
+  const show = n => {
+    step = n; steps.forEach(s => { s.hidden = +s.dataset.step !== n; });
+    form.querySelectorAll('.wiz-steps li').forEach((li, i) => { li.className = i + 1 < n ? 'done' : i + 1 === n ? 'on' : ''; });
+    $('wiz-fill').style.width = n * 25 + '%'; $('wiz-back').hidden = n === 1;
+    $('wiz-next').textContent = n === 4 ? 'Book my demo' : 'Next'; note.textContent = '';
+    if (n === 4) loadTaken();
+  };
+  const items = () => [0, 1, 2].map(i => [val('in' + i).slice(0, 40), num('ip' + i)]).filter(x => x[0] && x[1]);
+  const check = n => {
+    const t = type(), say = (m, el) => { note.textContent = m; if (el) el.focus(); return false; };
+    if (n === 1 && !t) return say('Pick the type closest to your business.');
+    if (n === 2) {
+      if (!val('shop')) return say('What’s your business called?', form.elements.shop);
+      if (ITEMS[t] && t !== 'other' && !items().length) return say('Add at least one item with its price.', form.elements.in0);
+      if (t === 'other' && !items().length && !val('od')) return say('Tell us in a sentence what you sell or offer.', form.elements.od);
+      if (t === 'stay' && !num('swd') && !num('swe')) return say('Add your weekday or weekend rate.', form.elements.swd);
+      if (t === 'lease' && !num('lu')) return say('How many units do you have?', form.elements.lu);
+    }
+    if (n === 3 && !checked('wpain')) return say('Pick at least one thing the demo should fix.');
+    if (n === 4) {
+      if (!checked('wday')) return say('Pick a day for your demo.');
+      if (!checked('wtime')) return say('Pick a time for your demo.');
+      if (!val('name')) return say('Please add your name.', form.elements.name);
+      if (!/^(09|\+639)\d{9}$/.test(val('phone').replace(/[\s-]/g, ''))) return say('Enter a PH mobile number like 0917 123 4567.', form.elements.phone);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val('email'))) return say('Please enter a valid email address.', form.elements.email);
+    }
+    return true;
+  };
+  // the personalized demo link carries business details only, never contact details
+  const demoCfg = () => {
+    const t = type(), d = { v: 1, t, n: val('shop').slice(0, 60), p: [...form.querySelectorAll('input[name=wpain]:checked')].map(i => i.value) };
+    if (ITEMS[t]) d.i = items();
+    if (t === 'stay') d.s = { wd: num('swd') || num('swe'), we: num('swe') || num('swd'), st: val('sst'), mx: Math.min(200, num('smx')) || 20, air: form.elements.sair.checked };
+    if (t === 'lease') d.l = { u: Math.min(2000, num('lu')), r: num('lr'), k: val('lk') };
+    if (t === 'other') d.o = val('od').slice(0, 240);
+    return d;
+  };
+  const urlFor = (page, key, obj) => new URL(page, location.href).href.split('#')[0] + '#' + key + '=' + b64(obj);
+  const ics = (day, time, title, url) => {
+    const [y, m, dd] = day.split('-').map(Number), [hh, mm] = time.split(':').map(Number), st = new Date(Date.UTC(y, m - 1, dd, hh - 8, mm));
+    const f = d => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z', en = new Date(st.getTime() + 30 * 60000);
+    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Purrfect Digitalization//Demo//EN', 'BEGIN:VEVENT',
+      'UID:' + Date.now() + '@purrfectdigital.online', 'DTSTAMP:' + f(new Date()), 'DTSTART:' + f(st), 'DTEND:' + f(en),
+      'SUMMARY:' + title, 'DESCRIPTION:Preview your demo: ' + url, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n'));
+  };
+  const DRAFT = 'demoDraft';                                   // an unfinished booking survives a reload on this device
+  const saveDraft = () => {
+    try {
+      const o = {};
+      [...form.elements].forEach(el => {
+        if (!el.name || el.name === 'hp') return;
+        if (el.type === 'radio' || el.type === 'checkbox') { if (el.checked) (o[el.name] = o[el.name] || []).push(el.value); } else o[el.name] = el.value;
+      });
+      localStorage.setItem(DRAFT, JSON.stringify(o));
+    } catch (e) {}
+  };
+  const loadDraft = () => {
+    try {
+      const o = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (!o) return;
+      if (o.wtype) { const r = form.querySelector(`input[name=wtype][value="${o.wtype[0]}"]`); if (r) r.checked = true; }
+      drawType();
+      [...form.elements].forEach(el => {
+        if (!el.name || el.name === 'wtype' || !(el.name in o)) return;
+        if (el.type === 'radio' || el.type === 'checkbox') el.checked = o[el.name].includes(el.value); else el.value = o[el.name];
+      });
+      drawTimes();
+    } catch (e) {}
+  };
+  form.addEventListener('change', e => { if (e.target.name === 'wtype') drawType(); if (e.target.name === 'wday') drawTimes(); saveDraft(); });
+  form.addEventListener('input', saveDraft);
+  form.addEventListener('submit', e => e.preventDefault());
+  $('wiz-back').onclick = () => show(Math.max(1, step - 1));
+  $('wiz-next').onclick = async () => {
+    if (!check(step)) return;
+    if (step < 4) {
+      show(step + 1);
+      const first = form.querySelector('.wiz-step:not([hidden]) input:not([type=radio]):not([type=checkbox]), .wiz-step:not([hidden]) textarea');
+      if (first && step === 2) first.focus({ preventScroll: true });
+      return;
+    }
+    const btn = $('wiz-next'), t = type(), day = checked('wday').value, time = checked('wtime').value;
+    const mode = checked('mode').value, ref = 'PD-' + Date.now().toString(36).slice(-6).toUpperCase();
+    const d = demoCfg(), demo = urlFor(DEMO[t] || 'shop-demo.html', 'd', d);
+    const brief = urlFor('brief.html', 'b', Object.assign({}, d, { ref, day, time, mode, plan: val('plan'), br: Math.min(50, num('branches')) || 1, link: val('link').slice(0, 160) }));
+    const body = { v: 2, ref, name: val('name'), shop: d.n, type: TYPES.find(x => x[0] === t)[2], email: val('email'), phone: val('phone'), plan: val('plan'), via: val('via'),
+      day, time, mode, pains: PAINS.filter(p => d.p.includes(p[0])).map(p => p[1]).join('; '), details: d, link: val('link'), branches: num('branches') || 1,
+      demo_url: demo, brief_url: brief, hp: val('hp'), page: location.href.split('#')[0] };
+    btn.disabled = true; btn.textContent = 'Booking…'; note.textContent = '';
     try {
       const r = await fetch(LEAD_API, { method: 'POST', body: JSON.stringify(body) }).then(x => x.json());
+      if (r.taken) { taken = Array.isArray(r.taken_list) ? r.taken_list : taken.concat(day + ' ' + time); drawTimes(); throw new Error('Sorry, that time was just taken. Please pick another one.'); }
       if (!r.ok) throw new Error(r.error || 'Something went wrong. Please try again.');
-      f.reset();
-      btn.textContent = 'Request sent';
-      note.textContent = 'Thanks, ' + body.name.split(' ')[0] + '! We received your request and sent a confirmation to ' + body.email
-        + '. We’ll message you within 1 business day.';
+      try { localStorage.removeItem(DRAFT); } catch (e) {}
+      [...steps, form.querySelector('.wiz-nav'), form.querySelector('.wiz-steps'), form.querySelector('.wiz-bar')].forEach(el => { el.hidden = true; });
+      $('wiz-done').innerHTML = `<h3>You're booked! 🎉</h3>
+        <p class="slot"><b>${dayLabel(day)} · ${timeLabel(time)}</b> · ${escH(mode)}</p>
+        <p>We sent the details to <b>${escH(body.email)}</b> and will confirm on <b>${escH(body.via)}</b>. Your demo is already set up with <b>${escH(d.n)}</b>’s details, so we can jump straight in.</p>
+        <div class="row"><a class="btn btn-primary" href="${demo}" target="_blank" rel="noopener">Preview your demo</a>
+        <a class="btn btn-ghost" href="${ics(day, time, 'Purrfect Digitalization demo · ' + d.n, demo)}" download="purrfect-demo.ics">Add to calendar</a></div>
+        <p class="note">Ref ${ref} · Need another time? Just reply to the email.</p>`;
+      $('wiz-done').hidden = false; note.textContent = '';
+      $('wiz-done').scrollIntoView({ block: 'nearest' });
     } catch (err) {
-      btn.disabled = false; btn.textContent = 'Request my demo';
+      btn.disabled = false; btn.textContent = 'Book my demo';
       note.textContent = err.message === 'Failed to fetch' ? 'We couldn’t reach our server. Check your connection and try again.' : err.message;
     }
-  });
+  };
+
+  // coming from the leasing or e-commerce pages, or a plan button: preselect
+  const pick = t => { const r = form.querySelector(`input[name=wtype][value="${t}"]`); if (r) { r.checked = true; drawType(); } };
+  drawTimes(); loadDraft();
+  if (location.hash === '#lessor') { pick('lease'); $('demo').scrollIntoView(); }
+  if (location.hash === '#seller') { pick('seller'); $('f-plan').value = 'Founding Seller (free e-commerce pilot)'; $('demo').scrollIntoView(); }
+  document.querySelectorAll('[data-plan]').forEach(a => a.addEventListener('click', () => { $('f-plan').value = a.dataset.plan; }));
+  show(1);
+  }
 })();
 </script>
 <script src="chat.js" defer></script>

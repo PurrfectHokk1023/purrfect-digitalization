@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Demo Brief</title>
+<link rel="icon" type="image/png" sizes="64x64" href="img/mark-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Internal page for running a lead's demo: opened from the "Demo brief" link in the lead email or the Leads sheet.
+   With no #b= link it is a builder, for leads that come in by Messenger, Viber or phone. */
+:root{
+  --bg:#f4f6f8; --surface:#fff; --ink:#131c2a; --muted:#5d6876; --line:#e1e5ea;
+  --accent:#e8601a; --accent-soft:#fdeee5; --blue:#2563eb; --blue-soft:#e6eefc; --good:#1f8a4c; --good-soft:#e2f3e8; --warn:#b7791f; --warn-soft:#f8efdc;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222; --warn:#f2b350; --warn-soft:#3a2f17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07111e; --surface:#0f1b2d; --ink:#eef2f8; --muted:#9aa6b8; --line:#22314a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --blue:#6aa1ff; --blue-soft:#15274a; --good:#4fd18b; --good-soft:#123222; --warn:#f2b350; --warn-soft:#3a2f17; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--blue)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0;line-height:1.15}
+h1{font-size:clamp(26px,4vw,36px)}h2{font-size:19px}h3{font-size:16px}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{border-bottom:1px solid var(--line);background:var(--surface)}
+.top .wrap{display:flex;align-items:center;gap:12px;min-height:60px}
+.brand{display:flex;gap:10px;align-items:center;margin-right:auto}
+.brand img{width:32px;height:32px;border-radius:8px}
+.brand b{display:block;font:800 16px var(--display)}.brand small{display:block;color:var(--muted);font-size:12px}
+main{padding-block:22px 48px;display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;text-decoration:none;color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{min-height:32px;padding:0 12px;font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-weight:600;font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.chip.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.chip.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.muted{color:var(--muted)}.small{font-size:13px}.num{font-variant-numeric:tabular-nums}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat span{font-size:13px;color:var(--muted)}
+.stat b{display:block;font:800 21px var(--display);letter-spacing:-.01em;margin-top:2px}
+.stat small{color:var(--muted);font-size:12.5px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;font-weight:600}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.steps li::before{counter-increment:s;content:counter(s);grid-row:span 3;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.steps b{font-size:15px}
+.steps .where{font-size:13.5px;color:var(--blue);font-weight:600}
+.steps .say{font-size:14px;color:var(--muted)}
+.steps .say::before{content:"Say: ";font-weight:700;color:var(--ink)}
+.checks{display:grid;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.checks input{width:18px;height:18px;margin-top:2px;accent-color:var(--good);flex:none}
+.checks label:has(input:checked) span{text-decoration:line-through;color:var(--muted)}
+form{display:grid;gap:12px}
+.f{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.f input:not([type=checkbox]),.f select,.f textarea{min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:8px 12px;font-size:16px;color:var(--ink);width:100%}
+.f textarea{resize:vertical}
+.fr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:10px}
+.pains{display:flex;flex-wrap:wrap;gap:8px}
+.pains label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer;background:var(--bg)}
+.pains label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.pains input{accent-color:var(--accent)}
+.msg{font-size:14px;color:var(--warn);font-weight:600;min-height:1em;margin:0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:50;max-width:calc(100% - 32px)}
+@media (max-width:760px){.grid3,.two{grid-template-columns:minmax(0,1fr)}.item{grid-template-columns:minmax(0,1fr) 110px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><img src="img/mark-64.png" alt=""><div><b>Demo brief</b><small>Purrfect Digitalization · internal</small></div></div>
+  <a class="btn sm" href="brief.html">New brief</a>
+</div></header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  // Same types, goals and pages as the demo booking on index.html: keep the three lists in sync.
+  const TYPES = [['food', '☕', 'Café, restaurant or food stall'], ['stay', '🏝️', 'Resort, staycation or rental'],
+    ['lease', '🏢', 'Commercial space, office or apartments'], ['seller', '🛍️', 'Online seller (TikTok, Shopee, Lazada, FB)'],
+    ['service', '💇', 'Salon, spa, clinic, laundry or services'], ['shop', '🏪', 'Shop or sari-sari store'], ['other', '✨', 'Something else']];
+  const ALL = TYPES.map(t => t[0]);
+  const PAINS = [['msg', 'Answering the same Messenger questions', ALL], ['book', 'Bookings and double bookings', ['stay', 'service', 'food', 'lease', 'other']],
+    ['air', 'Airbnb and Facebook calendars', ['stay']], ['pay', 'Checking GCash and bank payments', ALL],
+    ['order', 'Taking and tracking orders', ['food', 'shop', 'seller', 'other']], ['channel', 'Selling on many platforms', ['seller']],
+    ['stock', 'Stock running out', ['food', 'shop', 'seller', 'other']], ['rent', 'Rent billing and collections', ['lease']],
+    ['tenant', 'Tenant repairs and renewals', ['lease']], ['clean', 'Cleaning and turnover checklists', ['stay']],
+    ['cash', 'Daily cash-up that doesn’t match', ['food', 'shop', 'service', 'stay', 'other']], ['staff', 'Staff attendance and tasks', ['food', 'shop', 'service', 'stay', 'other']],
+    ['report', 'No clear sales report', ALL]];
+  const ITEMS = { food: 'Best-selling items and prices', shop: 'Fast-moving items and prices', seller: 'Best-selling products and prices', service: 'Top services and prices', other: 'Main products or services and prices' };
+  const DEMO = { stay: 'resort-demo.html', lease: 'leasing-demo.html' };            // every other type uses shop-demo.html
+  const TIMES = [['10:00', '10 AM'], ['13:00', '1 PM'], ['15:00', '3 PM'], ['17:00', '5 PM'], ['19:00', '7 PM']];
+  const MODES = ['Online (Google Meet)', 'On-site visit'];
+  const PLANS = { Starter: [15000, 1500], Growth: [35000, 3500], Pro: [60000, 6000] };   // regular prices; launch promo = 20% of these for 12 months
+  const PLAN_NAMES = ['Not sure yet', 'Starter', 'Growth', 'Pro', 'Founding Seller (free e-commerce pilot)'];
+  // which plan first covers each goal (index.html pricing: Starter = orders/bookings + Messenger; Growth = POS, cash-up, time clock,
+  // sync, reports, leasing billing/tenants; Pro = inventory and more than one branch)
+  const TIER = { msg: 0, book: 0, pay: 0, order: 0, air: 1, channel: 1, cash: 1, staff: 1, report: 1, clean: 1, rent: 1, tenant: 1, stock: 2 };
+  const WHY = ['online orders or bookings and the Messenger assistant', 'POS or front desk with receipts, cash-up, staff checklists, sync and the sales report', 'inventory with low-stock alerts and the multi-branch report'];
+  const WHY_LEASE = ['unit listings, Messenger answers and viewing slots', 'online applications, digital leases, monthly billing, the tenant portal and renewals', 'more than one building or owner, with an owner report per building'];   // leasing.html plans
+
+  // demo script: [title, where to click, what to say] per goal, per demo page
+  const SCRIPT = {
+    shop: {
+      msg: ['Messenger assistant answers for them', 'Customer view → chat: tap “HM po?”, then type “magkano {item}?”', 'It answers in seconds with your own prices, even at midnight, and points them to the order page.'],
+      order: ['An online {noun}, start to finish', 'Customer view: add items, name and mobile, Pay by GCash, any 10-digit ref → Owner view → {Orders}', 'Every {noun} lands on one board with the payment proof on it. No more scrolling Messenger to see who paid.'],
+      book: ['Bookings without double bookings', 'Customer view: pick a time and pay → Owner view → {Orders} and Schedule', 'Customers pick an open time and pay first, so slots never clash.'],
+      pay: ['GCash proof, checked in one tap', 'Owner view → {Orders}: the card marked “GCash proof” → Confirm payment', 'The reference number sits on the {noun}; one tap confirms it and sends the receipt.'],
+      channel: ['TikTok Shop, Shopee and Facebook in one board', 'Owner view → Orders: the platform tag on each card', 'One list and one stock count for every platform, so you stop overselling.'],
+      stock: ['Low-stock alerts', 'Owner view → Stock: items at 15 or fewer show “Low: reorder” → Reorder +50', 'Every online order and counter sale counts stock down by itself.'],
+      cash: ['A cash-up that matches', 'Owner view → Counter: ring up one Cash and one GCash sale → Today', 'Cash and GCash are split for you, so the end-of-day count matches.'],
+      staff: ['Staff time clock and checklists', 'Talk track: not in this demo (time-in/out, opening and closing checklists)', 'On Growth you see who came in and what got done, without being there.'],
+      report: ['Today’s numbers from anywhere', 'Owner view → Today: sales, {orders}, top items and the to-do list', 'You see the day without asking staff or counting receipts.'],
+    },
+    stay: {
+      msg: ['Messenger assistant answers for them', 'Guest view → chat: tap a quick question or ask “available po ba Nov 14?”', 'It checks your calendar and quotes your own rate right away, day or night.'],
+      book: ['A booking with a GCash down payment', 'Guest view: pick an open date, guests, name and mobile → pay the down payment → Owner view → Bookings', 'The date locks once the down payment is confirmed, so no double bookings.'],
+      air: ['Airbnb and Facebook on one calendar', 'Owner view → Calendar + Airbnb: import the Airbnb booking, see direct dates exported', 'Airbnb bookings block your booking page and direct bookings block Airbnb.'],
+      pay: ['Down payment proof, checked in one tap', 'Owner view → Bookings: the booking marked for review → confirm', 'The GCash reference sits on the booking; one tap confirms it and sends the receipt.'],
+      clean: ['Turnover checklist after check-out', 'Owner view → Turnover: tick the room-by-room list → Ready', 'Your caretaker follows the same list every time, and you see when it is ready for the next guests.'],
+      cash: ['Fees collected at check-in', 'Owner view → Check-in: count guests, add undeclared-guest or cleaning fees', 'Every fee is recorded, so the money matches the bookings.'],
+      staff: ['Caretaker tasks', 'Owner view → Check-in and Turnover: the caretaker’s to-do', 'Tasks get ticked off, so you know what was done without being there.'],
+      report: ['The month at a glance', 'Owner view → Dashboard: occupancy, income and next arrivals', 'Airbnb and direct bookings together, in one view.'],
+    },
+    lease: {
+      msg: ['Inquiries answered for them', 'Inquiries & viewings: a prospect’s message and the reply', 'Every inquiry gets the rate, CUSA and a viewing link, even after hours.'],
+      book: ['Viewings without the back-and-forth', 'Inquiries & viewings: book a viewing slot', 'Prospects pick a time; you get a list of who is coming.'],
+      pay: ['Payments matched to tenants', 'Billing: mark a payment as received', 'GCash and bank payments are matched to the right unit and tenant.'],
+      rent: ['One-click monthly billing', 'Billing: generate this month’s bills → see paid and unpaid', 'Every tenant gets a bill with GCash and bank links, and you see who has not paid.'],
+      tenant: ['Repairs and renewals', 'Repairs: open and assign a ticket → Renewals: send an offer', 'Tenants report issues in one place, and renewals are flagged 90 days ahead.'],
+      report: ['The building at a glance', 'Dashboard: occupancy and collections → Units', 'Occupancy and collections for the whole building, in one view.'],
+    },
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const peso = n => '₱' + Math.round(n).toLocaleString('en-PH');
+  const num = v => { const n = Number(String(v == null ? '' : v).replace(/[^\d.]/g, '')); return isFinite(n) && n > 0 ? Math.round(n) : 0; };
+  const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const okDay = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
+  const dayLabel = s => { const d = new Date(s + 'T00:00'); return `${DAYS[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`; };
+  const timeLabel = t => (TIMES.find(x => x[0] === t) || [t, t])[1];
+  const slotAt = (day, time) => { const [y, m, d] = day.split('-').map(Number), [hh, mm] = (time || '10:00').split(':').map(Number); return Date.UTC(y, m - 1, d, hh - 8, mm || 0); };  // Manila time
+  const rel = ms => {
+    const diff = ms - Date.now(), a = Math.abs(diff), h = a / 36e5;
+    const s = h < 1 ? Math.max(1, Math.round(a / 6e4)) + ' min' : h < 36 ? Math.round(h) + ' hours' : Math.round(h / 24) + ' days';
+    return diff >= 0 ? 'in ' + s : s + ' ago';
+  };
+  let toastT; const toast = m => { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3000); };
+  const copy = async (text, what) => {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    toast(what + ' copied');
+  };
+  const safeLink = s => { s = String(s || '').trim(); if (!s) return ''; if (!/^https?:\/\//i.test(s)) s = 'https://' + s.replace(/^\/+/, ''); try { const u = new URL(s); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch (e) { return ''; } };
+
+  const read = () => { const m = location.hash.match(/[#&]b=([\w-]+)/); if (!m) return null; try { const o = unb64(m[1]); return o && typeof o === 'object' && o.t ? o : null; } catch (e) { return null; } };
+  const typeOf = t => TYPES.find(x => x[0] === t) || TYPES[6];
+  const demoOf = b => {                                     // the personalized demo link carries business details only
+    const d = { v: 1, t: b.t, n: b.n, p: b.p || [] };
+    ['i', 's', 'l', 'o'].forEach(k => { if (b[k] != null) d[k] = b[k]; });
+    return new URL(DEMO[b.t] || 'shop-demo.html', location.href).href.split('#')[0] + '#d=' + b64(d);
+  };
+  const suggest = b => {
+    const br = Math.max(1, Math.min(50, num(b.br) || 1)), p = Array.isArray(b.p) ? b.p : [];
+    const W = b.t === 'lease' ? WHY_LEASE : WHY;
+    let tier = Math.max(0, ...p.map(k => TIER[k] || 0)), why = W[tier], up = '';
+    if (br > 1) { tier = 2; why = b.t === 'lease' ? `${br} buildings: ${W[2]}` : `${br} branches in one report`; }
+    else if (tier === 2) { tier = 1; why = W[1]; up = 'They picked “Stock running out”: Pro adds inventory with low-stock alerts (₱12,000 setup + ₱1,200/month promo).'; }   // one location: lead with Growth
+    const name = ['Starter', 'Growth', 'Pro'][tier], [s, m] = PLANS[name], extra = tier ? br - 1 : 0;
+    const fullS = s + extra * 10000, fullM = m + extra * 1500;
+    return { name, why, up, br, extra, fullS, fullM, s: fullS * 0.2, m: fullM * 0.2 };
+  };
+
+  // ---------- the brief ----------
+  function brief(b) {
+    const t = b.t, ty = typeOf(t), n = String(b.n || 'their business'), demo = demoOf(b), sg = suggest(b), page = DEMO[t] ? t : 'shop';
+    const p = (Array.isArray(b.p) ? b.p : []).filter(k => SCRIPT[page][k]);
+    const keys = p.length ? p : ['msg', 'report'];
+    const items = Array.isArray(b.i) ? b.i.filter(x => Array.isArray(x) && x[0]) : [];
+    const noun = t === 'service' ? 'booking' : 'order', Orders = t === 'service' ? 'Bookings' : 'Orders';
+    const fill = s => s.replace(/\{noun\}/g, noun).replace(/\{Orders\}/g, Orders).replace(/\{orders\}/g, Orders.toLowerCase()).replace(/\{item\}/g, esc(String(items[0] ? items[0][0] : 'kape').toLowerCase()));
+    const steps = keys.map(k => SCRIPT[page][k]);
+    if (!keys.includes('report') && SCRIPT[page].report) steps.push(SCRIPT[page].report);
+    const slot = okDay(b.day);
+    const when = slot ? `${dayLabel(b.day)} · ${timeLabel(b.time)}` : 'No time set';
+    const online = !/site/i.test(b.mode || '');
+    const link = safeLink(b.link), s = b.s || {}, l = b.l || {};
+    let details = '';
+    if (items.length) details = items.map(x => `<tr><td>${esc(x[0])}</td><td class="num">${num(x[1]) ? peso(num(x[1])) : '–'}</td></tr>`).join('');
+    if (t === 'stay') details = `<tr><td>Weekday rate</td><td class="num">${peso(num(s.wd))}</td></tr><tr><td>Weekend rate</td><td class="num">${peso(num(s.we))}</td></tr>
+      <tr><td>Type of stay</td><td>${esc(s.st || '22-hour stay')}</td></tr><tr><td>Max guests</td><td class="num">${num(s.mx) || '–'}</td></tr><tr><td>On Airbnb</td><td>${s.air ? 'Yes' : 'No'}</td></tr>`;
+    if (t === 'lease') details = `<tr><td>Units</td><td class="num">${num(l.u) || '–'}</td></tr><tr><td>Typical rent</td><td class="num">${num(l.r) ? peso(num(l.r)) + '/month' : '–'}</td></tr><tr><td>Property</td><td>${esc(l.k || '–')}</td></tr>`;
+    if (b.o) details += `<tr><td colspan="2" style="text-align:left;font-weight:400">“${esc(b.o)}”</td></tr>`;
+    details += `<tr><td>Branches or locations</td><td class="num">${sg.br}</td></tr>`;
+    const what = t === 'stay' ? 'rates' : t === 'lease' ? 'building' : 'items and prices';
+    const confirm = `Hi po! This is Purrfect Digitalization 👋 Confirming your free demo for ${n}${slot ? ` on ${dayLabel(b.day)} at ${timeLabel(b.time)}` : ''}${b.mode ? ` (${online ? 'online, Google Meet' : 'we visit you'})` : ''}.\n\nWe already set it up with your ${what}, so you can try it now: ${demo}\n\n${online ? 'We will send the Google Meet link before the call.' : 'Please send us your exact pin and who we should look for when we arrive.'} See you!`;
+    const ckKey = 'briefChecks:' + (b.ref || n);
+    let done = {}; try { done = JSON.parse(localStorage.getItem(ckKey)) || {}; } catch (e) {}
+    const checks = [['open', `Open their demo once and check the ${what}`], link && ['look', 'Look at their Facebook page or listing'],
+      ['send', online ? 'Create the Google Meet link and send it with the confirmation' : 'Ask for their exact pin and an on-site contact'],
+      ['reset', 'Press Reset demo right before the call so it starts clean'], ['after', 'After the call: update the lead’s Status in the Leads sheet']].filter(Boolean);
+    document.title = `Brief · ${n}`;
+    $('app').innerHTML = `
+<section class="card">
+  <div class="row"><span class="chip acc">${ty[1]} ${esc(ty[2])}</span>${b.ref ? `<span class="chip">Ref ${esc(b.ref)}</span>` : ''}${slot ? `<span class="chip ${slotAt(b.day, b.time) > Date.now() ? 'good' : 'warn'}">${rel(slotAt(b.day, b.time))}</span>` : ''}</div>
+  <h1>${esc(n)}</h1>
+  <div class="grid3">
+    <div class="stat"><span>Demo</span><b>${esc(when)}</b><small>${esc(b.mode || 'Format not set')}</small></div>
+    <div class="stat"><span>They picked</span><b>${esc(b.plan || 'Not sure yet')}</b><small>${t === 'seller' ? 'Founding Seller pilot is ₱0 (5 slots)' : 'plan on the booking'}</small></div>
+    <div class="stat"><span>Suggested</span><b>${sg.name}</b><small>${peso(sg.s)} setup + ${peso(sg.m)}/month (promo)</small></div>
+  </div>
+  <div class="row">
+    <a class="btn pri" href="${esc(demo)}" target="_blank" rel="noopener">Open their demo</a>
+    <button class="btn" type="button" data-act="cdemo">Copy demo link</button>
+    <button class="btn" type="button" data-act="cmsg">Copy confirmation message</button>
+    <button class="btn" type="button" data-act="cbrief">Copy brief link</button>
+    <button class="btn" type="button" data-act="edit">Edit details</button>
+  </div>
+</section>
+<div class="two">
+  <section class="card"><h2>What they told us</h2><table><tbody>${details}</tbody></table>
+    ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 60))}</a>` : '<span class="muted small">No Facebook page or website given.</span>'}
+    <div class="row">${(Array.isArray(b.p) ? b.p : []).map(k => PAINS.find(x => x[0] === k)).filter(Boolean).map(x => `<span class="chip warn">${esc(x[1])}</span>`).join('') || '<span class="muted small">No goals picked.</span>'}</div>
+  </section>
+  <section class="card"><h2>Before the call</h2><div class="checks">${checks.map(([k, l]) => `<label><input type="checkbox" data-ck="${k}" ${done[k] ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div>
+    <h3 style="margin-top:6px">Price to quote</h3>
+    <p class="small" style="margin:0"><b>${sg.name}</b>${sg.extra ? ` with ${sg.extra} extra branch${sg.extra > 1 ? 'es' : ''}` : ''}: <b>${peso(sg.s)}</b> setup <span class="muted">(was ${peso(sg.fullS)})</span>, then <b>${peso(sg.m)}/month</b> for 12 months <span class="muted">(was ${peso(sg.fullM)})</span>. Covers ${esc(sg.why)}. Half of the setup at kickoff, half at handover.</p>${sg.up ? `<p class="small" style="margin:0"><b>Upsell:</b> ${esc(sg.up)}</p>` : ''}
+  </section>
+</div>
+<section class="card"><h2>Run the demo in this order</h2><p class="muted small" style="margin:0">Their goals first, in the order they picked them. About 2 minutes each.</p>
+  <ol class="steps">${steps.map(([h, w, s]) => `<li><b>${fill(esc(h))}</b><span class="where">${fill(esc(w))}</span><span class="say">${fill(esc(s))}</span></li>`).join('')}
+    <li><b>Close: price and next step</b><span class="where">Pricing on purrfectdigital.online</span><span class="say">${sg.name} is ${peso(sg.s)} setup and ${peso(sg.m)} a month during the launch promo, and you are live in about ${sg.name === 'Starter' ? 'two' : 'four'} weeks. Shall we book the kickoff?</span></li></ol>
+</section>`;
+    $('app').onclick = e => {
+      const a = e.target.closest('[data-act]'); if (!a) return;
+      if (a.dataset.act === 'cdemo') copy(demo, 'Demo link');
+      if (a.dataset.act === 'cmsg') copy(confirm, 'Confirmation message');
+      if (a.dataset.act === 'cbrief') copy(location.href, 'Brief link');
+      if (a.dataset.act === 'edit') builder(b);
+    };
+    $('app').onchange = e => { const c = e.target.dataset.ck; if (!c) return; done[c] = e.target.checked; try { localStorage.setItem(ckKey, JSON.stringify(done)); } catch (er) {} };
+  }
+
+  // ---------- the builder: for leads who sent their details by Messenger, Viber or phone ----------
+  function builder(b) {
+    b = b || {};
+    const s = b.s || {}, l = b.l || {}, it = Array.isArray(b.i) ? b.i : [];
+    document.title = 'Demo Brief';
+    $('app').innerHTML = `
+<section class="card">
+  <h1>${b.t ? 'Edit the demo details' : 'Make a demo from a lead’s details'}</h1>
+  <p class="muted" style="margin:0">For leads who sent their details by Messenger, Viber or phone. You get their personalized demo link and this brief. Leads who book on the website get both by email.</p>
+  <form id="bf" novalidate>
+    <div class="fr"><label class="f">Type of business<select name="t">${TYPES.map(([k, ic, lb]) => `<option value="${k}" ${b.t === k ? 'selected' : ''}>${ic} ${lb}</option>`).join('')}</select></label>
+      <label class="f">Business name<input name="n" maxlength="60" value="${esc(b.n || '')}" placeholder="e.g. Kape Kanto"></label></div>
+    <div data-for="food shop seller service other" class="f"><span id="ilabel">Items and prices</span>
+      ${[0, 1, 2].map(i => `<div class="item"><input name="in${i}" maxlength="40" value="${esc(it[i] ? it[i][0] : '')}" placeholder="Item"><input name="ip${i}" inputmode="decimal" maxlength="7" value="${it[i] && num(it[i][1]) ? num(it[i][1]) : ''}" placeholder="₱ Price"></div>`).join('')}</div>
+    <div data-for="stay" class="fr"><label class="f">Weekday rate (₱)<input name="swd" inputmode="decimal" value="${num(s.wd) || ''}"></label><label class="f">Weekend rate (₱)<input name="swe" inputmode="decimal" value="${num(s.we) || ''}"></label>
+      <label class="f">Type of stay<select name="sst">${['22-hour stay', 'Day tour', 'Overnight', 'Per night'].map(o => `<option ${s.st === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label>
+      <label class="f">Max guests<input name="smx" inputmode="numeric" value="${num(s.mx) || ''}"></label>
+      <label class="f">On Airbnb?<select name="sair"><option value="">No</option><option value="1" ${s.air ? 'selected' : ''}>Yes</option></select></label></div>
+    <div data-for="lease" class="fr"><label class="f">Units<input name="lu" inputmode="numeric" value="${num(l.u) || ''}"></label><label class="f">Typical monthly rent (₱)<input name="lr" inputmode="decimal" value="${num(l.r) || ''}"></label>
+      <label class="f">Property<select name="lk">${['Commercial spaces', 'Offices', 'Apartments or condos', 'Stalls or kiosks', 'Boarding house'].map(o => `<option ${l.k === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label></div>
+    <label data-for="other" class="f">What they sell or offer<textarea name="o" rows="2" maxlength="240">${esc(b.o || '')}</textarea></label>
+    <div class="f"><span>What the demo should fix</span><div class="pains" id="bpains"></div></div>
+    <div class="fr"><label class="f">Facebook page or website<input name="link" maxlength="160" value="${esc(b.link || '')}"></label><label class="f">Branches<input name="br" inputmode="numeric" value="${num(b.br) || 1}"></label>
+      <label class="f">Plan they asked about<select name="plan">${PLAN_NAMES.map(o => `<option ${b.plan === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label></div>
+    <div class="fr"><label class="f">Demo day (optional)<input name="day" type="date" value="${okDay(b.day) ? b.day : ''}"></label>
+      <label class="f">Time<select name="time">${TIMES.map(([v, lb]) => `<option value="${v}" ${b.time === v ? 'selected' : ''}>${lb}</option>`).join('')}</select></label>
+      <label class="f">Format<select name="mode">${MODES.map(o => `<option ${b.mode === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label></div>
+    <p class="msg" id="bmsg" role="status"></p>
+    <div class="row"><button class="btn pri" type="submit">${b.t ? 'Update the demo + brief' : 'Make the demo + brief'}</button>${b.t ? '<button class="btn" type="button" id="bcancel">Cancel</button>' : ''}</div>
+  </form>
+</section>`;
+    const f = $('bf'), el = n => f.elements[n], v = n => (el(n).value || '').trim();
+    const draw = () => {
+      const t = v('t'), was = new Set([...f.querySelectorAll('input[name=p]:checked')].map(i => i.value).concat(b.t === t ? b.p || [] : []));
+      f.querySelectorAll('[data-for]').forEach(x => { x.hidden = !x.dataset.for.split(' ').includes(t); });
+      if (ITEMS[t]) $('ilabel').textContent = ITEMS[t];
+      $('bpains').innerHTML = PAINS.filter(x => x[2].includes(t)).map(([k, lb]) => `<label><input type="checkbox" name="p" value="${k}" ${was.has(k) ? 'checked' : ''}>${esc(lb)}</label>`).join('');
+    };
+    el('t').onchange = draw; draw();
+    if ($('bcancel')) $('bcancel').onclick = () => brief(b);
+    f.onsubmit = e => {
+      e.preventDefault();
+      const t = v('t'), say = m => { $('bmsg').textContent = m; };
+      const o = { v: 1, t, n: v('n').replace(/[<>`]/g, '').slice(0, 60), p: [...f.querySelectorAll('input[name=p]:checked')].map(i => i.value) };
+      if (!o.n) return say('Add the business name.');
+      if (ITEMS[t]) { o.i = [0, 1, 2].map(i => [v('in' + i).slice(0, 40), num(v('ip' + i))]).filter(x => x[0] && x[1]); if (!o.i.length && t !== 'other') return say('Add at least one item with its price.'); }
+      if (t === 'other') { o.o = v('o').slice(0, 240); if (!o.i.length && !o.o) return say('Add an item or a sentence about what they sell.'); }
+      if (t === 'stay') { o.s = { wd: num(v('swd')) || num(v('swe')), we: num(v('swe')) || num(v('swd')), st: v('sst'), mx: Math.min(200, num(v('smx'))) || 20, air: !!v('sair') }; if (!o.s.wd) return say('Add the weekday or weekend rate.'); }
+      if (t === 'lease') { o.l = { u: Math.min(2000, num(v('lu'))), r: num(v('lr')), k: v('lk') }; if (!o.l.u) return say('Add the number of units.'); }
+      Object.assign(o, { ref: b.ref || 'PD-' + Date.now().toString(36).slice(-6).toUpperCase(), plan: v('plan'), br: Math.min(50, num(v('br'))) || 1, link: v('link').slice(0, 160) });
+      if (v('day')) Object.assign(o, { day: v('day'), time: v('time'), mode: v('mode') });
+      const h = '#b=' + b64(o);
+      if (location.hash === h) brief(o); else location.hash = h;   // hashchange renders the brief
+      window.scrollTo(0, 0);
+    };
+  }
+
+  const route = () => { const b = read(); if (b) brief(b); else builder(null); };
+  addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
