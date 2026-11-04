@@ -8,7 +8,8 @@
 <meta property="og:title" content="E-commerce · Purrfect Digitalization">
 <meta property="og:description" content="One hub for TikTok Shop, Shopee, Lazada, Facebook and your own store: orders, stock, chats, returns, marketing and payouts.">
 <meta property="og:image" content="img/ecom-live.webp">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M5 26V9l5 5h10l5-5v17z' fill='%23e8601a'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="64x64" href="img/mark-64.png">
+<link rel="apple-touch-icon" href="img/mark-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -269,6 +270,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
 footer a{text-decoration:none}
 footer span:last-child{margin-left:auto}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* new logo (Nov 4): image wordmark, light and dark versions */
+.logo img{height:40px;width:auto;display:block}
+footer .logo img{height:30px}
+.logo-d{display:none!important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-l{display:none!important}:root:not([data-theme="light"]) .logo-d{display:block!important}}
+:root[data-theme="dark"] .logo-l{display:none!important}
+:root[data-theme="dark"] .logo-d{display:block!important}
+@media (max-width:400px){.logo img{height:32px}}
 </style>
 </head>
 <body>
@@ -280,8 +289,8 @@ footer span:last-child{margin-left:auto}
 <nav class="nav" aria-label="Main">
   <div class="wrap">
     <a class="logo" href="./" aria-label="Purrfect Digitalization home">
-      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 26V9l5 5h10l5-5v17z" fill="var(--accent)"/><circle cx="11.5" cy="18.5" r="1.6" fill="var(--bg)"/><circle cx="18.5" cy="18.5" r="1.6" fill="var(--bg)"/></svg>
-      Purrfect Digitalization
+      <img class="logo-l" src="img/logo-light.png" alt="Purrfect Digitalization" width="720" height="173">
+      <img class="logo-d" src="img/logo-dark.png" alt="" width="720" height="173" aria-hidden="true">
     </a>
     <ul>
       <li><a href="./">All industries</a></li>
@@ -644,7 +653,7 @@ footer span:last-child{margin-left:auto}
 
 <footer>
   <div class="wrap">
-    <a class="logo" href="./" style="font-size:16px;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 26V9l5 5h10l5-5v17z" fill="var(--accent)"/></svg>Purrfect Digitalization</a>
+    <a class="logo" href="./" style="font-size:16px;color:var(--ink)"><img class="logo-l" src="img/logo-light.png" alt="Purrfect Digitalization" width="720" height="173"><img class="logo-d" src="img/logo-dark.png" alt="" width="720" height="173" aria-hidden="true"></a>
     <a href="./">All industries</a>
     <a href="leasing.html">Leasing</a>
     <span>© 2026 Purrfect Digitalization</span>
