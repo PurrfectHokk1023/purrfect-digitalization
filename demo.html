@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seller Back Office Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an app shell (top bar + tabs) over one working area; gold is the only accent, used for money and live state. */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --ink:#17181f; --muted:#62646f; --line:#e5e3dc;
+  --gold:#a8791f; --gold-soft:#f6edd9; --teal:#0f7f8f; --teal-soft:#e3f2f3; --good:#1f8a4c; --good-soft:#e2f3e8;
+  --warn:#b7791f; --bad:#c2410c; --bad-soft:#fdebe2; --tt:#111827; --fb:#1877f2;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111216; --surface:#1a1b22; --ink:#f0eee8; --muted:#a3a3ad; --line:#2b2c35;
+  --gold:#e0b25a; --gold-soft:#3a2f17; --teal:#4cc0cd; --teal-soft:#13303a; --good:#4cc47f; --good-soft:#163222; --bad:#f08a5d; --bad-soft:#3a1f14; --tt:#e5e7eb; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111216; --surface:#1a1b22; --ink:#f0eee8; --muted:#a3a3ad; --line:#2b2c35;
+  --gold:#e0b25a; --gold-soft:#3a2f17; --teal:#4cc0cd; --teal-soft:#13303a; --good:#4cc47f; --good-soft:#163222; --bad:#f08a5d; --bad-soft:#3a1f14; --tt:#e5e7eb; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0;line-height:1.15}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.banner{background:var(--gold-soft);color:var(--ink);font-size:13px}
+.banner .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;padding-block:7px}
+.banner b{color:var(--gold)}
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .gem{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#f2d38a,#a8791f);display:grid;place-items:center;color:#fff;font-weight:800}
+.brand b{font:800 18px var(--display)}
+.brand small{display:block;color:var(--muted);font-size:12px}
+.rate{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.rate label{font-size:12.5px;color:var(--muted)}
+.rate input{width:92px;border:0;background:transparent;font-weight:700;text-align:right}
+.rate button{border:0;border-radius:999px;background:var(--gold);color:#fff;padding:5px 12px;font-weight:600;font-size:13px}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:10px}
+.tabs button{border:0;background:none;padding:8px 14px;border-radius:999px;color:var(--muted);font-weight:600;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs .ct{font:500 11.5px var(--mono);background:var(--gold-soft);color:var(--gold);border-radius:999px;padding:1px 7px}
+.tabs button[aria-selected="true"] .ct{background:var(--gold);color:#fff}
+main{padding-block:22px 60px}
+.view{display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.pad{padding:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.sm{padding:5px 11px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 12px var(--body);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.av{background:var(--good-soft);color:var(--good)}
+.pill.rs{background:var(--gold-soft);color:var(--gold)}
+.pill.sd{background:var(--line);color:var(--muted)}
+.pill.un{background:var(--bad-soft);color:var(--bad)}
+.pill.pr{background:var(--teal-soft);color:var(--teal)}
+.pill.pd{background:var(--good-soft);color:var(--good)}
+.pill.sh{background:var(--teal-soft);color:var(--teal)}
+.ch{display:inline-flex;font:700 11px var(--body);padding:2px 7px;border-radius:6px;color:#fff}
+.ch.fb{background:var(--fb)}.ch.tt{background:#111827;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.head p{color:var(--muted);font-size:14px;max-width:70ch;margin:4px 0 0}
+
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.kpi{padding:16px;display:grid;gap:2px}
+.kpi b{font:800 26px var(--display);letter-spacing:-.02em}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.gold b{color:var(--gold)}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.bars{display:grid;gap:10px}
+.bars .r{display:grid;grid-template-columns:110px 1fr 110px;gap:10px;align-items:center;font-size:14px}
+.bars .t{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bars .t i{display:block;height:100%;border-radius:5px;transition:width .4s}
+.bars em{font-style:normal;text-align:right}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:330px;overflow:auto}
+.log li{font-size:13.5px;display:grid;grid-template-columns:52px 1fr;gap:8px}
+.log time{font:500 12px var(--mono);color:var(--muted)}
+@media (max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}
+@media (max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+
+/* tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+th{text-align:left;font:600 12px var(--body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.code{font:500 13px var(--mono)}
+.thumb{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:18px;background:var(--gold-soft)}
+
+/* live */
+.live{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.stream{display:grid;gap:10px;grid-template-rows:auto 1fr}
+.stage{aspect-ratio:16/9;max-width:100%;border-radius:12px;background:radial-gradient(circle at 30% 35%,#3b2d12,#0f0f13 70%);position:relative;overflow:hidden;color:#fff;display:grid;place-items:center}
+.stage .onair{position:absolute;top:12px;left:12px;display:flex;gap:8px;align-items:center;font:700 12px var(--body)}
+.stage .onair .dot{background:#e11d48;padding:3px 8px;border-radius:6px}
+.stage .viewers{position:absolute;top:12px;right:12px;font:600 12px var(--body);background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px}
+.stage .showing{text-align:center;display:grid;gap:4px}
+.stage .showing b{font:800 22px var(--display)}
+.stage .showing span{font-size:13px;opacity:.8}
+.cmts{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:340px;overflow:auto;align-content:start}
+.cmts li{padding:8px 11px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:13.5px;display:grid;gap:2px}
+.cmts li b{font-weight:600;margin-right:6px}
+.cmts li em{font-style:normal;font-size:12px;font-weight:600}
+.cmts li em.ok{color:var(--good)}.cmts li em.wl{color:var(--warn)}.cmts li em.no{color:var(--muted);font-weight:500}
+.claims{display:grid;gap:8px;align-content:start}
+.claim{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+.claim small{display:block;color:var(--muted);font-size:12.5px}
+@media (max-width:900px){.live{grid-template-columns:1fr}}
+
+/* invoices */
+.invs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.inv{padding:16px;display:grid;gap:10px;align-content:start}
+.inv header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.inv header small{display:block;color:var(--muted);font-size:12.5px}
+.inv ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13.5px}
+.inv li{display:flex;justify-content:space-between;gap:10px}
+.inv .tot{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px;font-weight:700}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+
+/* buyer view modal */
+dialog{border:0;padding:0;border-radius:18px;max-width:420px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(10,10,14,.55)}
+.bv{display:grid;gap:14px;padding:22px}
+.bv .phone-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted)}
+.bv h3{font-size:20px}
+.bv .msg{background:var(--bg);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13.5px}
+.bv ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.bv li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:14px}
+.bv li small{display:block;color:var(--muted);font-size:12px}
+.bv .tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:10px}
+.bv .tot b{font:800 26px var(--display);color:var(--gold)}
+.qr{width:130px;height:130px;margin:0 auto;display:grid;grid-template-columns:repeat(13,1fr);gap:1px;padding:8px;background:#fff;border-radius:10px}
+.qr i{background:#111}.qr i.o{background:#fff}
+.pay{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pay button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px;font-weight:600}
+.pay button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.up{border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:13px;display:grid;gap:8px;text-align:center}
+
+/* packing */
+.checks{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
+.checks label{display:flex;gap:5px;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);opacity:0;transition:opacity .25s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap"><span><b>Live demo</b> · A sample gold-jewelry shop with made-up pieces, buyers and prices · Built by <a href="./" style="color:inherit;font-weight:600">Purrfect Digitalization</a></span><span class="row"><a class="btn sm" href="ecommerce.html" style="text-decoration:none">← Back to e-commerce</a><button class="btn sm" id="reset" type="button">Reset demo</button></span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="gem" aria-hidden="true">✦</span><div><b>Golden Hour Jewelry</b><small>Sample shop · TikTok Shop + Facebook · one stock list</small></div></div>
+    <div class="rate">
+      <label for="rateIn">18k gold rate today (₱/g)</label>
+      <input id="rateIn" type="number" min="1000" max="20000" step="10" inputmode="decimal">
+      <button id="rateBtn" type="button">Update prices</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-v="dash" aria-selected="true">Dashboard</button>
+      <button role="tab" data-v="pieces" aria-selected="false">Pieces <span class="ct" id="ct-av">0</span></button>
+      <button role="tab" data-v="live" aria-selected="false">Facebook Live <span class="ct" id="ct-cl">0</span></button>
+      <button role="tab" data-v="inv" aria-selected="false">Invoices <span class="ct" id="ct-un">0</span></button>
+      <button role="tab" data-v="tt" aria-selected="false">TikTok Shop <span class="ct" id="ct-tt">0</span></button>
+      <button role="tab" data-v="pack" aria-selected="false">Packing &amp; shipping <span class="ct" id="ct-pk">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- DASHBOARD -->
+  <section class="view" id="v-dash">
+    <div class="head"><div><h2>Today at a glance</h2><p>Everything from TikTok Shop and Facebook lands here. Try the Facebook Live tab, then come back.</p></div></div>
+    <div class="kpis">
+      <div class="card kpi gold"><b class="num" id="k-sales">₱0</b><span>paid sales today</span></div>
+      <div class="card kpi"><b class="num" id="k-grams">0 g</b><span>gold sold today</span></div>
+      <div class="card kpi"><b class="num" id="k-avail">0</b><span>pieces available</span></div>
+      <div class="card kpi"><b class="num" id="k-unpaid">₱0</b><span>unpaid invoices</span></div>
+      <div class="card kpi"><b class="num" id="k-ship">0</b><span>parcels to pack</span></div>
+    </div>
+    <div class="two">
+      <div class="card pad" style="display:grid;gap:14px">
+        <h3>Sales by platform</h3>
+        <div class="bars" id="bars"></div>
+        <p class="muted" style="font-size:13px;margin:0">Prices follow the gold rate at the top. Pieces already reserved or invoiced keep the price the buyer saw.</p>
+      </div>
+      <div class="card pad" style="display:grid;gap:12px">
+        <h3>Activity</h3>
+        <ul class="log" id="log"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIECES -->
+  <section class="view" id="v-pieces" hidden>
+    <div class="head"><div><h2>Pieces</h2><p>Every piece is its own row with weight and certificate, so one sale on any platform removes it everywhere. Price = weight × today’s rate + workmanship.</p></div>
+      <div class="row"><select id="fStatus" aria-label="Filter by status"><option value="">All statuses</option><option>Available</option><option>Reserved</option><option>Sold</option></select></div></div>
+    <div class="card tw"><table><thead><tr><th></th><th>Code</th><th>Piece</th><th class="r">Weight</th><th>Certificate</th><th class="r">Price</th><th>Status</th><th>Where</th></tr></thead><tbody id="pTable"></tbody></table></div>
+  </section>
+
+  <!-- FACEBOOK LIVE -->
+  <section class="view" id="v-live" hidden>
+    <div class="head"><div><h2>Facebook Live</h2><p>Comments are read as they come in. “Mine” plus a piece code reserves that exact piece for the first buyer; later buyers join the waitlist. After the live, one invoice per buyer is sent by Messenger.</p></div>
+      <div class="row"><button class="btn pri" id="goLive" type="button">▶ Start sample live</button><button class="btn dark" id="endLive" type="button" disabled>End live &amp; send invoices</button></div></div>
+    <div class="live">
+      <div class="card pad stream">
+        <div class="stage"><div class="onair" id="onair" hidden><span class="dot">● LIVE</span>Golden Hour Jewelry</div><div class="viewers" id="viewers" hidden>👁 0</div>
+          <div class="showing"><b id="showing">Press “Start sample live”</b><span id="showing2">The host shows pieces by code</span></div></div>
+        <ul class="cmts" id="cmts" aria-live="polite"></ul>
+      </div>
+      <div class="card pad" style="display:grid;gap:12px;align-content:start">
+        <div class="row" style="justify-content:space-between"><h3>Claims</h3><span class="muted" id="claimSum" style="font-size:13px">No claims yet</span></div>
+        <div class="claims" id="claims"></div>
+        <h3 style="margin-top:6px">Waitlist</h3>
+        <div class="claims" id="wait"><div class="empty">Buyers who claim a taken piece appear here.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVOICES -->
+  <section class="view" id="v-inv" hidden>
+    <div class="head"><div><h2>Invoices</h2><p>One invoice per buyer, sent by Messenger after the live. Open one to see the buyer’s view, upload a proof, then confirm after checking your GCash or bank app.</p></div>
+      <div class="row"><button class="btn" id="remind" type="button">Send reminders to unpaid</button><button class="btn" id="release" type="button">Cut-off: release unpaid</button></div></div>
+    <div class="invs" id="invs"></div>
+  </section>
+
+  <!-- TIKTOK -->
+  <section class="view" id="v-tt" hidden>
+    <div class="head"><div><h2>TikTok Shop orders</h2><p>Orders from TikTok Shop (including buyers who check out from a TikTok live cart) arrive here through the Shop connection. The piece is removed from Facebook and the website at the same moment.</p></div>
+      <div class="row"><button class="btn pri" id="ttOrder" type="button">Simulate a TikTok Shop order</button></div></div>
+    <div class="card tw"><table><thead><tr><th>Order</th><th>Buyer</th><th>Piece</th><th class="r">Amount</th><th>Payment</th><th>Shipping</th></tr></thead><tbody id="ttTable"></tbody></table></div>
+  </section>
+
+  <!-- PACKING -->
+  <section class="view" id="v-pack" hidden>
+    <div class="head"><div><h2>Packing &amp; shipping</h2><p>Paid orders from both platforms in one list. High-value rule: record the packing video and insert the certificate card before a parcel can be marked shipped.</p></div></div>
+    <div class="card tw"><table><thead><tr><th>Order</th><th>Buyer</th><th>Pieces</th><th>Checklist</th><th>Courier</th><th></th></tr></thead><tbody id="pkTable"></tbody></table></div>
+  </section>
+</main>
+
+<dialog id="buyer" aria-label="Buyer view of the invoice">
+  <div class="bv" id="bv"></div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const peso = v => '₱' + Math.round(v).toLocaleString('en-PH');
+  const now = () => new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+
+  // Sample catalog: [code, type, name, grams, cert, workmanship ₱]
+  const CATALOG = [
+    ['SP-0142', '⛓️', 'Rope chain 18"', 6.20, 'C-24-0142', 1800], ['SP-0143', '⛓️', 'Box chain 20"', 4.85, 'C-24-0143', 1500],
+    ['SP-0151', '📿', 'Figaro bracelet', 3.40, 'C-24-0151', 1200], ['SP-0152', '📿', 'Bangle, polished', 7.10, 'C-24-0152', 2200],
+    ['SP-0160', '💍', 'Signet ring, size 7', 2.65, 'C-24-0160', 1100], ['SP-0161', '💍', 'Twist band, size 6', 1.90, 'C-24-0161', 900],
+    ['SP-0170', '✨', 'Stud earrings, pair', 1.20, 'C-24-0170', 800], ['SP-0171', '✨', 'Hoop earrings, pair', 2.30, 'C-24-0171', 1000],
+    ['SP-0180', '🔆', 'Heart pendant', 1.55, 'C-24-0180', 900], ['SP-0181', '🔆', 'Initial pendant "A"', 1.35, 'C-24-0181', 900],
+    ['SP-0190', '⛓️', 'Cuban chain 22"', 8.50, 'C-24-0190', 2600], ['SP-0191', '📿', 'Anklet, curb', 2.10, 'C-24-0191', 950]
+  ];
+  // Sample live: [delay index, buyer, text]
+  const LIVE = [
+    ['Show', 'SP-0142', 'Rope chain 18" · 6.20 g'], ['Ana Reyes', 'Mine SP-0142!!'], ['Joy Santos', 'mine 0142'], ['Mark Lim', 'magkano po yung chain?'],
+    ['Show', 'SP-0170', 'Stud earrings · 1.20 g'], ['Bea Cruz', 'mine sp0170 po'], ['Ana Reyes', 'm1ne 0170'], ['Lea Dizon', 'pawnable po ba?'],
+    ['Show', 'SP-0152', 'Polished bangle · 7.10 g'], ['Carla Tan', 'pa-mine po SP-0152'], ['Rico Uy', 'MINE 0152'], ['Joy Santos', 'mine po 0180 heart'],
+    ['Show', 'SP-0160', 'Signet ring · 2.65 g'], ['Mark Lim', 'mine SP-0160 size 7'], ['Nina Go', 'ganda! nasa Cebu po kayo?'], ['Bea Cruz', 'mine 0161 din po']
+  ];
+  const SHIP = { insured: 180 };   // insured courier fee per invoice (sample)
+
+  let S;
+  const fresh = () => ({
+    rate: 4850, pieces: CATALOG.map(c => ({ code: c[0], ic: c[1], name: c[2], g: c[3], cert: c[4], lab: c[5], status: 'Available', where: '', locked: null })),
+    claims: [], wait: [], invoices: [], tt: [], log: [], liveDone: false, seq: { inv: 1100, tt: 58210, pk: 0 }
+  });
+  try { S = JSON.parse(localStorage.getItem('sellerDemo')) || fresh(); } catch (e) { S = fresh(); }
+  const save = () => { try { localStorage.setItem('sellerDemo', JSON.stringify(S)); } catch (e) {} };
+
+  const price = p => p.locked != null ? p.locked : p.g * S.rate + p.lab;
+  const piece = code => S.pieces.find(p => p.code === code);
+  const log = (t) => { S.log.unshift([now(), t]); S.log = S.log.slice(0, 60); };
+  const toast = t => { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 2400); };
+
+  // tabs
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  const show = v => { tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.v === v)); document.querySelectorAll('.view').forEach(s => s.hidden = s.id !== 'v-' + v); };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.v)));
+
+  // gold rate
+  $('rateIn').value = S.rate;
+  $('rateBtn').onclick = () => {
+    const v = Number($('rateIn').value);
+    if (!(v >= 1000 && v <= 20000)) { toast('Enter a rate between ₱1,000 and ₱20,000 per gram.'); return; }
+    S.rate = v; log('Gold rate set to ' + peso(v) + '/g · prices updated on TikTok Shop, Facebook catalog and website'); save(); render(); toast('Prices updated on every platform');
+  };
+
+  // ---------- render ----------
+  function render() {
+    const av = S.pieces.filter(p => p.status === 'Available');
+    const paid = S.invoices.filter(i => i.status === 'Paid' || i.status === 'Shipped');
+    const ttPaid = S.tt;
+    const fbSales = paid.reduce((a, i) => a + i.total, 0), ttSales = ttPaid.reduce((a, o) => a + o.amount, 0);
+    const grams = paid.reduce((a, i) => a + i.items.reduce((b, c) => b + piece(c).g, 0), 0) + ttPaid.reduce((a, o) => a + piece(o.code).g, 0);
+    const unpaid = S.invoices.filter(i => i.status === 'Unpaid' || i.status === 'Proof received');
+    const toPack = packList().filter(o => !o.shipped);
+    $('k-sales').textContent = peso(fbSales + ttSales); $('k-grams').textContent = grams.toFixed(2) + ' g';
+    $('k-avail').textContent = av.length; $('k-unpaid').textContent = peso(unpaid.reduce((a, i) => a + i.total, 0)); $('k-ship').textContent = toPack.length;
+    $('ct-av').textContent = av.length; $('ct-cl').textContent = S.claims.length; $('ct-un').textContent = unpaid.length; $('ct-tt').textContent = S.tt.length; $('ct-pk').textContent = toPack.length;
+    const max = Math.max(fbSales, ttSales, 1);
+    $('bars').innerHTML = [['Facebook', fbSales, 'var(--fb)'], ['TikTok Shop', ttSales, 'var(--tt)']].map(r =>
+      `<div class="r"><span>${r[0]}</span><span class="t"><i style="width:${r[1] / max * 100}%;background:${r[2]}"></i></span><em class="num">${peso(r[1])}</em></div>`).join('');
+    $('log').innerHTML = S.log.length ? S.log.map(l => `<li><time>${l[0]}</time><span>${l[1]}</span></li>`).join('') : '<li><time></time><span class="muted">Nothing yet. Start the sample live.</span></li>';
+
+    // pieces
+    const f = $('fStatus').value;
+    $('pTable').innerHTML = S.pieces.filter(p => !f || p.status === f).map(p => `<tr>
+      <td><span class="thumb" aria-hidden="true">${p.ic}</span></td><td class="code">${p.code}</td><td>${p.name}</td>
+      <td class="r num">${p.g.toFixed(2)} g</td><td class="code muted">${p.cert}</td><td class="r num">${peso(price(p))}${p.locked != null ? ' <span class="muted" title="Locked at the price the buyer saw">🔒</span>' : ''}</td>
+      <td><span class="pill ${p.status === 'Available' ? 'av' : p.status === 'Reserved' ? 'rs' : 'sd'}">${p.status}</span></td><td class="muted" style="font-size:13px">${p.where || 'Live on TikTok Shop, Facebook, website'}</td></tr>`).join('');
+
+    // claims + waitlist
+    $('claims').innerHTML = S.claims.length ? S.claims.map(c => { const p = piece(c.code); return `<div class="claim"><span class="thumb">${p.ic}</span><div><b>${c.buyer}</b><small>${p.code} · ${p.name} · ${p.g.toFixed(2)} g</small></div><span class="num">${peso(c.price)}</span></div>`; }).join('') : '<div class="empty">Claims appear here the moment someone types “mine”.</div>';
+    const buyers = new Set(S.claims.map(c => c.buyer)).size;
+    $('claimSum').textContent = S.claims.length ? `${S.claims.length} pieces · ${buyers} buyers · ${peso(S.claims.reduce((a, c) => a + c.price, 0))}` : 'No claims yet';
+    $('wait').innerHTML = S.wait.length ? S.wait.map(w => `<div class="claim"><span class="thumb">⏳</span><div><b>${w.buyer}</b><small>Waiting for ${w.code}</small></div><span class="pill rs">#${w.pos}</span></div>`).join('') : '<div class="empty">Buyers who claim a taken piece appear here.</div>';
+
+    // invoices
+    $('invs').innerHTML = S.invoices.length ? S.invoices.map(i => `<article class="card inv">
+      <header><div><b>${i.id}</b><small>${i.buyer} · sent ${i.sent}</small></div>${pill(i.status)}</header>
+      <ul>${i.items.map(c => { const p = piece(c); return `<li><span>${p.code} ${p.name}</span><span class="num">${peso(p.locked)}</span></li>`; }).join('')}
+      <li class="muted"><span>Insured shipping</span><span class="num">${peso(SHIP.insured)}</span></li></ul>
+      <div class="tot"><span>Total</span><span class="num">${peso(i.total)}</span></div>
+      <div class="row"><button class="btn sm" data-open="${i.id}" type="button">Buyer’s view</button>
+      ${i.status === 'Proof received' ? `<button class="btn sm pri" data-confirm="${i.id}" type="button">Confirm payment</button>` : ''}
+      ${i.reminded && i.status === 'Unpaid' ? '<span class="muted" style="font-size:12.5px">Reminder sent</span>' : ''}</div></article>`).join('')
+      : `<div class="empty">No invoices yet. Run the sample live and press “End live &amp; send invoices”.</div>`;
+
+    // tiktok
+    $('ttTable').innerHTML = S.tt.length ? S.tt.map(o => { const p = piece(o.code); return `<tr><td class="code">${o.id}</td><td>${o.buyer}</td><td>${p.code} · ${p.name}</td><td class="r num">${peso(o.amount)}</td><td><span class="pill pd">Paid in app</span></td><td class="muted" style="font-size:13px">TikTok Shop waybill</td></tr>`; }).join('')
+      : '<tr><td colspan="6" class="muted">No TikTok Shop orders yet. Press “Simulate a TikTok Shop order”.</td></tr>';
+
+    // packing
+    const pl = packList();
+    $('pkTable').innerHTML = pl.length ? pl.map(o => `<tr><td class="code">${o.id} ${o.ch === 'fb' ? '<span class="ch fb">FB</span>' : '<span class="ch tt">TikTok</span>'}</td><td>${o.buyer}</td>
+      <td style="font-size:13px">${o.items.map(c => piece(c).code).join(', ')}</td>
+      <td><div class="checks"><label><input type="checkbox" data-ck="${o.id}|v" ${o.ck.v ? 'checked' : ''} ${o.shipped ? 'disabled' : ''}>Packing video</label><label><input type="checkbox" data-ck="${o.id}|c" ${o.ck.c ? 'checked' : ''} ${o.shipped ? 'disabled' : ''}>Certificate card</label></div></td>
+      <td style="font-size:13px">${o.ch === 'fb' ? 'J&amp;T insured' : 'TikTok Shop logistics'}</td>
+      <td>${o.shipped ? `<span class="pill sh">Shipped · ${o.tracking}</span>` : `<button class="btn sm dark" data-ship="${o.id}" type="button" ${o.ck.v && o.ck.c ? '' : 'disabled'}>Mark shipped</button>`}</td></tr>`).join('')
+      : '<tr><td colspan="6" class="muted">Paid orders from both platforms appear here.</td></tr>';
+  }
+  const pill = s => `<span class="pill ${s === 'Unpaid' ? 'un' : s === 'Proof received' ? 'pr' : s === 'Paid' ? 'pd' : s === 'Released' ? 'sd' : 'sh'}">${s}</span>`;
+  function packList() {
+    S.pk = S.pk || {};
+    const fb = S.invoices.filter(i => i.status === 'Paid' || i.status === 'Shipped').map(i => ({ id: i.id, ch: 'fb', buyer: i.buyer, items: i.items }));
+    const tt = S.tt.map(o => ({ id: o.id, ch: 'tt', buyer: o.buyer, items: [o.code] }));
+    return fb.concat(tt).map(o => Object.assign(o, S.pk[o.id] || { ck: { v: false, c: false }, shipped: false }));
+  }
+
+  // ---------- live ----------
+  const CLAIM = /\b(?:pa-?)?m[i1]ne\b[^0-9]*?(?:sp-?)?(\d{4})\b/i;
+  let liveTimer = null, li = 0, viewers = 0;
+  $('goLive').onclick = () => {
+    if (S.liveDone || liveTimer) { toast('Reset the demo to run the live again.'); return; }
+    $('goLive').disabled = true; $('onair').hidden = false; $('viewers').hidden = false; $('cmts').innerHTML = '';
+    log('Facebook Live started · reading comments');
+    liveTimer = setInterval(step, 1100);
+  };
+  function step() {
+    if (li >= LIVE.length) { clearInterval(liveTimer); liveTimer = null; $('endLive').disabled = false; toast('Live finished. Send the invoices.'); save(); render(); return; }
+    const [who, a, b] = LIVE[li++]; viewers += 23 + (li * 7) % 40; $('viewers').textContent = '👁 ' + viewers;
+    if (who === 'Show') { $('showing').textContent = a; $('showing2').textContent = b + ' · ' + peso(price(piece(a))); return; }
+    const m = a.match(CLAIM); let tag = '<em class="no">Not an order</em>';
+    if (m) {
+      const p = piece('SP-' + m[1]);
+      if (!p) tag = '<em class="no">No such code</em>';
+      else if (p.status === 'Available') {
+        p.status = 'Reserved'; p.locked = price(p); p.where = 'Reserved on FB Live for ' + who + ' · hidden on TikTok Shop and website';
+        S.claims.push({ buyer: who, code: p.code, price: p.locked }); tag = `<em class="ok">✓ Reserved ${p.code} · ${peso(p.locked)}</em>`; log(`${who} claimed ${p.code} on Facebook Live`);
+      } else {
+        const pos = S.wait.filter(w => w.code === p.code).length + 1; S.wait.push({ buyer: who, code: p.code, pos }); tag = `<em class="wl">⏳ ${p.code} taken · waitlist #${pos}</em>`;
+      }
+    }
+    const el = document.createElement('li'); el.innerHTML = `<span><b>${who}</b>${a}</span>${tag}`; $('cmts').prepend(el);
+    render();
+  }
+  $('endLive').onclick = () => {
+    clearInterval(liveTimer); liveTimer = null; S.liveDone = true; $('endLive').disabled = true; $('onair').hidden = true;
+    const by = {};
+    S.claims.forEach(c => (by[c.buyer] = by[c.buyer] || []).push(c.code));
+    Object.keys(by).forEach(b => makeInvoice(b, by[b]));
+    log(`Live ended · ${Object.keys(by).length} invoices sent by Messenger`);
+    save(); render(); show('inv'); toast(Object.keys(by).length + ' invoices sent by Messenger');
+  };
+  function makeInvoice(buyer, codes) {
+    const total = codes.reduce((a, c) => a + piece(c).locked, 0) + SHIP.insured;
+    S.invoices.push({ id: 'LV-' + (++S.seq.inv), buyer, items: codes, total, status: 'Unpaid', sent: now(), reminded: false });
+  }
+
+  // ---------- invoices ----------
+  document.addEventListener('click', e => {
+    const o = e.target.closest('[data-open]'), c = e.target.closest('[data-confirm]'), s = e.target.closest('[data-ship]');
+    if (o) openBuyer(o.dataset.open);
+    if (c) { const i = S.invoices.find(x => x.id === c.dataset.confirm); i.status = 'Paid'; i.items.forEach(code => { const p = piece(code); p.status = 'Sold'; p.where = 'Sold on Facebook · ' + i.id; });
+      log(`${i.id} confirmed paid (${i.method || 'GCash'}) · moved to packing`); save(); render(); toast(i.id + ' paid · added to packing'); }
+    if (s) { const id = s.dataset.ship; S.pk[id] = S.pk[id] || { ck: { v: true, c: true } }; S.pk[id].shipped = true; S.pk[id].tracking = (id.startsWith('LV') ? 'JT' : 'TT') + (7400000000 + Math.floor(Math.random() * 99999999));
+      const inv = S.invoices.find(x => x.id === id); if (inv) inv.status = 'Shipped';
+      log(`${id} shipped · tracking sent to buyer`); save(); render(); toast('Shipped · tracking sent to buyer'); }
+  });
+  document.addEventListener('change', e => {
+    const ck = e.target.closest('[data-ck]');
+    if (ck) { const [id, k] = ck.dataset.ck.split('|'); S.pk[id] = S.pk[id] || { ck: { v: false, c: false }, shipped: false }; S.pk[id].ck[k] = ck.checked; save(); render(); }
+    if (e.target.id === 'fStatus') render();
+  });
+  $('remind').onclick = () => { const u = S.invoices.filter(i => i.status === 'Unpaid'); u.forEach(i => i.reminded = true);
+    if (u.length) log(`Reminders sent by Messenger to ${u.length} unpaid buyers`); save(); render(); toast(u.length ? u.length + ' reminders sent' : 'No unpaid invoices'); };
+  $('release').onclick = () => {
+    const u = S.invoices.filter(i => i.status === 'Unpaid'); if (!u.length) { toast('No unpaid invoices to release'); return; }
+    u.forEach(i => { i.status = 'Released'; i.items.forEach(code => {
+      const p = piece(code), next = S.wait.find(w => w.code === code && w.buyer !== i.buyer);
+      if (next) { S.wait = S.wait.filter(w => w !== next); p.where = 'Offered to waitlist: ' + next.buyer; makeInvoice(next.buyer, [code]); log(`${code} offered to ${next.buyer} from the waitlist`); }
+      else { p.status = 'Available'; p.locked = null; p.where = ''; log(`${code} released back to sale on all platforms`); }
+    }); log(`${i.id} released (unpaid after cut-off) · ${i.buyer} flagged`); });
+    save(); render(); toast('Unpaid invoices released');
+  };
+
+  // buyer view
+  let method = 'GCash';
+  function openBuyer(id) {
+    const i = S.invoices.find(x => x.id === id); method = i.method || 'GCash';
+    const first = i.buyer.split(' ')[0];
+    const qr = Array.from({ length: 169 }, (_, k) => `<i class="${((k * 37 + (k >> 3) * 11) % 7 < 3) || [0,1,2,13,14,15,26,27,28,10,11,12,23,24,25,36,37,38,130,131,132,143,144,145,156,157,158].includes(k) ? '' : 'o'}"></i>`).join('');
+    $('bv').innerHTML = `<div class="phone-top"><span>Messenger · Golden Hour Jewelry</span><button class="btn sm" id="bvClose" type="button">Close</button></div>
+      <div class="msg">Hi ${first}! Salamat sa pag-mine kanina sa live ✨ Here is your invoice. Please pay within 24 hours to keep your pieces.</div>
+      <h3>Invoice ${i.id}</h3>
+      <ul>${i.items.map(c => { const p = piece(c); return `<li><span class="thumb">${p.ic}</span><div>${p.name}<small>${p.code} · 18k · ${p.g.toFixed(2)} g · Cert ${p.cert} · pawnable</small></div><span class="num">${peso(p.locked)}</span></li>`; }).join('')}
+      <li><span class="thumb">🚚</span><div>Insured shipping<small>J&amp;T with declared value</small></div><span class="num">${peso(SHIP.insured)}</span></li></ul>
+      <div class="tot"><span>Total</span><b class="num">${peso(i.total)}</b></div>
+      ${i.status === 'Unpaid' ? `<div class="pay"><button type="button" data-m="GCash" aria-pressed="${method === 'GCash'}">GCash</button><button type="button" data-m="Bank transfer" aria-pressed="${method !== 'GCash'}">Bank transfer</button></div>
+      <div class="qr" aria-label="Sample payment QR">${qr}</div>
+      <div class="up"><span>Upload your payment screenshot</span><input type="file" id="proof" accept="image/*" aria-label="Payment screenshot"><button class="btn sm pri" id="sendProof" type="button">Send proof</button></div>`
+      : `<div class="msg">${i.status === 'Proof received' ? '✅ Proof received. We will confirm once it reflects in our account.' : i.status === 'Paid' ? '✅ Paid. Your order is being packed.' : i.status === 'Shipped' ? '🚚 Shipped. Tracking was sent to you.' : 'This invoice was released after the cut-off.'}</div>`}`;
+    $('buyer').showModal();
+    $('bvClose').onclick = () => $('buyer').close();
+    $('bv').querySelectorAll('[data-m]').forEach(b => b.onclick = () => { method = b.dataset.m; $('bv').querySelectorAll('[data-m]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    const sp = $('sendProof');
+    if (sp) sp.onclick = () => { i.status = 'Proof received'; i.method = method; log(`${i.buyer} sent ${method} proof for ${i.id}${$('proof').files.length ? ' (screenshot attached)' : ''}`); save(); render(); $('buyer').close(); toast('Proof received · confirm after checking your ' + method + ' app'); };
+  }
+
+  // ---------- tiktok ----------
+  const TT_BUYERS = ['Kat Mendoza', 'Paolo Ramos', 'Trish Villanueva', 'Gelo Bautista', 'Sam Navarro', 'Ivy Castillo'];
+  $('ttOrder').onclick = () => {
+    const av = S.pieces.filter(p => p.status === 'Available');
+    if (!av.length) { toast('No available pieces left. Reset the demo.'); return; }
+    const p = av[(S.tt.length * 5) % av.length], buyer = TT_BUYERS[S.tt.length % TT_BUYERS.length];
+    p.locked = price(p); p.status = 'Sold'; p.where = 'Sold on TikTok Shop · removed from Facebook and website';
+    S.tt.push({ id: 'TT-' + (++S.seq.tt), buyer, code: p.code, amount: p.locked });
+    log(`TikTok Shop order: ${buyer} bought ${p.code} · stock removed everywhere`); save(); render(); toast('TikTok order in · ' + p.code + ' removed from Facebook');
+  };
+
+  $('reset').onclick = () => { clearInterval(liveTimer); liveTimer = null; li = 0; viewers = 0; S = fresh(); save(); $('rateIn').value = S.rate;
+    $('goLive').disabled = false; $('endLive').disabled = true; $('onair').hidden = true; $('viewers').hidden = true; $('cmts').innerHTML = '';
+    $('showing').textContent = 'Press “Start sample live”'; $('showing2').textContent = 'The host shows pieces by code'; render(); show('dash'); toast('Demo reset'); };
+
+  if (S.liveDone) { $('goLive').disabled = true; }
+  render();
+})();
+</script>
+</body>
+</html>
