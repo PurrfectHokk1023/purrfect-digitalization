@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leasing Back Office Demo</title>
+<meta name="description" content="Try a working leasing back office: inquiries, viewings, leases, monthly billing with EWT, repairs and renewals for a sample building.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M5 26V9l5 5h10l5-5v17z' fill='%23e8601a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell (top bar + tabs) over one working area; teal = occupied/tenant, orange = action needed. */
+:root{
+  --bg:#f4f6f7; --surface:#ffffff; --ink:#13202a; --muted:#5d6872; --line:#e1e6e9;
+  --accent:#e8601a; --accent-soft:#fdeee5; --teal:#0f7f8f; --teal-soft:#e3f2f3; --good:#1f8a4c; --good-soft:#e2f3e8;
+  --warn:#b7791f; --warn-soft:#f8efdc; --bad:#c2410c; --bad-soft:#fdebe2;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1519; --surface:#172026; --ink:#edf1f3; --muted:#9aa6ae; --line:#26323a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --teal:#4cc0cd; --teal-soft:#13303a; --good:#4cc47f; --good-soft:#163222;
+  --warn:#e0a84a; --warn-soft:#3a2f17; --bad:#f08a5d; --bad-soft:#3a1f14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1519; --surface:#172026; --ink:#edf1f3; --muted:#9aa6ae; --line:#26323a;
+  --accent:#ff7a33; --accent-soft:#3a2216; --teal:#4cc0cd; --teal-soft:#13303a; --good:#4cc47f; --good-soft:#163222;
+  --warn:#e0a84a; --warn-soft:#3a2f17; --bad:#f08a5d; --bad-soft:#3a1f14; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0;line-height:1.15}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.banner{background:var(--teal-soft);font-size:13px}
+.banner .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;align-items:center;padding-block:7px}
+.banner b{color:var(--teal)}
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .bld{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4cc0cd,#0f7f8f);display:grid;place-items:center;color:#fff;font-size:17px}
+.brand b{font:800 18px var(--display)}
+.brand small{display:block;color:var(--muted);font-size:12px}
+.date{margin-left:auto;font:500 13px var(--mono);color:var(--muted);padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:10px}
+.tabs button{border:0;background:none;padding:8px 14px;border-radius:999px;color:var(--muted);font-weight:600;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs .ct{font:500 11.5px var(--mono);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:1px 7px}
+.tabs button[aria-selected="true"] .ct{background:var(--accent);color:#fff}
+main{padding-block:22px 60px}
+.view{display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.pad{padding:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.tl{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.sm{padding:5px 11px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+.pill{display:inline-flex;align-items:center;font:600 12px var(--body);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.p-oc{background:var(--teal-soft);color:var(--teal)}.p-va{background:var(--line);color:var(--muted)}
+.p-vw{background:var(--accent-soft);color:var(--accent)}.p-rs{background:var(--good-soft);color:var(--good)}
+.p-un{background:var(--bad-soft);color:var(--bad)}.p-pr{background:var(--warn-soft);color:var(--warn)}.p-pd{background:var(--good-soft);color:var(--good)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.head p{color:var(--muted);font-size:14px;max-width:72ch;margin:4px 0 0}
+.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi{padding:16px;display:grid;gap:2px}
+.kpi b{font:800 24px var(--display);letter-spacing:-.02em}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:380px;overflow:auto}
+.log li{font-size:13.5px;display:grid;grid-template-columns:56px 1fr;gap:8px}
+.log time{font:500 12px var(--mono);color:var(--muted)}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}
+@media (max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+
+/* unit board */
+.board{display:grid;gap:8px}
+.floor{display:grid;grid-template-columns:44px repeat(6,1fr);gap:8px;align-items:stretch}
+.floor > b{font:500 12px var(--mono);color:var(--muted);align-self:center}
+.unit{border-radius:10px;padding:9px 8px;border:1px solid var(--line);background:var(--bg);text-align:left;display:grid;gap:1px;font-size:12px;min-width:0}
+.unit b{font-size:13.5px}
+.unit span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit.oc{background:var(--teal);border-color:var(--teal);color:#fff}.unit.oc span{color:rgba(255,255,255,.85)}
+.unit.vw{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.unit.rs{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media (max-width:640px){.floor{grid-template-columns:30px repeat(3,1fr)}.floor > b{grid-row:span 2}}
+
+/* lists */
+.list{display:grid;gap:10px}
+.item{padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center}
+.item small{display:block;color:var(--muted);font-size:12.5px}
+.item .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chat{display:grid;gap:6px;grid-column:1/-1}
+.bub{max-width:88%;padding:8px 12px;border-radius:14px;font-size:13.5px;line-height:1.45}
+.bub.in{background:var(--bg);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bub.out{justify-self:end;background:var(--teal);color:#fff;border-bottom-right-radius:4px}
+.bub.draft{justify-self:end;background:var(--teal-soft);color:var(--ink);border:1px dashed var(--teal);border-bottom-right-radius:4px}
+.docs{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;grid-column:1/-1}
+.docs span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.docs span.ok{background:var(--good-soft);border-color:transparent;color:var(--good)}
+
+/* tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+th{text-align:left;font:600 12px var(--body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tfoot td{font-weight:700;border-top:1px solid var(--line)}
+
+/* dialog */
+dialog{border:0;padding:0;border-radius:18px;max-width:460px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(8,12,16,.55)}
+.dlg{display:grid;gap:14px;padding:22px}
+.dlg .top2{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.terms{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.terms dt{color:var(--muted)}.terms dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.bal{border-radius:14px;padding:14px;background:var(--ink);color:var(--bg);display:grid;gap:3px}
+.bal small{opacity:.75;font-size:12px}
+.bal b{font:800 28px var(--display)}
+.sig{border:1px dashed var(--line);border-radius:12px;padding:12px;text-align:center;font:600 22px/1 "Brush Script MT",cursive;min-height:52px;display:grid;place-items:center;color:var(--teal)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap"><span><b>Live demo</b> · A sample building with made-up units, tenants and amounts · Built by <a href="./" style="color:inherit;font-weight:600">Purrfect Digitalization</a></span><span class="row"><a class="btn sm" href="leasing.html">← Back to leasing</a><button class="btn sm" id="reset" type="button">Reset demo</button></span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="bld" aria-hidden="true">🏢</span><div><b>Sampaguita Commercial Bldg</b><small>Sample building · 18 units · 3 floors</small></div></div>
+    <span class="date">Demo date: Nov 4, 2026</span>
+  </div>
+  <div class="wrap">
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-v="dash" aria-selected="true">Dashboard</button>
+      <button role="tab" data-v="units" aria-selected="false">Units</button>
+      <button role="tab" data-v="leads" aria-selected="false">Inquiries &amp; viewings <span class="ct" id="ct-ld">0</span></button>
+      <button role="tab" data-v="apps" aria-selected="false">Applications &amp; leases <span class="ct" id="ct-ap">0</span></button>
+      <button role="tab" data-v="bill" aria-selected="false">Billing <span class="ct" id="ct-bl">0</span></button>
+      <button role="tab" data-v="mnt" aria-selected="false">Repairs <span class="ct" id="ct-mt">0</span></button>
+      <button role="tab" data-v="ren" aria-selected="false">Renewals <span class="ct" id="ct-rn">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- DASHBOARD -->
+  <section class="view" id="v-dash">
+    <div class="head"><div><h2>Building at a glance</h2><p>Start with <b>Inquiries</b> to lease a vacant unit, then run <b>Billing</b> for November. Every step updates this screen.</p></div></div>
+    <div class="kpis">
+      <div class="card kpi"><b class="num" id="k-occ">0%</b><span>occupancy</span></div>
+      <div class="card kpi"><b class="num" id="k-billed">₱0</b><span>billed this month</span></div>
+      <div class="card kpi"><b class="num" id="k-coll">₱0</b><span>collected</span></div>
+      <div class="card kpi"><b class="num" id="k-over">0</b><span>unpaid bills</span></div>
+      <div class="card kpi"><b class="num" id="k-tix">0</b><span>open repairs</span></div>
+      <div class="card kpi"><b class="num" id="k-ren">0</b><span>renewals due ≤ 90 days</span></div>
+    </div>
+    <div class="two">
+      <div class="card pad" style="display:grid;gap:12px">
+        <div class="row" style="justify-content:space-between"><h3>Unit board</h3><div class="legend"><span><i style="background:var(--teal)"></i>Occupied</span><span><i style="background:var(--accent)"></i>Viewing</span><span><i style="background:var(--good)"></i>Leasing</span><span><i style="border:1px solid var(--line)"></i>Vacant</span></div></div>
+        <div class="board" id="boardMini"></div>
+        <p class="muted" style="font-size:12.5px;margin:0">Click any unit to open the tenant’s portal or the vacant unit’s listing.</p>
+      </div>
+      <div class="card pad" style="display:grid;gap:12px;align-content:start"><h3>Activity</h3><ul class="log" id="log"></ul></div>
+    </div>
+  </section>
+
+  <!-- UNITS -->
+  <section class="view" id="v-units" hidden>
+    <div class="head"><div><h2>Units &amp; rent roll</h2><p>Every unit with its size, rate, tenant and lease end. Rent = sqm × rate per sqm. CUSA (common area dues) is ₱80 per sqm.</p></div></div>
+    <div class="card tw"><table><thead><tr><th>Unit</th><th>Floor</th><th class="r">Size</th><th class="r">Rate/sqm</th><th class="r">Monthly rent</th><th>Tenant</th><th>Lease ends</th><th>Status</th></tr></thead><tbody id="uTable"></tbody><tfoot><tr><td colspan="4">Total rent roll (occupied)</td><td class="r num" id="rollTot"></td><td colspan="3"></td></tr></tfoot></table></div>
+  </section>
+
+  <!-- LEADS -->
+  <section class="view" id="v-leads" hidden>
+    <div class="head"><div><h2>Inquiries &amp; viewings</h2><p>Messages from Facebook, the website and QR signs. The AI drafts a reply from the live unit board; you send it and offer viewing slots.</p></div>
+      <div class="row"><button class="btn pri" id="newLead" type="button">+ Simulate a new inquiry</button></div></div>
+    <div class="list" id="leads"></div>
+  </section>
+
+  <!-- APPLICATIONS -->
+  <section class="view" id="v-apps" hidden>
+    <div class="head"><div><h2>Applications &amp; leases</h2><p>Prospects who viewed get an application link. When documents are complete, approve to create the lease from the template, then send it for e-signature.</p></div></div>
+    <div class="list" id="apps"></div>
+  </section>
+
+  <!-- BILLING -->
+  <section class="view" id="v-bill" hidden>
+    <div class="head"><div><h2>Billing · November 2026</h2><p>One bill per occupied unit: rent, CUSA and electricity by submeter. Commercial tenants withhold 5% EWT on rent and owe you a BIR Form 2307.</p></div>
+      <div class="row"><button class="btn pri" id="runBill" type="button">Run November billing</button><button class="btn" id="simPay" type="button" disabled>Simulate tenant payments</button><button class="btn" id="remind" type="button" disabled>Remind unpaid</button></div></div>
+    <div class="card tw"><table><thead><tr><th>Unit</th><th>Tenant</th><th class="r">Rent</th><th class="r">CUSA</th><th class="r">Electric</th><th class="r">Less 5% EWT</th><th class="r">Net due</th><th>Status</th><th></th></tr></thead><tbody id="bTable"></tbody><tfoot id="bFoot"></tfoot></table></div>
+  </section>
+
+  <!-- MAINTENANCE -->
+  <section class="view" id="v-mnt" hidden>
+    <div class="head"><div><h2>Repairs</h2><p>Tenants report by QR or the portal. The AI sets urgency and suggests who should fix it; the fix is closed with a photo.</p></div>
+      <div class="row"><button class="btn pri" id="newTix" type="button">+ Simulate a repair request</button></div></div>
+    <div class="list" id="tix"></div>
+  </section>
+
+  <!-- RENEWALS -->
+  <section class="view" id="v-ren" hidden>
+    <div class="head"><div><h2>Renewals</h2><p>Leases ending within 90 days of the demo date. The AI suggests the new rent from the lease’s 5% escalation and the tenant’s payment record.</p></div></div>
+    <div class="list" id="ren"></div>
+  </section>
+</main>
+
+<dialog id="dlg" aria-label="Details"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const peso = v => '₱' + Math.round(v).toLocaleString('en-PH');
+  const now = () => new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+  const TODAY = new Date('2026-11-04');
+  const CUSA = 80, EWT = 0.05;
+  const RATE = { GF: 900, '2F': 650, '3F': 550 };
+  const monthStr = d => new Date(d).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
+  const daysTo = d => Math.round((new Date(d) - TODAY) / 864e5);
+
+  // [unit, floor, sqm, tenant or '', lease end, commercial?]
+  const UNITS = [
+    ['G1', 'GF', 32, 'Milk tea shop', '2027-06-30'], ['G2', 'GF', 40, 'Laundry shop', '2027-02-28'], ['G3', 'GF', 48, 'Bakery', '2027-03-31'],
+    ['G4', 'GF', 18, 'Bank ATM', '2028-01-31'], ['G5', 'GF', 55, 'Pharmacy', '2027-09-30'], ['G6', 'GF', 42, 'Café', '2026-12-31'],
+    ['201', '2F', 36, 'Salon', '2027-05-31'], ['202', '2F', 50, 'Dental clinic', '2027-01-31'], ['203', '2F', 34, '', ''],
+    ['204', '2F', 44, 'Spa', '2027-08-31'], ['205', '2F', 38, 'Insurance office', '2026-12-31'], ['206', '2F', 38, '', ''],
+    ['301', '3F', 40, 'Tutorial center', '2027-08-31'], ['302', '3F', 42, 'Law office', '2027-04-30'], ['303', '3F', 60, 'BPO team seats', '2027-11-30'],
+    ['304', '3F', 45, '', ''], ['305', '3F', 30, 'Accounting firm', '2027-07-31'], ['306', '3F', 35, 'Photo studio', '2027-10-31']
+  ];
+  const PROSPECTS = [
+    { name: 'Mika Santos', src: 'Facebook', biz: 'Nail salon', msg: 'Hi po! Available pa ba 2F? Magkano po per month?', floor: '2F' },
+    { name: 'Ramon Cruz', src: 'Website', biz: 'Physical therapy clinic', msg: 'Good day, may 40+ sqm space po ba kayo sa 3F for a clinic?', floor: '3F' },
+    { name: 'Joy Villareal', src: 'QR sign', biz: 'Coffee kiosk', msg: 'Hello, saw your sign. Rate po for the vacant unit and CUSA?', floor: '2F' },
+    { name: 'Paolo Lim', src: 'Facebook', biz: 'Review center', msg: 'Pwede po mag-view this weekend? Need around 45 sqm.', floor: '3F' }
+  ];
+  const ISSUES = [
+    ['G3', 'Bakery', 'Aircon not cooling since this morning', 'Medium', 'Aircon technician'],
+    ['201', 'Salon', 'Water leaking from ceiling near the sink', 'Urgent', 'Plumber'],
+    ['302', 'Law office', 'Main door lock is hard to open', 'Low', 'Building maintenance'],
+    ['G1', 'Milk tea shop', 'Tripping breaker when blender is used', 'Urgent', 'Electrician']
+  ];
+
+  let S;
+  const fresh = () => ({
+    units: UNITS.map(u => ({ id: u[0], floor: u[1], sqm: u[2], rate: RATE[u[1]], tenant: u[3], end: u[4], status: u[3] ? 'Occupied' : 'Vacant', paidRecord: u[0] === '205' ? 'late twice' : 'on time' })),
+    leads: [], apps: [], bills: [], billed: false, tix: [], offers: {}, log: [], seq: { lead: 0, app: 0, tix: 200 }
+  });
+  try { S = JSON.parse(localStorage.getItem('leasingDemo')) || fresh(); } catch (e) { S = fresh(); }
+  const save = () => { try { localStorage.setItem('leasingDemo', JSON.stringify(S)); } catch (e) {} };
+  const unit = id => S.units.find(u => u.id === id);
+  const rent = u => u.sqm * u.rate;
+  const log = t => { S.log.unshift([now(), t]); S.log = S.log.slice(0, 80); };
+  const toast = t => { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 2600); };
+  const cls = s => ({ Occupied: 'oc', Viewing: 'vw', Leasing: 'rs', Vacant: '' })[s] || '';
+  const pcls = s => ({ Occupied: 'p-oc', Viewing: 'p-vw', Leasing: 'p-rs', Vacant: 'p-va' })[s];
+
+  // tabs
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  const show = v => { tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.v === v)); document.querySelectorAll('.view').forEach(s => s.hidden = s.id !== 'v-' + v); };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.v)));
+
+  const renewDue = () => S.units.filter(u => u.status === 'Occupied' && u.end && daysTo(u.end) <= 90 && !(S.offers[u.id] && S.offers[u.id].done));
+
+  // ---------- render ----------
+  function render() {
+    const occ = S.units.filter(u => u.status === 'Occupied');
+    const billed = S.bills.reduce((a, b) => a + b.gross, 0), coll = S.bills.filter(b => b.status !== 'Unpaid').reduce((a, b) => a + b.paid, 0);
+    const unpaid = S.bills.filter(b => b.status === 'Unpaid');
+    const openT = S.tix.filter(t => t.status !== 'Fixed');
+    $('k-occ').textContent = Math.round(occ.length / S.units.length * 100) + '%';
+    $('k-billed').textContent = peso(billed); $('k-coll').textContent = peso(coll);
+    $('k-over').textContent = unpaid.length; $('k-tix').textContent = openT.length; $('k-ren').textContent = renewDue().length;
+    $('ct-ld').textContent = S.leads.filter(l => l.stage !== 'Applied' && l.stage !== 'Closed').length;
+    $('ct-ap').textContent = S.apps.filter(a => a.stage !== 'Signed').length;
+    $('ct-bl').textContent = unpaid.length + S.bills.filter(b => b.status === 'Proof received').length;
+    $('ct-mt').textContent = openT.length; $('ct-rn').textContent = renewDue().length;
+
+    // board
+    const floors = ['3F', '2F', 'GF'];
+    $('boardMini').innerHTML = floors.map(f => `<div class="floor"><b>${f}</b>${S.units.filter(u => u.floor === f).map(u =>
+      `<button class="unit ${cls(u.status)}" data-unit="${u.id}" type="button"><b>${u.id}</b><span>${u.tenant || u.status}</span></button>`).join('')}</div>`).join('');
+    $('log').innerHTML = S.log.length ? S.log.map(l => `<li><time>${l[0]}</time><span>${l[1]}</span></li>`).join('') : '<li><time></time><span class="muted">Nothing yet. Try “Simulate a new inquiry”.</span></li>';
+
+    // units table
+    $('uTable').innerHTML = S.units.map(u => `<tr><td><b>${u.id}</b></td><td>${u.floor}</td><td class="r num">${u.sqm} sqm</td><td class="r num">${peso(u.rate)}</td><td class="r num">${peso(rent(u))}</td>
+      <td>${u.tenant || '<span class="muted">—</span>'}</td><td>${u.end ? monthStr(u.end) + (daysTo(u.end) <= 90 && u.status === 'Occupied' ? ' <span class="pill p-pr">renewal due</span>' : '') : '<span class="muted">—</span>'}</td>
+      <td><span class="pill ${pcls(u.status)}">${u.status}</span></td></tr>`).join('');
+    $('rollTot').textContent = peso(occ.reduce((a, u) => a + rent(u), 0)) + ' / month';
+
+    // leads
+    $('leads').innerHTML = S.leads.length ? S.leads.slice().reverse().map(l => {
+      const u = unit(l.unit);
+      let acts = '';
+      if (l.stage === 'New') acts = `<button class="btn sm tl" data-a="send" data-id="${l.id}" type="button">Send reply + offer slots</button>`;
+      if (l.stage === 'Slots offered') acts = `<button class="btn sm" data-a="book" data-id="${l.id}" data-slot="Sat 10:00 AM" type="button">Book Sat 10 AM</button><button class="btn sm" data-a="book" data-id="${l.id}" data-slot="Sat 2:00 PM" type="button">Book Sat 2 PM</button>`;
+      if (l.stage === 'Viewing booked') acts = `<button class="btn sm tl" data-a="attended" data-id="${l.id}" type="button">Attended → send application</button><button class="btn sm" data-a="noshow" data-id="${l.id}" type="button">No-show</button>`;
+      if (l.stage === 'No-show') acts = `<button class="btn sm" data-a="rebook" data-id="${l.id}" type="button">Follow up + rebook</button>`;
+      return `<article class="card item"><div><b>${l.name}</b> · ${l.biz} <span class="pill p-vw">${l.src}</span><small>${l.stage}${l.slot ? ' · ' + l.slot : ''} · Unit ${u.id}, ${u.sqm} sqm</small></div><div class="acts">${acts}</div>
+        <div class="chat"><span class="bub in">${l.msg}</span>${l.stage === 'New' ? `<span class="bub draft">✦ AI draft: ${l.reply}</span>` : `<span class="bub out">${l.reply}</span>`}${l.followup ? `<span class="bub out">${l.followup}</span>` : ''}</div></article>`;
+    }).join('') : '<div class="empty">No inquiries yet. Press “Simulate a new inquiry”.</div>';
+
+    // apps
+    $('apps').innerHTML = S.apps.length ? S.apps.slice().reverse().map(a => {
+      const u = unit(a.unit), docs = ['Valid ID', 'DTI/SEC registration', 'Mayor’s permit', 'Proof of billing'];
+      let acts = '';
+      if (a.stage === 'Waiting for documents') acts = `<button class="btn sm" data-a="docs" data-id="${a.id}" type="button">Simulate upload</button>`;
+      if (a.stage === 'Documents complete') acts = `<button class="btn sm tl" data-a="lease" data-id="${a.id}" type="button">Approve &amp; create lease</button>`;
+      if (a.stage === 'Out for signature') acts = `<button class="btn sm" data-a="viewlease" data-id="${a.id}" type="button">View lease</button><button class="btn sm pri" data-a="sign" data-id="${a.id}" type="button">Tenant signs</button>`;
+      if (a.stage === 'Signed') acts = `<button class="btn sm" data-a="viewlease" data-id="${a.id}" type="button">View lease</button>`;
+      return `<article class="card item"><div><b>${a.name}</b> · ${a.biz}<small>Unit ${u.id} · ${u.sqm} sqm · ${peso(rent(u))}/month · ${a.stage}</small></div><div class="acts">${acts}</div>
+        <div class="docs">${docs.map((d, i) => `<span class="${a.docs > i ? 'ok' : ''}">${a.docs > i ? '✓ ' : ''}${d}</span>`).join('')}</div></article>`;
+    }).join('') : '<div class="empty">Applications appear after a prospect attends a viewing.</div>';
+
+    // billing
+    $('runBill').disabled = S.billed; $('simPay').disabled = !S.billed || S.bills.every(b => b.status !== 'Unpaid' || b.tried); $('remind').disabled = !S.bills.some(b => b.status === 'Unpaid');
+    $('bTable').innerHTML = S.bills.length ? S.bills.map(b => `<tr><td><b>${b.unit}</b></td><td>${b.tenant}</td><td class="r num">${peso(b.rent)}</td><td class="r num">${peso(b.cusa)}</td><td class="r num">${peso(b.elec)}</td>
+      <td class="r num">${b.ewt ? '−' + peso(b.ewt) : '—'}</td><td class="r num"><b>${peso(b.net)}</b></td>
+      <td>${b.status === 'Unpaid' ? `<span class="pill p-un">Unpaid${b.reminded ? ' · reminded' : ''}</span>` : b.status === 'Proof received' ? `<span class="pill p-pr">GCash proof · ${peso(b.paid)}</span>` : `<span class="pill p-pd">Paid</span>${b.ewt ? (b.f2307 ? ' <span class="pill p-pd">2307 ✓</span>' : ' <span class="pill p-pr">2307 pending</span>') : ''}`}</td>
+      <td>${b.status === 'Proof received' ? `<button class="btn sm tl" data-a="confirm" data-id="${b.unit}" type="button">Confirm</button>` : b.status === 'Paid' && b.ewt && !b.f2307 ? `<button class="btn sm" data-a="f2307" data-id="${b.unit}" type="button">2307 received</button>` : ''}</td></tr>`).join('')
+      : '<tr><td colspan="9" class="muted">Press “Run November billing” to bill every occupied unit at once.</td></tr>';
+    $('bFoot').innerHTML = S.bills.length ? `<tr><td colspan="6">Totals</td><td class="r num">${peso(S.bills.reduce((a, b) => a + b.net, 0))}</td><td colspan="2" class="muted" style="font-weight:500">Collected ${peso(coll)}</td></tr>` : '';
+
+    // tickets
+    $('tix').innerHTML = S.tix.length ? S.tix.slice().reverse().map(t => `<article class="card item"><div><b>#M-${t.id} · Unit ${t.unit}</b> · ${t.tenant} <span class="pill ${t.urg === 'Urgent' ? 'p-un' : t.urg === 'Medium' ? 'p-pr' : 'p-va'}">${t.urg}</span><small>“${t.text}” · ✦ AI: ${t.urg.toLowerCase()} priority, suggest ${t.who} · ${t.status}</small></div>
+      <div class="acts">${t.status === 'New' ? `<button class="btn sm tl" data-a="assign" data-id="${t.id}" type="button">Assign ${t.who}</button>` : t.status === 'Assigned' ? `<button class="btn sm pri" data-a="fixed" data-id="${t.id}" type="button">Mark fixed (photo)</button>` : '<span class="pill p-pd">Fixed · photo sent to tenant</span>'}</div></article>`).join('')
+      : '<div class="empty">No repair requests. Press “Simulate a repair request”.</div>';
+
+    // renewals
+    const due = S.units.filter(u => u.status === 'Occupied' && u.end && daysTo(u.end) <= 90 || S.offers[u.id]);
+    $('ren').innerHTML = due.length ? due.map(u => { const o = S.offers[u.id] || {}, newRent = Math.round(rent(u) * 1.05);
+      return `<article class="card item"><div><b>Unit ${u.id} · ${u.tenant}</b><small>Ends ${monthStr(u.end)} (${daysTo(u.end)} days) · now ${peso(rent(u))}/mo · pays ${u.paidRecord} · ✦ AI: renew at ${peso(o.done ? rent(u) : newRent)} (+5%)</small></div>
+        <div class="acts">${o.done ? '<span class="pill p-pd">Renewed · signed online</span>' : o.sent ? `<button class="btn sm pri" data-a="accept" data-id="${u.id}" type="button">Tenant accepts</button>` : `<button class="btn sm tl" data-a="offer" data-id="${u.id}" type="button">Send renewal offer</button>`}</div></article>`; }).join('')
+      : '<div class="empty">No leases end in the next 90 days.</div>';
+  }
+
+  // ---------- actions ----------
+  $('newLead').onclick = () => {
+    const p = PROSPECTS[S.seq.lead % PROSPECTS.length];
+    const u = S.units.find(x => x.floor === p.floor && x.status === 'Vacant') || S.units.find(x => x.status === 'Vacant');
+    if (!u) { toast('No vacant units left. Reset the demo to try again.'); return; }
+    S.seq.lead++;
+    const reply = `Hi ${p.name.split(' ')[0]}! Yes po, Unit ${u.id} on ${u.floor} is available: ${u.sqm} sqm at ${peso(u.rate)}/sqm, so ${peso(rent(u))}/month plus CUSA ${peso(u.sqm * CUSA)}. 2 months advance + 2 months deposit. Want to view it? Sat 10 AM or 2 PM po.`;
+    S.leads.push({ id: S.seq.lead, name: p.name, biz: p.biz, src: p.src, msg: p.msg, unit: u.id, stage: 'New', reply });
+    log(`New inquiry from ${p.name} (${p.src}) · AI drafted a reply for Unit ${u.id}`); save(); render(); show('leads');
+  };
+
+  document.addEventListener('click', e => {
+    const unitBtn = e.target.closest('[data-unit]'); if (unitBtn) { openUnit(unitBtn.dataset.unit); return; }
+    const b = e.target.closest('[data-a]'); if (!b) return;
+    const a = b.dataset.a, id = b.dataset.id;
+    const L = () => S.leads.find(x => String(x.id) === id), A = () => S.apps.find(x => String(x.id) === id);
+    if (a === 'send') { const l = L(); l.stage = 'Slots offered'; log(`Reply sent to ${l.name} with viewing slots`); }
+    if (a === 'book' || a === 'rebook') { const l = L();
+      if (a === 'rebook') { l.followup = `Hi ${l.name.split(' ')[0]}, sayang po at hindi kayo nakarating. Gusto niyo pa ba i-rebook? Sat 10 AM or 2 PM po.`; l.stage = 'Slots offered'; log(`Follow-up sent to ${l.name} after a no-show`); }
+      else { l.stage = 'Viewing booked'; l.slot = b.dataset.slot; unit(l.unit).status = 'Viewing'; log(`${l.name} booked a viewing of Unit ${l.unit}, ${l.slot} · reminders scheduled`); } }
+    if (a === 'noshow') { const l = L(); l.stage = 'No-show'; unit(l.unit).status = 'Vacant'; log(`${l.name} did not show up for Unit ${l.unit}`); }
+    if (a === 'attended') { const l = L(); l.stage = 'Applied'; l.followup = `Salamat sa pag-visit, ${l.name.split(' ')[0]}! Here is the application link for Unit ${l.unit}. Please upload a valid ID, DTI/SEC, mayor’s permit and proof of billing.`;
+      unit(l.unit).status = 'Leasing'; S.seq.app++; S.apps.push({ id: S.seq.app, name: l.name, biz: l.biz, unit: l.unit, stage: 'Waiting for documents', docs: 0 });
+      log(`${l.name} attended the viewing · application link sent`); show('apps'); }
+    if (a === 'docs') { const ap = A(); ap.docs = 4; ap.stage = 'Documents complete'; log(`${ap.name} uploaded all 4 documents`); }
+    if (a === 'lease') { const ap = A(); ap.stage = 'Out for signature'; log(`Lease for Unit ${ap.unit} created from template · sent to ${ap.name} for e-signature`); save(); render(); openLease(ap); return; }
+    if (a === 'viewlease') { openLease(A()); return; }
+    if (a === 'sign') { const ap = A(), u = unit(ap.unit); ap.stage = 'Signed'; u.status = 'Occupied'; u.tenant = ap.biz; u.end = '2028-11-30'; u.paidRecord = 'new tenant';
+      const l = S.leads.find(x => x.name === ap.name); if (l) l.stage = 'Closed';
+      log(`${ap.name} signed the lease · Unit ${u.id} occupied · move-in ${peso(rent(u) * 4)} (2 adv + 2 dep) recorded`); toast('Lease signed · Unit ' + u.id + ' is now occupied'); }
+    if (a === 'confirm') { const bl = S.bills.find(x => x.unit === id); bl.status = 'Paid'; log(`Unit ${id} payment confirmed (${peso(bl.paid)})`); }
+    if (a === 'f2307') { const bl = S.bills.find(x => x.unit === id); bl.f2307 = true; log(`Form 2307 received from Unit ${id} for ${peso(bl.ewt)} withheld`); }
+    if (a === 'assign') { const t = S.tix.find(x => String(x.id) === id); t.status = 'Assigned'; log(`#M-${t.id} assigned to ${t.who} · tenant notified`); }
+    if (a === 'fixed') { const t = S.tix.find(x => String(x.id) === id); t.status = 'Fixed'; log(`#M-${t.id} fixed · after photo sent to Unit ${t.unit}`); }
+    if (a === 'offer') { S.offers[id] = { sent: true }; log(`Renewal offer sent to Unit ${id} at ${peso(rent(unit(id)) * 1.05)}/month`); }
+    if (a === 'accept') { const u = unit(id); u.rate = Math.round(u.rate * 1.05); const d = new Date(u.end); d.setFullYear(d.getFullYear() + 1); u.end = d.toISOString().slice(0, 10);
+      S.offers[id] = { sent: true, done: true }; log(`Unit ${id} renewed to ${monthStr(u.end)} at ${peso(rent(u))}/month · signed online`); toast('Renewal signed'); }
+    save(); render();
+  });
+
+  $('runBill').onclick = () => {
+    S.bills = S.units.filter(u => u.status === 'Occupied').map((u, i) => {
+      const r = rent(u), c = u.sqm * CUSA, el = Math.round(u.sqm * (55 + (i * 17) % 40)), commercial = true;   // every tenant here is a business, so all withhold 5% EWT on rent
+      const ewt = commercial ? Math.round(r * EWT) : 0, gross = r + c + el;
+      return { unit: u.id, tenant: u.tenant, rent: r, cusa: c, elec: el, ewt, gross, net: gross - ewt, paid: 0, status: 'Unpaid', f2307: false };
+    });
+    S.billed = true; log(`November billing run · ${S.bills.length} bills sent by email and Messenger`); save(); render(); toast(S.bills.length + ' bills sent');
+  };
+  $('simPay').onclick = () => {
+    let n = 0;
+    S.bills.forEach((b, i) => { if (b.status !== 'Unpaid' || b.tried) return; b.tried = true;
+      if (i % 5 === 3) return;                      // a few tenants don't pay yet
+      b.status = 'Proof received'; b.paid = b.net; n++; });
+    log(`${n} tenants paid by GCash or bank · proofs matched to their bills`); save(); render(); toast(n + ' payments matched · confirm them');
+  };
+  $('remind').onclick = () => { const u = S.bills.filter(b => b.status === 'Unpaid'); u.forEach(b => b.reminded = true);
+    log(`Reminders sent to ${u.length} unpaid tenants`); save(); render(); toast('Reminders sent'); };
+  $('newTix').onclick = () => {
+    const is = ISSUES[S.tix.length % ISSUES.length]; S.seq.tix++;
+    S.tix.push({ id: S.seq.tix, unit: is[0], tenant: is[1], text: is[2], urg: is[3], who: is[4], status: 'New' });
+    log(`Repair request #M-${S.seq.tix} from Unit ${is[0]} · AI marked it ${is[3].toLowerCase()}`); save(); render(); show('mnt');
+  };
+
+  // ---------- dialogs ----------
+  const dlg = $('dlg'), body = $('dlgBody');
+  function openLease(ap) {
+    const u = unit(ap.unit), r = rent(u);
+    body.innerHTML = `<div class="top2"><span>Lease contract · from your template</span><button class="btn sm" id="x" type="button">Close</button></div>
+      <h3>Lease: Unit ${u.id}, Sampaguita Commercial Bldg</h3>
+      <dl class="terms"><dt>Lessee</dt><dd>${ap.name} (${ap.biz})</dd><dt>Area</dt><dd>${u.sqm} sqm, ${u.floor}</dd><dt>Term</dt><dd>2 years · Dec 1, 2026 to Nov 30, 2028</dd>
+      <dt>Monthly rent</dt><dd>${peso(r)}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}/month</dd><dt>Escalation</dt><dd>5% per year</dd>
+      <dt>Advance</dt><dd>2 months · ${peso(r * 2)}</dd><dt>Security deposit</dt><dd>2 months · ${peso(r * 2)}</dd><dt>Move-in total</dt><dd>${peso(r * 4)}</dd></dl>
+      <div class="sig">${ap.stage === 'Signed' ? ap.name : '<span class="muted" style="font:500 13px var(--body)">Waiting for e-signature…</span>'}</div>`;
+    dlg.showModal(); $('x').onclick = () => dlg.close();
+  }
+  function openUnit(id) {
+    const u = unit(id), b = S.bills.find(x => x.unit === id), tk = S.tix.filter(t => t.unit === id).slice(-1)[0];
+    if (u.status !== 'Occupied') {
+      body.innerHTML = `<div class="top2"><span>Public listing</span><button class="btn sm" id="x" type="button">Close</button></div><h3>Unit ${u.id} · ${u.sqm} sqm · ${u.floor}</h3>
+        <dl class="terms"><dt>Rate</dt><dd>${peso(u.rate)}/sqm</dd><dt>Monthly rent</dt><dd>${peso(rent(u))}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}</dd><dt>Status</dt><dd>${u.status}</dd></dl>
+        <p class="muted" style="margin:0;font-size:13.5px">This listing is on the website, Facebook and the QR sign on the unit door. Inquiries go to the Inquiries tab.</p>`;
+    } else {
+      body.innerHTML = `<div class="top2"><span>Tenant portal · what ${u.tenant} sees</span><button class="btn sm" id="x" type="button">Close</button></div>
+        <h3>Hi, ${u.tenant} 👋</h3>
+        <div class="bal"><small>November balance${b ? '' : ' · not billed yet'}</small><b>${b ? (b.status === 'Unpaid' ? peso(b.net) : '₱0 · paid') : '—'}</b><small>Unit ${u.id} · lease ends ${monthStr(u.end)}</small></div>
+        <dl class="terms"><dt>Rent</dt><dd>${peso(rent(u))}</dd><dt>CUSA</dt><dd>${peso(u.sqm * CUSA)}</dd>${b && b.ewt ? `<dt>5% EWT</dt><dd>−${peso(b.ewt)} · 2307 ${b.f2307 ? 'received' : 'please upload'}</dd>` : ''}<dt>Last repair</dt><dd>${tk ? '#M-' + tk.id + ' · ' + tk.status : 'None'}</dd></dl>
+        <div class="row"><button class="btn sm pri" type="button" disabled>Pay with GCash</button><button class="btn sm" type="button" disabled>Report a repair</button><button class="btn sm" type="button" disabled>Download lease</button></div>
+        <p class="muted" style="margin:0;font-size:12.5px">Buttons are shown for illustration in the demo.</p>`;
+    }
+    dlg.showModal(); $('x').onclick = () => dlg.close();
+  }
+
+  $('reset').onclick = () => { S = fresh(); save(); render(); show('dash'); toast('Demo reset'); };
+  render();
+})();
+</script>
+</body>
+</html>
