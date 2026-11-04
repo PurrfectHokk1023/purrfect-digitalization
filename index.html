@@ -796,7 +796,9 @@ footer span:last-child{margin-left:auto}
       <input id="f-name" name="name" placeholder="Your name" autocomplete="name" required>
       <input id="f-shop" name="shop" placeholder="Business name and city" required>
       <select id="f-type" name="type" aria-label="Type of business"><option>Café or food business</option><option>Commercial space or office leasing</option><option>Apartment, condo or boarding house</option><option>Staycation or rental</option><option>Laundry, car wash or services</option><option>Salon, spa or clinic</option><option>Shop or online seller</option><option>Events or catering</option><option>Classes or studio</option><option>Something else</option></select>
+      <input id="f-email" name="email" type="email" placeholder="Email address" autocomplete="email" required>
       <input id="f-phone" name="phone" placeholder="Mobile number (09xx…)" inputmode="tel" autocomplete="tel" required>
+      <input id="f-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <select id="f-plan" name="plan" aria-label="Plan you're interested in"><option>Not sure yet</option><option>Starter</option><option>Growth</option><option>Pro</option></select>
       <button class="btn btn-primary" type="submit" style="justify-content:center">Request my demo</button>
       <p class="note" id="f-note" role="status"></p>
@@ -900,14 +902,30 @@ footer span:last-child{margin-left:auto}
   // plan buttons prefill the demo form
   document.querySelectorAll('[data-plan]').forEach(a => a.addEventListener('click', () => { $('f-plan').value = a.dataset.plan; }));
 
-  // demo form (preview: not connected to a backend)
-  $('demo-form').addEventListener('submit', e => {
+  // demo form: saved to the Purrfect Digitalization Leads sheet by its own Apps Script web app (apps-script/Leads.gs),
+  // which emails the requester a confirmation and the owner a notice
+  const LEAD_API = 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';
+  $('demo-form').addEventListener('submit', async e => {
     e.preventDefault();
-    const f = e.target, note = $('f-note');
+    const f = e.target, note = $('f-note'), btn = f.querySelector('button[type=submit]');
     const miss = [...f.querySelectorAll('[required]')].find(i => !i.value.trim());
     if (miss) { note.textContent = 'Please fill in your ' + miss.placeholder.toLowerCase().split(' (')[0] + '.'; miss.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim())) { note.textContent = 'Please enter a valid email address.'; f.email.focus(); return; }
     if (!/^(09|\+639)\d{9}$/.test(f.phone.value.replace(/[\s-]/g, ''))) { note.textContent = 'Enter a PH mobile number like 0917 123 4567.'; f.phone.focus(); return; }
-    note.textContent = 'Thanks, ' + f.name.value.trim().split(' ')[0] + '! This is a preview site, so the request isn’t sent yet.';
+    btn.disabled = true; btn.textContent = 'Sending…'; note.textContent = '';
+    const body = { name: f.name.value.trim(), shop: f.shop.value.trim(), type: f.type.value, email: f.email.value.trim(),
+      phone: f.phone.value.trim(), plan: f.plan.value, hp: f.hp.value, page: location.href.split('#')[0] };
+    try {
+      const r = await fetch(LEAD_API, { method: 'POST', body: JSON.stringify(body) }).then(x => x.json());
+      if (!r.ok) throw new Error(r.error || 'Something went wrong. Please try again.');
+      f.reset();
+      btn.textContent = 'Request sent';
+      note.textContent = 'Thanks, ' + body.name.split(' ')[0] + '! We received your request and sent a confirmation to ' + body.email
+        + '. We’ll message you within 1 business day.';
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Request my demo';
+      note.textContent = err.message === 'Failed to fetch' ? 'We couldn’t reach our server. Check your connection and try again.' : err.message;
+    }
   });
 })();
 </script>
