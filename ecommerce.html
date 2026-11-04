@@ -111,6 +111,29 @@ section{padding-block:clamp(64px,9vw,108px)}
 .arrow{color:var(--muted);font-size:22px;text-align:center}
 @media (max-width:860px){.hub-wrap{grid-template-columns:1fr}.hubc{margin:12px auto}}
 
+/* AI layer + section */
+.ai-layer{margin-top:22px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:16px 20px;border-radius:var(--r);text-decoration:none;color:var(--ink);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--teal) 14%,var(--surface)),color-mix(in srgb,var(--accent) 12%,var(--surface)));border:1px solid var(--line)}
+.ai-layer b{font:700 17px var(--display)}
+.ai-layer span:last-child{color:var(--muted);font-size:14.5px}
+.ai-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-size:15px}
+.ai{background:color-mix(in srgb,var(--teal) 6%,var(--bg))}
+.ai-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.aic{padding:20px;display:grid;gap:10px;align-content:start}
+.aic h3{font-size:17px}
+.aic p{font-size:14px;color:var(--muted)}
+.aic .tag{font:500 12px var(--mono);color:var(--teal);letter-spacing:.04em;text-transform:uppercase}
+.aic .demo{display:grid;gap:6px;margin-top:4px}
+.aic .demo span{font-size:12.5px;line-height:1.45;padding:7px 10px;border-radius:10px}
+.aic .demo .q{background:var(--bg);border:1px solid var(--line);justify-self:start}
+.aic .demo .a{background:var(--teal-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--teal) 30%,transparent)}
+.guard{margin-top:18px;padding:20px 24px;border-radius:var(--r);border:1px dashed var(--teal);display:grid;gap:10px}
+.guard ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14.5px;color:var(--muted)}
+.guard li{position:relative;padding-left:22px}
+.guard li::before{content:"🛡";position:absolute;left:0;top:0;font-size:13px}
+@media (max-width:1000px){.ai-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.ai-grid,.guard ul{grid-template-columns:1fr}}
+
 /* pillars */
 .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .pillar{padding:24px;display:grid;gap:12px;align-content:start}
@@ -135,6 +158,44 @@ section{padding-block:clamp(64px,9vw,108px)}
 .ftxt li::before{content:"→";position:absolute;left:0;top:0;color:var(--accent);font-weight:700}
 .ftxt li b{font-weight:600}
 @media (max-width:860px){.feature{grid-template-columns:1fr;gap:22px}.feature.flip .ph{order:0}}
+
+/* live selling */
+.live-demo{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+.comments,.invoice{padding:18px;display:grid;gap:12px;min-width:0}
+.comments header,.invoice header{display:flex;align-items:center;gap:10px;font-weight:700}
+.comments header small{margin-left:auto;font:500 12.5px var(--mono);color:var(--good)}
+.rec{font:700 11.5px var(--body);color:#fff;background:#e11d48;padding:3px 8px;border-radius:6px;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.55}}
+.comments ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.comments li{padding:9px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;display:grid;gap:3px;animation:pop .5s ease}
+.comments li b{font-weight:600;margin-right:6px}
+.comments li em{font-style:normal;font-size:12.5px;color:var(--good);font-weight:600}
+.comments li em.wait{color:var(--warn)}
+.invoice header{justify-content:space-between;align-items:flex-start}
+.invoice header small{display:block;font-weight:500;color:var(--muted);font-size:13px}
+.st{font:600 12px var(--body);padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);transition:background .4s,color .4s}
+.st.paid{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+.invoice ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
+.invoice li{display:flex;justify-content:space-between;gap:10px}
+.invoice li span:last-child,.invoice .tot b{font-variant-numeric:tabular-nums}
+.invoice .tot{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding-top:10px;font-size:16px}
+.invoice .tot b{font:800 22px var(--display)}
+.invoice .pay{display:flex;flex-wrap:wrap;gap:6px}
+.invoice .pay span{font-size:12.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.invoice .note{font-size:12.5px;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin-top:28px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+.pains-table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}
+.pains-table th{text-align:left;font:600 13px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--bg)}
+.pains-table td{padding:14px 18px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--muted)}
+.pains-table td b{color:var(--ink)}
+.pains-table td:last-child{color:var(--ink)}
+.pains-table tr:last-child td{border-bottom:0}
+.live-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:22px}
+.live-steps div{padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;gap:4px;align-content:start}
+.live-steps span{width:26px;height:26px;border-radius:50%;background:#e11d48;color:#fff;font:600 12.5px var(--body);display:grid;place-items:center}
+.live-steps small{color:var(--muted);font-size:12.5px;line-height:1.4}
+@media (max-width:900px){.live-demo{grid-template-columns:1fr}.live-steps{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:520px){.live-steps{grid-template-columns:1fr 1fr}}
 
 /* lifecycle */
 .life{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;counter-reset:l}
@@ -175,6 +236,16 @@ section{padding-block:clamp(64px,9vw,108px)}
 .plan li::before{content:"✓";color:var(--teal);font-weight:700}
 .plan li.inc{color:var(--muted)}.plan li.inc::before{content:"+";color:var(--muted)}
 @media (max-width:920px){.plans{grid-template-columns:1fr}}
+.aibundle{margin-top:18px;padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:16px 28px;align-items:center;border:2px solid var(--teal)}
+.ab-head{display:flex;gap:14px;align-items:flex-start}
+.ab-head h3{font-size:19px}
+.ab-head p{color:var(--muted);font-size:14.5px;margin-top:4px}
+.ab-price{display:grid;gap:2px;text-align:right}
+.ab-price .was{font-size:14px;color:var(--muted);text-decoration:line-through}
+.ab-price b{font:800 34px var(--display);letter-spacing:-.03em}
+.ab-price b small{font:500 14px var(--body);color:var(--muted)}
+.ab-price span:last-child{font-size:13px;color:var(--muted)}
+@media (max-width:760px){.aibundle{grid-template-columns:1fr}.ab-price{text-align:left}}
 .managed{margin-top:18px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:6px 20px;align-items:center}
 .managed h3{font-size:18px}
 .managed p{color:var(--muted);font-size:14.5px}
@@ -215,6 +286,8 @@ footer span:last-child{margin-left:auto}
     <ul>
       <li><a href="./">All industries</a></li>
       <li><a href="#pillars">What we connect</a></li>
+      <li><a href="#live">Live selling</a></li>
+      <li><a href="#ai">AI</a></li>
       <li><a href="#flow">Order flow</a></li>
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
@@ -228,7 +301,7 @@ footer span:last-child{margin-left:auto}
     <div class="hero-copy">
       <span class="eyebrow">For online sellers in the Philippines</span>
       <h1>Five shops. One <em>back office.</em></h1>
-      <p class="lead">Sell on TikTok Shop, Shopee, Lazada, Facebook and your own website, then handle every order, stock count, chat, return, promo and payout from one place. No more juggling seller centers.</p>
+      <p class="lead">Sell on TikTok Shop, Shopee, Lazada, Facebook and your own website, then handle every order, stock count, chat, return, promo and payout from one place, with an AI back end doing the repetitive work. No more juggling seller centers.</p>
       <div class="plats" aria-label="Platforms we connect">
         <span class="chip tt">TikTok Shop</span><span class="chip sp">Shopee</span><span class="chip lz">Lazada</span><span class="chip fb">Facebook & IG</span><span class="chip web">Your website</span>
       </div>
@@ -296,6 +369,7 @@ footer span:last-child{margin-left:auto}
         <div class="row">📊 Finance<small>payouts, true profit</small></div>
       </div>
     </div>
+    <a class="ai-layer" href="#ai"><span class="ai-dot" aria-hidden="true">✦</span><b>AI back end</b><span>runs under every job: drafts replies, writes listings, forecasts stock, flags problems. A person approves what goes out.</span></a>
   </div>
 </section>
 
@@ -318,6 +392,30 @@ footer span:last-child{margin-left:auto}
         <ul><li>Content calendar for TikTok, Facebook and IG</li><li>Live-selling run sheets and “mine” order capture</li><li>Affiliate and KOL tracker with commissions</li><li>Ad spend vs. sales (ROAS) per platform</li><li>Customer list for broadcasts and promos</li></ul></article>
       <article class="card pillar"><span class="ic" aria-hidden="true">📊</span><span class="tag">Finance</span><h3>Know your real profit</h3>
         <ul><li>Payout reconciliation per platform</li><li>Fees, vouchers and shipping split out</li><li>True profit per SKU and per channel</li><li>Daily GMV, orders, AOV and return rate</li><li>Cash flow and break-even view</li></ul></article>
+    </div>
+  </div>
+</section>
+
+<section id="ai" class="ai">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">AI integration</span>
+      <h2>An AI back end that works while you sell.</h2>
+      <p class="lead">AI sits behind every part of the hub. It reads your orders, chats, stock and reviews, does the repetitive work, and hands you drafts and alerts. You stay in control: nothing reaches a buyer or a platform without the rules you set.</p>
+    </div>
+    <div class="ai-grid">
+      <article class="card aic"><span class="tag">Customer service</span><h3>Replies drafted in seconds</h3><p>Answers order status, sizing, shipping and COD questions in Taglish, using the buyer’s real order. Simple FAQs can go out on their own; anything unusual goes to a person.</p><div class="demo"><span class="q">Kailan po darating order ko?</span><span class="a">✦ Hi po! Shipped na kahapon via J&amp;T, expected Thu. Tracking: link</span></div></article>
+      <article class="card aic"><span class="tag">Commercial</span><h3>Listings written for each platform</h3><p>Titles, descriptions, bullet points and search keywords from one product sheet, adapted to TikTok Shop, Shopee and Lazada rules, in English or Taglish.</p><div class="demo"><span class="a">✦ Ruched Puff-Sleeve Blouse | Soft Rayon | S–XL | Date Night Top</span></div></article>
+      <article class="card aic"><span class="tag">Content</span><h3>Product photos and captions</h3><p>Clean backgrounds, lifestyle shots and short video scripts for TikTok and Reels, made from your product photos and checked before posting.</p><div class="demo"><span class="a">✦ 3 TikTok hooks ready · 6 photos cleaned</span></div></article>
+      <article class="card aic"><span class="tag">Warehousing</span><h3>Stock forecasts and reorder alerts</h3><p>Predicts what will run out before payday sales and 11.11, based on your own sales history, and suggests how much to reorder.</p><div class="demo"><span class="a">✦ Linen pants M sells out in 6 days. Reorder 40.</span></div></article>
+      <article class="card aic"><span class="tag">Aftersales</span><h3>Returns and reviews, explained</h3><p>Groups complaints and bad reviews by cause, such as sizing, damage or late delivery, so you fix the root problem instead of each ticket.</p><div class="demo"><span class="a">✦ 62% of returns this week: “runs small”, size M blouse</span></div></article>
+      <article class="card aic"><span class="tag">Marketing</span><h3>Live-selling copilot</h3><p>Writes run sheets and scripts, captures “mine” comments into orders, and suggests which items to push next based on what is selling during the live.</p><div class="demo"><span class="a">✦ 38 orders captured · push serum next (12 asks)</span></div></article>
+      <article class="card aic"><span class="tag">Finance</span><h3>Daily owner brief</h3><p>One short message every morning: yesterday’s sales and profit per platform, what changed, and anything that needs you, like a spike in returns or a payout that doesn’t match.</p><div class="demo"><span class="a">✦ ₱18.4k sales, ₱4.6k profit. Shopee payout short ₱312: voucher fee.</span></div></article>
+      <article class="card aic"><span class="tag">Promos</span><h3>Campaign suggestions</h3><p>Proposes bundles, vouchers and which products to feature for each campaign, with the margin worked out after platform fees.</p><div class="demo"><span class="a">✦ 12.12: bundle serum + toner at ₱599 keeps 31% margin</span></div></article>
+    </div>
+    <div class="guard">
+      <b>How we keep AI safe for your shop</b>
+      <ul><li>You choose what AI may send by itself and what needs approval.</li><li>It answers from your own orders, prices and policies, not guesses.</li><li>Your data stays in accounts you own and is never used to sell to others.</li><li>Every AI reply and change is logged, so you can see what it did.</li></ul>
     </div>
   </div>
 </section>
@@ -362,6 +460,66 @@ footer span:last-child{margin-left:auto}
           <li><b>Ad spend vs. sales per platform,</b> so you know where each peso of marketing works.</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="live" class="live">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">Live selling</span>
+      <h2>From “mine!” to paid invoice, without the notebook.</h2>
+      <p class="lead">Live selling sells fast, but the work after it is slow: reading hundreds of comments, writing orders by hand, making invoices one by one, and chasing buyers who never pay. We automate the whole after-live process for Facebook, TikTok and Instagram lives.</p>
+    </div>
+
+    <div class="live-demo">
+      <div class="card comments" aria-label="Example: live comments being captured">
+        <header><span class="rec">● LIVE</span> Comments <small id="cap">38 orders captured</small></header>
+        <ul id="cmts">
+          <li><span><b>Ana Reyes</b>mine B12 M</span><em>✓ B12 Ruched blouse, M · ₱299</em></li>
+          <li><span><b>Joy Santos</b>mine S03 x2</span><em>✓ S03 Serum ×2 · ₱698</em></li>
+          <li><span><b>Ana Reyes</b>mine L07</span><em>✓ L07 Linen pants, M · ₱499</em></li>
+          <li><span><b>Mika Cruz</b>pa-mine po B12 L</span><em>✓ B12 Ruched blouse, L · ₱299</em></li>
+          <li><span><b>Lea Dizon</b>mine B12 M</span><em class="wait">⏳ Sold out: added to waitlist</em></li>
+        </ul>
+      </div>
+      <div class="card invoice" aria-label="Example invoice combined from one buyer's comments">
+        <header><div><b>Invoice LV-1104</b><small>Ana Reyes · Quezon City</small></div><span class="st" id="inv-st">Unpaid</span></header>
+        <ul>
+          <li><span>B12 Ruched blouse, M</span><span>₱299</span></li>
+          <li><span>L07 Linen pants, M</span><span>₱499</span></li>
+          <li><span>Shipping (Metro Manila)</span><span>₱85</span></li>
+        </ul>
+        <div class="tot"><span>Total</span><b>₱883</b></div>
+        <div class="pay"><span>GCash</span><span>Bank transfer</span><span>COD +₱20</span></div>
+        <p class="note" id="inv-note">Sent by Messenger 2 min after the live · reminder in 12 h · stock released in 24 h if unpaid</p>
+      </div>
+    </div>
+    <p class="ex" style="margin-top:10px">Sample live for illustration.</p>
+
+    <div class="table-wrap">
+      <table class="pains-table">
+        <thead><tr><th>The live-selling headache</th><th>What we automate</th></tr></thead>
+        <tbody>
+          <tr><td><b>Hundreds of comments, missed orders</b><br>Scrolling back through the live to find who said “mine”.</td><td>Every “mine” comment is captured with the buyer’s name, item code, size and quantity, even when typed as “pa-mine po” or “m1ne”.</td></tr>
+          <tr><td><b>Writing orders by hand</b><br>Notebook lists, screenshots, wrong sizes.</td><td>Item codes match your catalog automatically, so the price and variant are right. Multiple “mine” comments from one buyer merge into one order.</td></tr>
+          <tr><td><b>Overselling during the live</b><br>Two buyers claim the last piece.</td><td>Stock is held per claim in order of comment time. When it runs out, the next buyers go to a waitlist and get offered the item if someone cancels.</td></tr>
+          <tr><td><b>Making invoices one by one</b><br>Computing totals and shipping for each buyer.</td><td>An invoice per buyer is generated right after the live, with shipping by area, vouchers and COD fee, and sent by Messenger or as a link.</td></tr>
+          <tr><td><b>Collecting payment</b><br>Checking GCash screenshots against names.</td><td>Buyers pay by GCash, bank or COD from the invoice link. Payment proofs are matched to invoices and marked paid for you to confirm.</td></tr>
+          <tr><td><b>Joy reservers and bogus buyers</b><br>Buyers who claim and disappear.</td><td>Automatic reminders, a payment cut-off, then stock goes back on sale. Repeat no-shows are flagged so you can require prepayment next time.</td></tr>
+          <tr><td><b>Packing and shipping the batch</b><br>Matching paid buyers to parcels.</td><td>Paid invoices become a packing list and waybills in one batch, and buyers get their tracking number automatically.</td></tr>
+          <tr><td><b>Knowing if the live was worth it</b><br>Sales, unpaid claims and costs all over the place.</td><td>A live report: claims, paid orders, unpaid rate, best sellers, sales per minute and profit after shipping.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="live-steps">
+      <div><span>1</span><b>Prepare</b><small>Run sheet with item codes, prices and stock</small></div>
+      <div><span>2</span><b>Go live</b><small>“Mine” comments captured as you sell</small></div>
+      <div><span>3</span><b>Invoice</b><small>One invoice per buyer, sent minutes after</small></div>
+      <div><span>4</span><b>Collect</b><small>GCash, bank or COD, with reminders</small></div>
+      <div><span>5</span><b>Ship</b><small>Packing list, waybills, tracking sent</small></div>
+      <div><span>6</span><b>Review</b><small>Live report and repeat-buyer list</small></div>
     </div>
   </div>
 </section>
@@ -425,7 +583,7 @@ footer span:last-child{margin-left:auto}
         <h3>Founding Seller</h3>
         <p class="for">For sellers who want to try it before committing.</p>
         <div class="price"><b>₱0</b><span>no setup fee, no monthly fee during the pilot</span></div>
-        <ul><li>Orders and stock sheet for up to 2 platforms</li><li>Saved-reply kit for chats in Taglish</li><li>Daily sales dashboard</li><li>Packing-video and returns checklist</li><li>In return: honest feedback and a case study</li></ul>
+        <ul><li>Orders and stock sheet for up to 2 platforms</li><li>Saved-reply kit for chats in Taglish</li><li>AI chat drafts and daily owner brief (trial)</li><li>Daily sales dashboard</li><li>Packing-video and returns checklist</li><li>In return: honest feedback and a case study</li></ul>
         <a class="btn btn-ghost" href="./#seller">Apply as Founding Seller</a>
       </article>
       <article class="card plan pop">
@@ -433,7 +591,7 @@ footer span:last-child{margin-left:auto}
         <h3>Seller Growth</h3>
         <p class="for">For sellers on 2 to 3 platforms with a small team.</p>
         <div class="price"><span class="was">₱35,000</span><b>₱7,000</b><span>setup, then ₱700/month <s>₱3,500</s> for 12 months</span></div>
-        <ul><li class="inc">Everything in Founding Seller</li><li>Up to 3 platforms synced, plus your website</li><li>One inbox for all chats</li><li>Pick lists, waybills and courier log</li><li>Returns, RTS and review tracker</li><li>Payout reconciliation and profit per SKU</li></ul>
+        <ul><li class="inc">Everything in Founding Seller</li><li>Up to 3 platforms synced, plus your website</li><li>One inbox for all chats</li><li>Pick lists, waybills and courier log</li><li>Returns, RTS and review tracker</li><li>Payout reconciliation and profit per SKU</li><li class="inc">AI bundle available as an add-on</li></ul>
         <a class="btn btn-primary" href="./#demo">Choose Seller Growth</a>
       </article>
       <article class="card plan">
@@ -441,9 +599,13 @@ footer span:last-child{margin-left:auto}
         <h3>Seller Ecosystem</h3>
         <p class="for">For brands selling everywhere, with a warehouse and a team.</p>
         <div class="price"><span class="was">₱60,000</span><b>₱12,000</b><span>setup, then ₱1,200/month <s>₱6,000</s> for 12 months</span></div>
-        <ul><li class="inc">Everything in Seller Growth</li><li>All platforms, multiple warehouses or a 3PL</li><li>Live-selling order capture and run sheets</li><li>Affiliate, KOL and ad-spend tracking</li><li>Team shifts, SLAs and monthly business review</li></ul>
+        <ul><li class="inc">Everything in Seller Growth</li><li>All platforms, multiple warehouses or a 3PL</li><li>Live-selling order capture and run sheets</li><li>Affiliate, KOL and ad-spend tracking</li><li>Team shifts, SLAs and monthly business review</li><li><b>AI bundle included</b></li></ul>
         <a class="btn btn-ghost" href="./#demo">Choose Seller Ecosystem</a>
       </article>
+    </div>
+    <div class="card aibundle">
+      <div class="ab-head"><span class="ai-dot" aria-hidden="true">✦</span><div><h3>AI bundle</h3><p>The full AI back end: chat replies, listing writer, photo and caption help, stock forecasts, returns and review insights, live-selling copilot, campaign suggestions and the daily owner brief.</p></div></div>
+      <div class="ab-price"><span class="was">₱2,500/month</span><b>₱500<small>/month</small></b><span>for 12 months at launch · included in Seller Ecosystem</span></div>
     </div>
     <div class="card managed">
       <h3>Managed services</h3>
@@ -461,6 +623,8 @@ footer span:last-child{margin-left:auto}
       <details><summary>Is the Founding Seller pilot really free?</summary><p>Yes. We set up the starter tools at no cost and you pay nothing during the pilot. In return we ask for honest feedback and permission to share your results as a case study. You only pay if you decide to move to Seller Growth or the full ecosystem.</p></details>
       <details><summary>How do you connect to TikTok Shop, Shopee and Lazada?</summary><p>Through each platform’s official seller tools and order exports, or through a multichannel tool you already use. We set up whatever fits your volume and budget, and the data stays in accounts you own.</p></details>
       <details><summary>Will this stop overselling during big sales?</summary><p>That is the main job of the stock sync. One count is shared by every shop, and items are held as soon as an order comes in on any platform.</p></details>
+      <details><summary>Will the AI reply to buyers by itself?</summary><p>Only if you allow it. You decide which questions it may answer on its own, such as order status or shipping times, and everything else waits as a draft for your team to approve. It answers from your real orders, prices and policies, and every reply is logged.</p></details>
+      <details><summary>Do I pay extra for AI usage?</summary><p>The AI bundle covers normal use for a small to mid-size shop. If your volume grows very large, we will show you the usage first and agree on any change before it applies.</p></details>
       <details><summary>Can you handle our chats for us?</summary><p>Yes, through managed customer service. Our agents reply from the same inbox using your saved answers, and you see every conversation.</p></details>
       <details><summary>We use a 3PL warehouse. Does that still work?</summary><p>Yes. Orders and stock flow to and from your 3PL, and you still see packing, shipping and returns in one place.</p></details>
       <details><summary>How long does setup take?</summary><p>About two weeks for the Founding Seller pilot and four weeks for the full ecosystem, including training your team.</p></details>
@@ -498,6 +662,33 @@ footer span:last-child{margin-left:auto}
   ];
   let i = 0, n = 128;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // live-selling demo: new "mine" comments arrive, and the invoice flips to Paid
+  const cmts = document.getElementById('cmts'), cap = document.getElementById('cap');
+  const st = document.getElementById('inv-st'), note = document.getElementById('inv-note');
+  const comments = [
+    ['Rose Lim', 'mine S03', '✓ S03 Serum · ₱349', ''],
+    ['Kat Uy', 'mine L07 S', '✓ L07 Linen pants, S · ₱499', ''],
+    ['Bea Tan', 'm1ne B12 S', '✓ B12 Ruched blouse, S · ₱299', ''],
+    ['Lea Dizon', 'mine L07 M', '⏳ Last piece held for Ana: waitlisted', 'wait'],
+    ['Jen Ong', 'pa-mine po S03 x3', '✓ S03 Serum ×3 · ₱1,047', '']
+  ];
+  let c = 0, claimed = 38;
+  setInterval(() => {
+    const s = comments[c++ % comments.length];
+    const li = document.createElement('li');
+    li.innerHTML = '<span><b>' + s[0] + '</b>' + s[1] + '</span><em class="' + s[3] + '">' + s[2] + '</em>';
+    cmts.prepend(li);
+    while (cmts.children.length > 5) cmts.lastElementChild.remove();
+    if (!s[3]) cap.textContent = (++claimed) + ' orders captured';
+    if (c % 3 === 0) {
+      const paid = !st.classList.contains('paid');
+      st.classList.toggle('paid', paid);
+      st.textContent = paid ? 'Paid · GCash' : 'Unpaid';
+      note.textContent = paid ? 'GCash proof matched to LV-1104 · added to today’s packing list'
+        : 'Sent by Messenger 2 min after the live · reminder in 12 h · stock released in 24 h if unpaid';
+    }
+  }, 2400);
   setInterval(() => {
     const s = samples[i++ % samples.length];
     const li = document.createElement('li');
