@@ -147,6 +147,10 @@ section{padding-block:clamp(64px,9vw,112px)}
 .ind ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:14.5px;color:var(--muted)}
 .ind li{display:grid;grid-template-columns:16px 1fr;gap:8px}
 .ind li::before{content:"→";color:var(--teal);font-weight:700}
+.ind .more{font-weight:600;color:var(--accent);text-decoration:none;font-size:14.5px}
+.also{margin-top:18px;color:var(--muted);font-size:15px}
+.also a{color:var(--accent);font-weight:600;text-decoration:none}
+.ind .pic{aspect-ratio:2/1!important}
 .ind .who{font:500 12px var(--mono);color:var(--teal);letter-spacing:.04em;text-transform:uppercase}
 @media (max-width:960px){.inds{grid-template-columns:1fr 1fr}}
 @media (max-width:620px){.inds{grid-template-columns:1fr}}
@@ -458,70 +462,43 @@ footer span:last-child{margin-left:auto}
     <div class="head">
       <span class="eyebrow">Industries</span>
       <h2>If customers message you, book you or buy from you, we can digitalize it.</h2>
-      <p class="lead">The same building blocks fit very different businesses. Here is what we set up for each.</p>
+      <p class="lead">The same building blocks fit very different businesses.</p>
     </div>
     <div class="inds">
-      <article class="card ind">
-        <div class="pic"><img src="img/commercial-viewing.webp" alt="A leasing agent shows a floor plan on a tablet to a couple viewing an empty commercial space" width="1400" height="933" loading="lazy"><span class="float">🏢 Unit G-3 · Viewing Sat 10 AM</span></div>
-        <div class="body"><span class="who">Property leasing</span><h3>Commercial spaces, offices, stalls</h3>
-          <ul><li>Listings with photos, floor plans and a virtual tour</li><li>Online viewing schedule with reminders</li><li>Applications, digital lease, monthly rent billing</li></ul>
-          <a href="leasing.html" style="font-weight:600;color:var(--accent);text-decoration:none">See how leasing works →</a></div>
-      </article>
-      <article class="card ind">
-        <div class="pic"><img src="img/apartment-rent.webp" alt="A tenant shows her landlord on her phone that rent was paid" width="900" height="600" loading="lazy"><span class="float">💸 Rent for Unit 3B · Paid</span></div>
-        <div class="body"><span class="who">Rentals</span><h3>Apartments, condos, boarding houses</h3>
-          <ul><li>Rent reminders before the due date</li><li>GCash payment proof matched to each unit</li><li>Tenant records and repair requests</li></ul></div>
-      </article>
-      <article class="card ind">
-        <div class="pic"><img src="img/laundry.webp" alt="A laundry shop hands a folded order to a customer while a rider waits for a delivery" width="900" height="600" loading="lazy"><span class="float">🧺 Order L-221 · Out for delivery</span></div>
-        <div class="body"><span class="who">Services</span><h3>Laundry, car wash, repair, delivery</h3>
-          <ul><li>Drop-off and pickup orders with status updates</li><li>Rider schedule and delivery fees</li><li>Sales per load, per service, per day</li></ul></div>
-      </article>
       <article class="card ind">
         <div class="pic"><img src="img/qr-scan.webp" alt="A customer scans a QR code at a café table and the menu opens on her phone" width="900" height="600" loading="lazy"><span class="float">📲 Order P-014 · Ready</span></div>
         <div class="body"><span class="who">Food and drinks</span><h3>Cafés, restaurants, food stalls</h3>
           <ul><li>QR menu and pickup orders</li><li>POS with receipts and stock alerts</li><li>Daily sales and cash-up</li></ul></div>
       </article>
       <article class="card ind">
+        <div class="pic"><img src="img/ecom-live.webp" alt="An online seller doing a live-selling session" width="1400" height="933" loading="lazy"><span class="float">🔴 Live · 38 orders captured</span></div>
+        <div class="body"><span class="who">E-commerce</span><h3>TikTok Shop, Shopee, Lazada sellers</h3>
+          <ul><li>One stock count and one chat inbox</li><li>Live-selling orders to paid invoices</li><li>Packing, returns and payouts in one place</li></ul>
+          <a class="more" href="ecommerce.html">See the e-commerce page →</a></div>
+      </article>
+      <article class="card ind">
+        <div class="pic"><img src="img/commercial-viewing.webp" alt="A leasing agent shows a floor plan on a tablet to a couple viewing an empty commercial space" width="1400" height="933" loading="lazy"><span class="float">🏢 Unit 304 · 360° tour sent</span></div>
+        <div class="body"><span class="who">Property leasing</span><h3>Commercial spaces, offices, apartments</h3>
+          <ul><li>Listings with 360° tours and viewing slots</li><li>Digital leases and monthly rent billing</li><li>Repairs and renewals tracked</li></ul>
+          <a class="more" href="leasing.html">See the leasing page →</a></div>
+      </article>
+      <article class="card ind">
         <div class="pic"><img src="img/staycation.webp" alt="A family arrives at a staycation house with a private pool at sunset" width="900" height="600" loading="lazy"><span class="float">🗓️ November · 78% booked</span></div>
-        <div class="body"><span class="who">Rentals</span><h3>Staycations, Airbnbs, private resorts</h3>
-          <ul><li>Live availability calendar and booking page</li><li>GCash down payment, proof checked</li><li>Cleaning checklist and monthly occupancy</li></ul></div>
+        <div class="body"><span class="who">Stays</span><h3>Staycations, Airbnbs, private resorts</h3>
+          <ul><li>Live availability and booking page</li><li>GCash down payment, proof checked</li><li>Cleaning checklist and occupancy</li></ul></div>
       </article>
       <article class="card ind">
         <div class="pic"><img src="img/salon.webp" alt="A stylist cuts a customer's hair in a bright salon with a booking tablet on the counter" width="900" height="600" loading="lazy"><span class="float">⏰ 2:00 PM slot · Open</span></div>
-        <div class="body"><span class="who">Appointments</span><h3>Salons, spas, clinics, repair shops</h3>
-          <ul><li>Online booking with open time slots</li><li>Automatic reminders the day before</li><li>Earnings per staff member</li></ul></div>
+        <div class="body"><span class="who">Services</span><h3>Salons, clinics, laundries, repair shops</h3>
+          <ul><li>Online booking or drop-off orders</li><li>Reminders and status updates</li><li>Earnings per staff or service</li></ul></div>
       </article>
       <article class="card ind">
         <div class="pic"><img src="img/sari-sari.webp" alt="A store owner checks stock on her phone behind the counter of her sari-sari store" width="900" height="600" loading="lazy"><span class="float warn">⚠️ Canned tuna · 3 left</span></div>
-        <div class="body"><span class="who">Retail</span><h3>Shops, sari-sari stores, online sellers</h3>
-          <ul><li>Product catalog and Messenger orders</li><li>Stock counts with reorder alerts</li><li>Best sellers and profit per item</li></ul></div>
-      </article>
-      <article class="card ind">
-        <div class="pic"><img src="img/events-cart.webp" alt="A server hands a drink to a guest from a mobile coffee cart at a garden party" width="900" height="600" loading="lazy"><span class="float">🎉 Sat event · Deposit paid</span></div>
-        <div class="body"><span class="who">Events</span><h3>Mobile bars, catering, photo booths</h3>
-          <ul><li>Event inquiry form and package quotes</li><li>Booking calendar with deposits</li><li>Per-event cost and profit</li></ul></div>
-      </article>
-      <article class="card ind">
-        <div class="pic"><img src="img/art-class.webp" alt="Kids paint in an art class while a parent checks in with a QR code" width="900" height="600" loading="lazy"><span class="float">✅ 17 of 20 seats filled</span></div>
-        <div class="body"><span class="who">Classes</span><h3>Tutors, gyms, dance and art studios</h3>
-          <ul><li>Class schedule and online enrolment</li><li>Membership and payment tracking</li><li>Attendance with a QR check-in</li></ul></div>
+        <div class="body"><span class="who">Retail</span><h3>Shops and sari-sari stores</h3>
+          <ul><li>Catalog and Messenger orders</li><li>Stock counts with reorder alerts</li><li>Best sellers and profit per item</li></ul></div>
       </article>
     </div>
-  </div>
-</section>
-
-<section class="ecom-band">
-  <div class="wrap">
-    <a class="card ecom-cta" href="ecommerce.html">
-      <img src="img/ecom-live.webp" alt="An online seller doing a live-selling session" width="1400" height="933" loading="lazy">
-      <div>
-        <span class="eyebrow">New · E-commerce</span>
-        <h2>Selling on TikTok Shop, Shopee or Lazada?</h2>
-        <p class="lead">One back office for every platform: synced stock, one chat inbox, packing and returns, live selling, affiliates and payouts. Founding Sellers start free.</p>
-        <span class="btn btn-primary">See the e-commerce page →</span>
-      </div>
-    </a>
+    <p class="also">Also for events and catering, classes and studios, and any business where customers ask, book, order or pay. <a href="#demo">Tell us about yours →</a></p>
   </div>
 </section>
 
