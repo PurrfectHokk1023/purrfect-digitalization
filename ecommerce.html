@@ -342,6 +342,31 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
 .cta input::placeholder{color:#7f8aa3}
 .cta .btn-ghost{color:var(--ink)}
 .site-footer{background:#040c17}
+
+/* Responsive nav (5 Nov): on tablets and phones the links fold into a menu button that opens a dropdown */
+.nav ul a{white-space:nowrap}
+.nav-toggle{display:none;width:42px;height:42px;flex:none;place-items:center;border-radius:12px;border:1px solid rgba(148,170,210,.28);background:rgba(255,255,255,.05);color:var(--ink);cursor:pointer;padding:0}
+.nav-toggle span,.nav-toggle span::before,.nav-toggle span::after{display:block;width:18px;height:2px;border-radius:2px;background:currentColor;transition:transform .2s,background .2s}
+.nav-toggle span{position:relative}
+.nav-toggle span::before,.nav-toggle span::after{content:"";position:absolute;left:0}
+.nav-toggle span::before{top:-6px}.nav-toggle span::after{top:6px}
+.nav.open .nav-toggle span{background:transparent}
+.nav.open .nav-toggle span::before{transform:translateY(6px) rotate(45deg)}
+.nav.open .nav-toggle span::after{transform:translateY(-6px) rotate(-45deg)}
+@media (max-width:1180px){
+  .nav .wrap{position:relative}
+  .nav .btn{margin-left:auto}
+  .nav-toggle{display:grid}
+  .nav ul{display:none;position:absolute;top:100%;left:0;right:0;margin:0;flex-direction:column;gap:0;padding:6px max(20px,env(safe-area-inset-left,0px)) 14px;background:#05101d;border-bottom:1px solid var(--line);box-shadow:0 28px 40px -24px rgba(0,0,0,.7);max-height:calc(100vh - 64px);max-height:calc(100dvh - 64px);overflow-y:auto}
+  .nav.open ul{display:flex}
+  .nav ul li+li a{border-top:1px solid var(--line)}
+  .nav ul a{display:flex;align-items:center;min-height:50px;font-size:16.5px;color:var(--ink)}
+}
+@media (max-width:480px){.nav .wrap{gap:10px}.nav .btn{padding:0 13px;font-size:13.5px;height:40px}}
+
+/* Tablet and phone polish (5 Nov; leasing.html shares this through BASE_CSS) */
+@media (min-width:720px) and (max-width:920px){.plans{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.plan{padding:22px 18px}}
+@media (max-width:767px){.promo a{display:inline-block;padding:6px 2px}}
 </style>
 </head>
 <body>
@@ -356,7 +381,7 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
       <img class="logo-l" src="img/logo-light.png" alt="Purrfect Digitalization" width="720" height="173">
       <img class="logo-d" src="img/logo-dark.png" alt="" width="720" height="173" aria-hidden="true">
     </a>
-    <ul>
+    <ul id="navlinks">
       <li><a href="./">All industries</a></li>
       <li><a href="#pillars">What we connect</a></li>
       <li><a href="#live">Live selling</a></li>
@@ -367,8 +392,22 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
       <li><a href="./#contact">Contact</a></li>
     </ul>
     <a class="btn btn-primary" href="./#seller">Book a demo</a>
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navlinks"><span></span></button>
   </div>
 </nav>
+<script>
+// tablets and phones: the menu button opens the nav links as a dropdown
+(() => {
+  const nav = document.querySelector('.nav'), btn = nav && nav.querySelector('.nav-toggle');
+  if (!btn) return;
+  const set = open => { nav.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); };
+  btn.addEventListener('click', () => set(!nav.classList.contains('open')));
+  nav.querySelectorAll('ul a').forEach(a => a.addEventListener('click', () => set(false)));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+  document.addEventListener('click', e => { if (!nav.contains(e.target)) set(false); });
+  matchMedia('(min-width:1181px)').addEventListener('change', e => { if (e.matches) set(false); });
+})();
+</script>
 
 <header class="hero">
   <div class="wrap">

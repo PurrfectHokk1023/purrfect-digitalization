@@ -145,6 +145,9 @@ dialog::backdrop{background:rgba(8,12,16,.55)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;max-width:calc(100% - 32px);text-align:center}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* phones and landscape phones: the tall header stops pinning so it doesn't cover a quarter of the screen */
+@media (max-width:640px),(max-height:520px){.top{position:static}}
 </style>
 </head>
 <body>
