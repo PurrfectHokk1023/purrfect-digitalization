@@ -1,5 +1,5 @@
 // Purrfect POS offline helper (make_pos_app.py): network first so updates arrive, the saved copy when there is no internet.
-const CACHE = 'ppos-2';
+const CACHE = 'ppos-3';
 const SHELL = ['./', './?app=1', 'index.html', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys()

@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Back office · Purrfect POS</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b1729">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Purrfect POS back office: the owner's view of the shop from any phone (Vince, 5 Nov 2026). Same brand as the register: navy bar,
+   burnt-orange actions, light surface. Layout: one column of cards on phones, two on wider screens; the money cards come first. */
+:root{--bar:#0b1729;--act:#c24e0e;--act-soft:#fdeee5;--bg:#eef1f6;--card:#fff;--ink:#131c3a;--muted:#5b6478;--line:#dde2ea;--good:#1f7a45;--red:#b42318;--warn:#a15c07;--chart:#e8601a;
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--body:Figtree,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.45 var(--body);min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:var(--act)}
+h1,h2,h3,.num,.btn{font-family:var(--display)}
+:focus-visible{outline:3px solid #ffb07a;outline-offset:2px}
+.bar{background:var(--bar);color:#fff;display:flex;align-items:center;gap:12px;padding:12px max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));padding-top:max(12px,env(safe-area-inset-top))}
+.bar img{width:30px;height:30px;border-radius:8px}
+.bar h1{font-size:17px;line-height:1.15;flex:1;min-width:0}
+.bar h1 small{display:block;font:500 12px var(--body);opacity:.75}
+.bar button{color:#fff;opacity:.85;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 12px}
+main{max-width:1060px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left));display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.card h2{font-size:16px}
+.note{color:var(--muted);font-size:13.5px}
+.warn{color:var(--red);font-size:14px;font-weight:600}
+.warn:empty{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:999px;font-weight:700;font-size:15px;background:var(--act);color:#fff}
+.btn.o{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn[disabled]{opacity:.55;cursor:default}
+label{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+input,select{background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 12px;height:46px;font-size:16px;color:var(--ink);width:100%;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--bar);color:#fff;border-color:var(--bar)}
+.sync{font-size:13px;color:var(--muted)}
+.sync.old{color:var(--warn);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:4px}
+.tile span{font-size:12.5px;color:var(--muted);font-weight:600}
+.tile .num{font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile.profit{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.tile.profit.neg{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.tile.profit.neg .num{color:var(--red)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.sumrows{display:grid;gap:6px;font-variant-numeric:tabular-nums}
+.sumrows div{display:flex;justify-content:space-between;gap:12px}
+.sumrows div.total{border-top:1px solid var(--line);padding-top:8px;font-weight:700;font-family:var(--display);font-size:17px}
+.list{display:grid;gap:2px;list-style:none}
+.list li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.list li:last-child{border-bottom:0}
+.list li small{color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:8px;vertical-align:1px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:140px;padding-top:8px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;min-width:6px;background:var(--chart);border-radius:4px 4px 0 0;position:relative}
+.bars div:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bar);color:#fff;font-size:12px;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.barlab{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.expform{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px;align-items:end}
+.x{color:var(--muted);font-size:20px;padding:0 6px;line-height:1}
+.signin{max-width:440px;margin:24px auto}
+.empty{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header class="bar">
+  <img src="icons/icon-192.png" alt="">
+  <h1><span id="shop">Purrfect POS</span><small>Back office</small></h1>
+  <button type="button" id="out" hidden>Sign out</button>
+</header>
+
+<main id="signin" hidden>
+  <section class="card signin">
+    <h2>Sign in to your back office</h2>
+    <p class="note">See today’s sales, who is at work and your net profit from any phone. On the register, turn on <b>Online back office</b> in Settings first.</p>
+    <label for="key">License key<input id="key" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PDPOS-XXXX-XXXX-XXXX"></label>
+    <p class="warn" id="kerr"></p>
+    <button class="btn" type="button" id="send">Email me a sign-in link</button>
+    <p class="note" id="sent" hidden></p>
+    <p class="note">Or open it straight from the register: Settings › Online back office › <b>Open back office</b>.</p>
+  </section>
+</main>
+
+<main id="app" hidden>
+  <div class="seg" role="group" aria-label="Period">
+    <button type="button" data-p="today" aria-pressed="true">Today</button>
+    <button type="button" data-p="yesterday" aria-pressed="false">Yesterday</button>
+    <button type="button" data-p="week" aria-pressed="false">Last 7 days</button>
+    <button type="button" data-p="month" aria-pressed="false">This month</button>
+    <button type="button" data-p="last" aria-pressed="false">Last month</button>
+  </div>
+  <p class="sync" id="sync"></p>
+  <p class="warn" id="err"></p>
+
+  <section class="tiles" aria-label="Headline figures">
+    <div class="tile"><span>Net sales</span><div class="num" id="tNet">—</div></div>
+    <div class="tile profit" id="tProfitBox"><span>Net profit</span><div class="num" id="tProfit">—</div></div>
+    <div class="tile"><span>Receipts</span><div class="num" id="tRcpt">—</div></div>
+    <div class="tile"><span>Average sale</span><div class="num" id="tAvg">—</div></div>
+    <div class="tile"><span>Staff at work now</span><div class="num" id="tOn">—</div></div>
+  </section>
+
+  <div class="cols">
+    <section class="card" id="profit">
+      <h2>Net profit</h2>
+      <div class="sumrows">
+        <div><span>Net sales</span><span id="pNet">—</span></div>
+        <div><span>Cost of items sold</span><span id="pCost">—</span></div>
+        <div><span>Expenses</span><span id="pExp">—</span></div>
+        <div class="total"><span>Net profit</span><span id="pProfit">—</span></div>
+      </div>
+      <p class="note" id="pMissing" hidden></p>
+      <p class="note" id="pExtra"></p>
+    </section>
+
+    <section class="card" id="staff">
+      <h2>Staff</h2>
+      <div id="staffPro">
+        <p class="note">From the register’s time clock.</p>
+        <ul class="list" id="onList"></ul>
+        <p class="empty" id="onEmpty" hidden>Nobody is clocked in right now.</p>
+        <h3 class="note">Hours in this period</h3>
+        <ul class="list" id="hoursList"></ul>
+        <p class="empty" id="hoursEmpty" hidden>No time clock entries in this period.</p>
+      </div>
+      <div id="staffBase" hidden>
+        <p class="note">Staff clock in and out on the register with Purrfect POS Pro, and you see who is at work here, with their hours.</p>
+        <a class="btn o" href="../point-of-sale.html#pro" target="_blank" rel="noopener">Get Pro</a>
+      </div>
+    </section>
+
+    <section class="card" id="days">
+      <h2>Sales by day</h2>
+      <div class="bars" id="bars" role="img" aria-label="Net sales by day"></div>
+      <div class="barlab"><span id="bFrom"></span><span id="bTo"></span></div>
+      <p class="empty" id="daysEmpty" hidden>No sales in this period yet.</p>
+    </section>
+
+    <section class="card" id="pays">
+      <h2>Payments</h2>
+      <ul class="list" id="payList"></ul>
+      <p class="empty" id="payEmpty" hidden>No payments in this period yet.</p>
+    </section>
+
+    <section class="card" id="top">
+      <h2>Best sellers</h2>
+      <ul class="list" id="topList"></ul>
+      <p class="empty" id="topEmpty" hidden>Nothing sold in this period yet.</p>
+    </section>
+
+    <section class="card" id="stock">
+      <h2>Low stock</h2>
+      <ul class="list" id="lowList"></ul>
+      <p class="empty" id="lowEmpty" hidden>Nothing is running low. Items you track in the register show here when they reach their warning level.</p>
+    </section>
+
+    <section class="card" id="expenses">
+      <h2>Expenses</h2>
+      <p class="note">Rent, supplies, salaries: anything you spend. It comes off your net profit for that day.</p>
+      <form class="expform" id="expForm" novalidate>
+        <label for="eDay">Day<input id="eDay" type="date"></label>
+        <label for="eCat">Kind<select id="eCat"><option>Ingredients</option><option>Supplies</option><option>Salaries</option><option>Rent</option><option>Utilities</option><option>Delivery</option><option>Other</option></select></label>
+        <label for="eAmt">Amount (₱)<input id="eAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+        <label for="eNote">Note<input id="eNote" maxlength="120" placeholder="optional"></label>
+        <button class="btn" type="submit" id="eAdd">Add expense</button>
+      </form>
+      <p class="warn" id="eErr"></p>
+      <ul class="list" id="expList"></ul>
+      <p class="empty" id="expEmpty" hidden>No expenses in this period.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+'use strict';
+const API = ((location.hostname === '127.0.0.1' || location.hostname === 'localhost') && (() => { try { return localStorage.getItem('pd-api'); } catch (e) { return null; } })())
+  || 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';   // the Purrfect Digitalization web app (BackOffice.gs)
+const TK = 'ppos-office-t';
+const $ = id => document.getElementById(id);
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+  del: k => { try { localStorage.removeItem(k); } catch (e) {} }};
+const peso = n => (n < 0 ? '−' : '') + '₱' + Math.abs(Number(n) || 0).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const day0 = () => new Date(Date.now() + 8 * 3600e3);   // Manila
+const ymd = d => d.toISOString().slice(0, 10);
+const addD = (s, n) => ymd(new Date(Date.parse(s + 'T00:00:00Z') + n * 864e5));
+const short = s => new Date(s + 'T12:00:00Z').toLocaleDateString('en-PH', {month: 'short', day: 'numeric', timeZone: 'UTC'});
+const timeOf = iso => new Date(iso).toLocaleTimeString('en-PH', {hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila'});
+const post = body => fetch(API, {method: 'POST', body: JSON.stringify(body)}).then(r => r.json());
+
+// a sign-in link carries the token in the address (#t=...): keep it here, then take it out of the address
+function takeHash() {
+  const t = (location.hash.match(/t=([0-9a-f]{64})/) || [])[1];
+  if (t) { store.set(TK, t); history.replaceState(null, '', location.pathname); }
+  return !!t;
+}
+takeHash();
+
+const span = p => {
+  const t = ymd(day0()), d = day0();
+  if (p === 'yesterday') return [addD(t, -1), addD(t, -1)];
+  if (p === 'week') return [addD(t, -6), t];
+  if (p === 'month') return [t.slice(0, 8) + '01', t];
+  if (p === 'last') { const first = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)); return [ymd(first), addD(t.slice(0, 8) + '01', -1)]; }
+  return [t, t];
+};
+let period = 'today', timer = null, last = null;
+
+function signedOut(msg) {
+  store.del(TK); clearInterval(timer);
+  $('app').hidden = true; $('signin').hidden = false; $('out').hidden = true; $('shop').textContent = 'Purrfect POS';
+  if (msg) $('kerr').textContent = msg;
+}
+async function load() {
+  const t = store.get(TK);
+  if (!t) return signedOut();
+  const [from, to] = span(period);
+  let r;
+  try { r = await post({pos: 'office', t, from, to}); } catch (e) { $('err').textContent = 'No internet connection. The numbers below may be old.'; return; }
+  if (!r.ok) { if (r.signin) return signedOut(r.error); $('err').textContent = r.error || 'Something went wrong.'; return; }
+  $('err').textContent = ''; last = r;
+  $('signin').hidden = true; $('app').hidden = false; $('out').hidden = false;
+  draw(r);
+}
+
+function li(left, right, sub) {
+  const el = document.createElement('li'), a = document.createElement('span'), b = document.createElement('span');
+  a.append(left); if (sub) { const s = document.createElement('small'); s.textContent = ' ' + sub; a.append(s); }
+  b.textContent = right; el.append(a, b); return el;
+}
+function fill(listId, emptyId, rows, make) {
+  const list = $(listId);
+  list.replaceChildren(...rows.map(make));
+  $(emptyId).hidden = rows.length > 0;
+}
+function draw(r) {
+  $('shop').textContent = r.shop;
+  document.title = r.shop + ' · Back office';
+  const s = r.sales;
+  // when the register last sent: more than 30 minutes ago during the day is worth a look
+  if (!r.synced) { $('sync').textContent = 'Your register hasn’t sent anything yet. On it, turn on Online back office in Settings.'; $('sync').className = 'sync old'; }
+  else {
+    const at = r.lastSync ? new Date(r.lastSync.replace(' ', 'T') + ':00+08:00') : null, mins = at ? Math.round((Date.now() - at) / 60000) : null;
+    $('sync').textContent = 'Last update from the register: ' + (mins == null ? 'never' : mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : r.lastSync + ' (Manila)') + '.';
+    $('sync').className = 'sync' + (mins != null && mins > 30 ? ' old' : '');
+  }
+  $('tNet').textContent = peso(s.net); $('tRcpt').textContent = s.receipts.toLocaleString('en-PH'); $('tAvg').textContent = peso(s.avg);
+  $('tProfit').textContent = peso(s.profit); $('tProfitBox').classList.toggle('neg', s.profit < 0);
+  $('tOn').textContent = r.tier === 'pro' ? String(r.staff.on.length) : '—';
+  $('pNet').textContent = peso(s.net); $('pCost').textContent = '−' + peso(s.cost); $('pExp').textContent = '−' + peso(s.expenses); $('pProfit').textContent = peso(s.profit);
+  $('pMissing').hidden = !s.costMissing;
+  $('pMissing').textContent = s.costMissing ? s.costMissing + (s.costMissing === 1 ? ' item sold has' : ' items sold have') + ' no cost yet, so the profit is higher than it really is. Add each item’s cost on the register: Items › edit an item › Your cost.' : '';
+  $('pExtra').textContent = (s.discounts ? 'Discounts given: ' + peso(s.discounts) + '. ' : '') + (s.refunds ? 'Refunds: ' + peso(s.refunds) + '. ' : '') + (s.voids ? s.voids + ' voided receipt' + (s.voids === 1 ? '' : 's') + ' left out.' : '');
+  $('staffPro').hidden = r.tier !== 'pro'; $('staffBase').hidden = r.tier === 'pro';
+  fill('onList', 'onEmpty', r.staff.on, x => { const d = document.createElement('span'); d.className = 'dot'; const w = document.createElement('span'); w.append(d, x.name); return li(w, 'since ' + timeOf(x.since)); });
+  fill('hoursList', 'hoursEmpty', r.staff.hours, x => li(x.name, x.hours.toLocaleString('en-PH', {maximumFractionDigits: 1}) + ' h'));
+  // sales by day: every day of the period, zero where nothing sold
+  const [from, to] = [r.from, r.to], by = Object.fromEntries(r.days.map(d => [d.day, d])), all = [];
+  for (let d = from; d <= to; d = addD(d, 1)) all.push(by[d] || {day: d, net: 0, receipts: 0});
+  const max = Math.max(...all.map(d => d.net), 0);
+  $('bars').replaceChildren(...all.map(d => { const b = document.createElement('div'); b.style.height = (max ? Math.max(2, d.net / max * 100) : 2) + '%'; b.dataset.tip = short(d.day) + ': ' + peso(d.net); b.setAttribute('aria-label', b.dataset.tip); return b; }));
+  $('bFrom').textContent = short(from); $('bTo').textContent = from === to ? '' : short(to);
+  $('daysEmpty').hidden = r.days.length > 0;
+  $('days').hidden = from === to;   // one day is one bar: the Net sales tile already says it
+  fill('payList', 'payEmpty', r.pays, x => li(x.type, peso(x.amount), x.n + (x.n === 1 ? ' receipt' : ' receipts')));
+  fill('topList', 'topEmpty', r.top, x => li(x.name, peso(x.amount), '× ' + x.qty.toLocaleString('en-PH')));
+  fill('lowList', 'lowEmpty', r.low, x => li(x.name, x.stock.toLocaleString('en-PH') + ' left', 'warns at ' + x.low));
+  fill('expList', 'expEmpty', r.expenses, x => {
+    const row = li(x.category + (x.note ? ': ' + x.note : ''), peso(x.amount), short(x.day)), del = document.createElement('button');
+    del.type = 'button'; del.className = 'x'; del.textContent = '×'; del.setAttribute('aria-label', 'Delete this expense');
+    del.onclick = async () => { del.disabled = true; const res = await post({pos: 'expense', t: store.get(TK), remove: x.id}).catch(() => null); if (res && res.signin) return signedOut(res.error); load(); };
+    row.lastChild.append(' ', del); return row;
+  });
+}
+
+document.querySelectorAll('.seg button').forEach(b => { b.onclick = () => {
+  period = b.dataset.p; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); load();
+}; });
+$('eDay').value = ymd(day0());
+$('expForm').onsubmit = async e => {
+  e.preventDefault();
+  const amount = Number($('eAmt').value);
+  if (!(amount > 0)) { $('eErr').textContent = 'Enter the amount.'; $('eAmt').focus(); return; }
+  $('eAdd').disabled = true; $('eErr').textContent = '';
+  try {
+    const r = await post({pos: 'expense', t: store.get(TK), add: {day: $('eDay').value, category: $('eCat').value, amount, note: $('eNote').value.trim()}});
+    if (!r.ok) { if (r.signin) return signedOut(r.error); $('eErr').textContent = r.error || 'The expense was not saved.'; return; }
+    $('eAmt').value = ''; $('eNote').value = ''; load();
+  } catch (err) { $('eErr').textContent = 'No internet connection. Try again.'; }
+  finally { $('eAdd').disabled = false; }
+};
+$('send').onclick = async () => {
+  $('kerr').textContent = ''; $('sent').hidden = true; $('send').disabled = true;
+  try {
+    const r = await post({pos: 'officeLink', key: $('key').value});
+    if (!r.ok) $('kerr').textContent = r.error || 'That key was not accepted.';
+    else { $('sent').hidden = false; $('sent').textContent = 'We sent a sign-in link to ' + r.to + '. Open it on this phone.'; }
+  } catch (e) { $('kerr').textContent = 'No internet connection. Try again.'; }
+  finally { $('send').disabled = false; }
+};
+$('out').onclick = () => signedOut();
+function start() { clearInterval(timer); load(); timer = setInterval(() => { if (!document.hidden) load(); }, 60000); }
+window.addEventListener('hashchange', () => { if (takeHash()) start(); });   // a sign-in link opened in this same tab
+document.addEventListener('visibilitychange', () => { if (!document.hidden && store.get(TK)) load(); });
+if (store.get(TK)) start(); else signedOut();
+</script>
+</body>
+</html>

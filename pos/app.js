@@ -1,8 +1,9 @@
 'use strict';
 /* Purrfect POS (Purrfect Digitalization, Nov 2026): an offline point of sale any small shop can use, sold for ₱299 on
    purrfectdigital.online/point-of-sale.html. Settings, items, photos and open tickets live in localStorage; receipts in
-   IndexedDB ("purrfect-pos"). Nothing leaves the device except the one-time license check. Until a key is activated the
-   app runs as a demo: sample items, a banner, and DEMO printed on receipts.
+   IndexedDB ("purrfect-pos"). Nothing leaves the device except the one-time license check, unless the owner turns on the
+   online back office (Settings): then receipts, the time clock and items are copied to the shop's private back office (office.html).
+   Until a key is activated the app runs as a demo: sample items, a banner, and DEMO printed on receipts.
    The café's own POS (clients/purrfect-hokkaido/pos/) shares this origin and uses "pos-*" keys, so every key here
    starts with "ppos-". */
 
@@ -61,7 +62,7 @@ function refreshItems() {
   const seen = [...new Set(ITEMS.map(i => i.cat || 'Other'))];
   CATS = [...S.catOrder.filter(c => seen.includes(c)), ...seen.filter(c => !S.catOrder.includes(c))];
 }
-function saveItems() { if (!jset('ppos-items', ITEMS)) toast('This device is out of storage: items were not saved. Remove some photos.'); refreshItems(); }
+function saveItems() { if (!jset('ppos-items', ITEMS)) toast('This device is out of storage: items were not saved. Remove some photos.'); refreshItems(); syncSoon(15000); }
 const photoOf = id => store.get('ppos-ph-' + id) || '';
 refreshItems();
 
@@ -93,6 +94,44 @@ const db = (() => {
     count: () => run('readonly', s => s ? s.count() : {result: mem.size}),
   };
 })();
+
+// ---- online back office (opt-in) ------------------------------------------------------------------------------
+// "Online back office" in Settings (licensed copies, off by default): the register copies its receipts, time clock, items and stock to
+// the shop's private back office (BackOffice.gs in the web app), and the owner checks sales, staff and net profit from any phone on
+// office.html. Off, nothing leaves this device but the license check. Receipts to send wait in ppos-sync-q (their numbers); each send
+// carries up to 150 of them, the last 14 days of the time clock and every item, then drops what it sent from the queue.
+const SYNC_Q = 'ppos-sync-q', SYNC_AT = 'ppos-sync-at';
+let syncTimer = null, syncing = false;
+function officeOn() { return licensed() && !!S.office; }
+function queueSync(no) { if (!officeOn()) return; const q = jget(SYNC_Q, []); if (!q.includes(no)) q.push(no); jset(SYNC_Q, q); syncSoon(); }
+function syncSoon(ms) { if (!officeOn()) return; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, ms ?? 4000); }
+async function syncNow() {
+  if (!officeOn() || syncing) return;
+  if (!navigator.onLine) { syncSoon(60000); return; }
+  syncing = true;
+  const nos = jget(SYNC_Q, []).slice(0, 150);
+  try {
+    const receipts = [];
+    for (const no of nos) { const r = await db.get(no); if (r && !r.demo) receipts.push(slimSale(r)); }
+    const since = new Date(Date.now() - 14 * 864e5).toISOString(), who = Object.fromEntries(STAFF.map(x => [x.id, x.name]));
+    const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'sync', key: LIC.key, dev: DEV, shop: S.shop.name, receipts,
+      punches: PUNCH.filter(x => (x.out || x.in) >= since).map(x => ({id: x.id, staff: who[x.staff] || 'Staff', in: x.in, out: x.out || ''})),
+      items: ITEMS.filter(i => !i.sample).map(i => ({id: i.id, name: i.name, cat: i.cat, price: i.price, cost: i.cost ?? '', track: !!i.track,
+        stock: i.track ? i.stock : '', low: i.track ? (i.low ?? S.lowDefault) : ''}))})}).then(x => x.json());
+    if (!r || !r.ok) throw new Error((r && r.error) || 'Not accepted');
+    const left = jget(SYNC_Q, []).filter(no => !nos.includes(no));
+    jset(SYNC_Q, left); store.set(SYNC_AT, new Date().toISOString()); store.del('ppos-sync-err');
+    if (left.length) syncSoon(1500);
+  } catch (e) { store.set('ppos-sync-err', String((e && e.message) || e).slice(0, 80)); syncSoon(120000); }
+  finally { syncing = false; }
+}
+function slimSale(r) {   // what the back office needs of a receipt: no Sr/PWD names or IDs, no payment reference numbers
+  return {no: r.no, at: r.at, type: r.type, sub: r.sub, disc: r.disc || 0, total: r.total, refunded: r.refunded || 0, voided: !!r.voided, cashier: r.cashier || '',
+    qty: r.qty, refundedQty: r.refundedQty || {},
+    lines: r.lines.map(l => ({id: l.id, name: l.name, qty: l.qty, price: l.price, cost: l.cost ?? (IDX[l.id] && IDX[l.id].cost != null ? IDX[l.id].cost : '')}))};
+}
+setInterval(() => syncNow(), 5 * 60000);   // keeps the time clock and stock fresh in the back office too
+window.addEventListener('online', () => syncSoon(1000));
 
 // ---- ticket -------------------------------------------------------------------------------------------
 const SAVED = jget('ppos-ticket', {});   // the ticket survives a closed app or a reload
@@ -288,14 +327,14 @@ async function done(type, tendered, ref) {
   const sale = {no, at: new Date().toISOString(), type, ref, tendered: r2(tendered), change: r2(tendered - t.total),
     sub: t.sub, disc: t.disc, discLabel: t.label, total: t.total, qty: t.qty, cashier: S.cashier,
     senior: disc && disc.kind === 'sr' ? {id: disc.id, name: disc.name} : null, demo: !licensed(),
-    lines: ticket.map(l => ({id: l.id, name: IDX[l.id].name, price: IDX[l.id].price, qty: l.qty}))};
+    lines: ticket.map(l => ({id: l.id, name: IDX[l.id].name, price: IDX[l.id].price, qty: l.qty, ...(IDX[l.id].cost != null ? {cost: IDX[l.id].cost} : {})}))};
   const low = [];
   for (const l of sale.lines) {
     const it = IDX[l.id];
     if (it && it.track) { it.stock = r2(r2(it.stock) - l.qty); if (it.stock <= (it.low ?? S.lowDefault)) low.push(it.name + ' (' + Math.max(0, it.stock) + ' left)'); }
   }
   if (sale.lines.some(l => IDX[l.id] && IDX[l.id].track)) saveItems();
-  try { await db.put(sale); } catch (e) { toast('The receipt could not be saved on this device: ' + (e && e.message)); }
+  try { await db.put(sale); queueSync(sale.no); } catch (e) { toast('The receipt could not be saved on this device: ' + (e && e.message)); }
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
   newSale();
   if (S.autoprint) printSale(sale);
@@ -634,7 +673,7 @@ function voidOrRefund(sale, type) {
           const rq = {...(rec.refundedQty || {})}; lines.forEach(l => { const k = l.id || l.name; rq[k] = (rq[k] || 0) + l.qty; });
           Object.assign(rec, {refunded: r2((rec.refunded || 0) + amount), refundedQty: rq, refunds: [...(rec.refunds || []), {at: new Date().toISOString(), amount, reason, lines}]});
         }
-        await db.put(rec);
+        await db.put(rec); queueSync(rec.no);
         let back = false;
         for (const l of lines) { const it = IDX[l.id]; if (it && it.track) { it.stock = r2(r2(it.stock) + l.qty); back = true; } }
         if (back) saveItems();
@@ -741,6 +780,7 @@ function editItem(i, after) {
     cat.setAttribute('list', 'ppos-cats');
     const dl = el('datalist', {id: 'ppos-cats'}, CATS.map(c => el('option', {value: c})));
     const pr = el('input', {type: 'number', inputMode: 'decimal', min: 0, step: '0.01', value: i ? i.price : '', placeholder: '0.00'});
+    const cost = el('input', {type: 'number', inputMode: 'decimal', min: 0, step: '0.01', value: i && i.cost != null ? i.cost : '', placeholder: 'optional'});
     let color = i ? i.color : (ITEMS.find(x => x.cat === cat.value) || {}).color || COLORS[0];
     const sw = el('div', {className: 'swatches', role: 'radiogroup', ariaLabel: 'Tile colour'}, COLORS.map((c, n) => {
       const r = el('input', {type: 'radio', name: 'ppos-color', value: c, checked: c === color, ariaLabel: 'Colour ' + (n + 1)});
@@ -773,8 +813,11 @@ function editItem(i, after) {
       if (!name) { err.textContent = 'Give the item a name.'; nm.focus(); return; }
       if (!(price >= 0)) { err.textContent = 'Enter a price (0 is fine for free items).'; pr.focus(); return; }
       if (track.checked && stock.value === '') { err.textContent = 'Enter how many you have now.'; stock.focus(); return; }
+      const cst = cost.value === '' ? null : Number(cost.value);
+      if (cst != null && !(cst >= 0)) { err.textContent = 'Enter your cost as a number, or leave it empty.'; cost.focus(); return; }
       const it = i || {id: uid()};
       Object.assign(it, {name, cat: cat.value.trim() || 'Other', price: r2(price), color, hidden: hid.checked, track: track.checked});
+      if (cst == null) delete it.cost; else it.cost = r2(cst);
       if (track.checked) { it.stock = r2(stock.value); it.low = low.value === '' ? S.lowDefault : r2(low.value); } else { delete it.stock; delete it.low; }
       delete it.sample;
       if (photo) { if (!store.set('ppos-ph-' + it.id, photo)) toast('Storage is full: the photo was not saved.'); } else store.del('ppos-ph-' + it.id);
@@ -791,6 +834,7 @@ function editItem(i, after) {
       btns.unshift(del);
     }
     bd.append(el('label', {}, ['Name', nm]), el('div', {className: 'row2'}, [el('label', {}, ['Category', cat]), el('label', {}, ['Price (₱)', pr])]), dl,
+      el('label', {}, ['Your cost per piece (₱): for net profit in the back office', cost]),
       el('label', {}, ['Tile colour']), sw, el('label', {}, ['Photo (optional)']), phWrap, pick,
       el('label', {className: 'tog'}, [el('span', {textContent: 'Track stock'}), track]), stockRow,
       el('label', {className: 'tog'}, [el('span', {textContent: 'Hide from the register'}), hid]), err,
@@ -1113,6 +1157,7 @@ function showSettings() {
       el('div', {className: 'row2'}, [el('label', {}, ['Low-stock warning at', lowD]), el('label', {}, ['Receipt number prefix', prefix])]),
       el('p', {className: 'note', textContent: 'Give each phone or tablet its own prefix (A, B, …) so receipt numbers never repeat across devices.'}), err, save,
       el('h3', {textContent: 'Security and device'}), pinBtn, el('div', {className: 'row2'}, [prBtn, inBtn]), stBtn,
+      el('h3', {textContent: 'Online back office'}), officeBox(),
       el('h3', {textContent: 'Backup'}), bkNote, el('div', {className: 'row2'}, [bkBtn, rsBtn]), rfile,
       el('h3', {textContent: 'License'}), licenseBox(close),
       el('p', {className: 'note'}, ['Purrfect POS by ', el('a', {href: 'https://purrfectdigital.online/', target: '_blank', rel: 'noopener', textContent: 'Purrfect Digitalization'}),
@@ -1120,6 +1165,39 @@ function showSettings() {
   }));
 }
 $('#setBtn').onclick = showSettings;
+
+function officeBox() {
+  if (!licensed()) return el('p', {className: 'note', textContent: 'Activate your license to check sales, staff and profit from any phone in the online back office.'});
+  const on = el('input', {type: 'checkbox', checked: !!S.office}), status = el('p', {className: 'note'});
+  const openB = el('button', {className: 'btn o', textContent: 'Open back office', disabled: !S.office});
+  const paint = () => {
+    const at = store.get(SYNC_AT), q = jget(SYNC_Q, []).length, err = store.get('ppos-sync-err');
+    status.textContent = !S.office ? 'Off: your sales stay on this device only.'
+      : (at ? 'Last sent ' + when(at) + '.' : 'Nothing sent yet.') + (q ? ' ' + plural(q, 'receipt') + ' waiting' + (navigator.onLine ? (err ? ' (' + err + ').' : '…') : ' for the internet.') : '');
+    openB.disabled = !S.office;
+  };
+  on.onchange = async () => {
+    S.office = on.checked; saveS();
+    if (S.office) {   // the last 60 days go up first
+      const rs = await db.range(new Date(Date.now() - 60 * 864e5).toISOString(), new Date(Date.now() + 864e5).toISOString());
+      jset(SYNC_Q, rs.filter(r => !r.demo).map(r => r.no)); toast('Online back office on'); paint(); await syncNow();
+    } else { clearTimeout(syncTimer); jset(SYNC_Q, []); toast('Online back office off. What was already sent stays there.'); }
+    paint();
+  };
+  openB.onclick = openOffice;
+  paint();
+  return el('div', {}, [el('label', {className: 'tog'}, [el('span', {textContent: 'Send sales, staff hours and stock to my back office'}), on]),
+    el('p', {className: 'note', textContent: 'See today’s sales, who is at work and your net profit from any phone. Only you can open it: from here, or with a link we email you.'}),
+    status, openB]);
+}
+async function openOffice() {
+  const w = window.open('about:blank', '_blank');   // opened in the tap itself, so no pop-up blocker stops it
+  try {
+    const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'officeOpen', key: LIC.key, dev: DEV})}).then(x => x.json());
+    if (!r || !r.ok) throw new Error((r && r.error) || 'The back office could not be opened.');
+    if (w) w.location.href = r.url; else location.href = r.url;
+  } catch (e) { if (w) w.close(); toast(/fetch|network/i.test(String(e && e.message)) ? 'No internet connection.' : e.message); }
+}
 
 function fitLogo(file) {   // keep logos small: at most 512 px wide, PNG keeps transparency
   return new Promise((res, rej) => {
@@ -1188,7 +1266,7 @@ let SCHED = jget('ppos-sched', {});     // {staff id: 7 days, Sunday first: null
 let PUNCH = jget('ppos-punches', []);   // [{id, staff, in, out}] ISO times; out is null while clocked in
 let OT = jget('ppos-ot', []);           // [{id, staff, day, hours, reason, status: 'waiting' | 'approved' | 'declined', at, decided}]
 const saveStaff = () => { if (!jset('ppos-staff', STAFF) || !jset('ppos-sched', SCHED)) toast('This device is out of storage: staff were not saved.'); };
-const savePunch = () => { if (!jset('ppos-punches', PUNCH)) toast('This device is out of storage: the time clock was not saved.'); };
+const savePunch = () => { if (!jset('ppos-punches', PUNCH)) toast('This device is out of storage: the time clock was not saved.'); syncSoon(5000); };
 const saveOT = () => { jset('ppos-ot', OT); updOT(); };
 const openPunch = id => PUNCH.find(p => p.staff === id && !p.out);
 const staffOf = id => STAFF.find(s => s.id === id) || {name: 'Removed staff', role: ''};
@@ -1461,7 +1539,7 @@ $('#closeTicket').onclick = () => $('#right').classList.remove('open');
 const mq = matchMedia('(max-width:760px)'); const syncMq = () => { $('#closeTicket').hidden = !mq.matches; }; mq.addEventListener('change', syncMq); syncMq();
 
 store.keys().filter(k => /^ppos-seq-\d{6}$/.test(k) && k.slice(9) < dayKey(addDays(new Date(), -3)).slice(2).replace(/-/g, '')).forEach(store.del);
-applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT();
+applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT(); syncSoon(3000);
 const hashKey = (location.hash.match(/key=([A-Za-z0-9-]+)/) || [])[1];
 if (hashKey) {
   history.replaceState(null, '', location.pathname + location.search);
