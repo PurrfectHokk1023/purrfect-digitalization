@@ -949,14 +949,41 @@ const RCPT = (() => {
     pool.forEach(f => { seen[f.v] = (seen[f.v] || 0) + 1; });
     return pool.map(f => f.v).sort((a, b) => seen[b] - seen[a] || b - a)[0];
   };
-  // GCash's Ref. No. (1234 567 890123), else whatever follows "Ref"/"Reference" (Maya and banks mix letters and digits)
+  // The receipt's reference number: what follows a "Reference No." / "Ref. No." / "Reference ID" label on its line, or on the next line
+  // when the label ends its line. A label inside a sentence (GCash: "You may present reference / number below…") has no number after it
+  // and is skipped. Else GCash's 13-digit pattern (1234 567 890123) anywhere. Groups of 3+ letters/digits join up (Maya: 6C5A 9F12 77B3);
+  // a short stray token after the number doesn't. Real GCash QR payments (5 Nov 2026) have a 9-digit Ref. No. with a copy icon after it.
   const refOf = text => {
+    const lines = String(text).split('\n'), LABEL = /\bref(?:erence)?\s*\.?\s*(?:n[o0]|number|num|id|#)?\s*\.?\s*[:#]?\s*/i;
+    const take = s => {
+      let out = '';
+      for (const t of String(s || '').trim().split(/[\s-]+/)) {
+        if (!/^[A-Za-z0-9]+$/.test(t) || !/\d/.test(t) || (out && t.length < 3) || (out + t).length > 20) break;
+        out += t;
+      }
+      return out.length >= 6 ? out.toUpperCase() : '';
+    };
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(LABEL);
+      if (!m) continue;
+      const rest = lines[i].slice(m.index + m[0].length), got = take(rest) || (!rest.trim() && take(lines.slice(i + 1).find(l => l.trim())));
+      if (got) return got;
+    }
     const g = String(text).match(/(?:^|\D)(\d{4}) ?(\d{3}) ?(\d{6})(?!\d)/);
-    if (g) return g[1] + g[2] + g[3];
-    const m = String(text).match(/\bref(?:erence)?\.?(?: ?(?:no|number|id|#)\.?)?\s*[:#.]?\s*([^\n]+)/i);
-    let out = '';
-    if (m) for (const t of m[1].trim().split(/[\s-]+/)) { if (!/\d/.test(t) || !/^[A-Za-z0-9]+$/.test(t)) break; out += t; }
-    return out.length >= 6 && out.length <= 20 ? out.toUpperCase() : '';
+    return g ? g[1] + g[2] + g[3] : '';
+  };
+  // GCash puts a copy icon right after the Ref. No., and the reader takes it for one more digit ("2494718270" for 249471827). The icon
+  // sits much farther from the last digit than the digits sit from each other, so a long number whose last character is that far out
+  // loses it.
+  const dropIcons = data => {
+    let text = data.text;
+    for (const w of data.words || []) {
+      const sy = w.symbols || [];
+      if (!/^[A-Za-z0-9]{7,}$/.test(w.text) || sy.length !== w.text.length) continue;
+      const gaps = sy.slice(1).map((x, i) => x.bbox.x0 - sy[i].bbox.x1), last = gaps.pop(), mid = [...gaps].sort((x, y) => x - y)[gaps.length >> 1];
+      if (gaps.length >= 4 && last > 6 && last > 2.5 * Math.max(mid, 1) && last > Math.max(...gaps) + 4) text = text.replace(w.text, w.text.slice(0, -1));
+    }
+    return text;
   };
   // The receipt's date and time (Manila) as {at, timed}, or null. Dates like "Nov 5, 2026", "5 Nov 2026", "2026-11-05" or "11/05/2026"
   // (month first, as PH apps write it, unless the first number can't be a month). The time is the first one after the date: the phone's
@@ -978,8 +1005,8 @@ const RCPT = (() => {
   const read = async (canvas, stage) => {
     onStage = stage;
     try {
-      const {data} = await (await reader()).recognize(canvas);
-      return {amount: parse(data.text), ref: refOf(data.text), tm: timeOf(data.text), payee: /vicente|amandac|hokkaido/i.test(data.text)};
+      const {data} = await (await reader()).recognize(canvas), text = dropIcons(data);
+      return {amount: parse(text), ref: refOf(text), tm: timeOf(text), payee: /vicente|amandac|hokkaido/i.test(text)};
     } finally { onStage = null; }
   };
 
@@ -1119,7 +1146,7 @@ const RCPT = (() => {
       reset: () => { items = []; manual = false; autoRef = ''; man.textContent = manText; paint(); },
     };
   };
-  return {step, warm: () => { reader().catch(() => {}); }, parse, refOf, timeOf};
+  return {step, warm: () => { reader().catch(() => {}); }, parse, refOf, timeOf, dropIcons};
 })();
 
 (() => {
