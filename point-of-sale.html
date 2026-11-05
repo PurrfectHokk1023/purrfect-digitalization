@@ -447,6 +447,9 @@ html:not([data-promo=off]) .promo-off{display:none!important}
 .rc-list b .spin{width:16px;height:16px;border-width:2px}
 .rc-list small{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
 .rc-list li.bad b{color:#ff8a8a}
+.rc-list small.rc-flag{color:#ff8a8a;font-weight:600}
+.rc-list small.rc-ok{color:var(--good);font-weight:600}
+.rc-sum.warn{background:rgba(255,90,90,.12);color:#ffb4b4}
 .rc-list li.dup{opacity:.6}
 .rc-x{background:none;border:0;color:var(--muted);font-size:24px;line-height:1;cursor:pointer;padding:6px 10px}
 .rc-sum{margin:0;font-weight:600;font-size:15px;padding:12px 14px;border-radius:12px;background:var(--accent-soft)}
@@ -593,7 +596,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <h2>Pay with GCash, get your key by email.</h2>
     </div>
     <div class="steps3">
-      <div class="card"><h3>Pay <span class="promo-on">₱179</span><span class="promo-off">₱299</span> with GCash</h3><p>Fill in your details below and scan the QR (the amount fills in by itself). Then add a screenshot of your GCash receipt: the page checks the amount right away and asks for the rest if it’s short.</p></div>
+      <div class="card"><h3>Pay <span class="promo-on">₱179</span><span class="promo-off">₱299</span> with GCash</h3><p>Fill in your details below, scan our GCash QR and type the amount. Then add a screenshot of your GCash receipt: the page checks the amount, date and Ref. No. right away, and asks for the rest if it’s short.</p></div>
       <div class="card"><h3>Get your license key</h3><p>We confirm every payment in GCash, usually within a few hours between 8 AM and 10 PM. Your key arrives by email and on this page.</p></div>
       <div class="card"><h3>Open the link and sell</h3><p>The link in the email activates the app by itself. One license is for 1 phone, tablet or computer.</p></div>
     </div>
@@ -635,43 +638,42 @@ html:not([data-promo=off]) .promo-off{display:none!important}
         <div class="pane" id="ck2" hidden>
           <h3>Pay <span class="promo-on">₱179</span><span class="promo-off">₱299</span> with GCash</h3>
           <div class="qrbox">
-            <img class="promo-on" src="img/gcash-179.png" alt="GCash QR code for ₱179" width="220" height="220">
-            <img class="promo-off" src="img/gcash-299.png" alt="GCash QR code for ₱299" width="220" height="220">
+            <img src="img/gcash-qr.png" alt="Our GCash QR code" width="220" height="220">
             <div>
-              <div class="amtbig"><span class="promo-on">₱179.00</span><span class="promo-off">₱299.00</span></div>
+              <div class="amtbig">Type <span class="promo-on">₱179.00</span><span class="promo-off">₱299.00</span></div>
               <ol>
-                <li><b>On a computer?</b> Scan the QR with GCash on your phone.</li>
-                <li><b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR, and pick the saved image.</li>
-                <li>The amount fills in by itself. Any QR Ph app works too (Maya, bank apps).</li>
+                <li>Scan the QR with GCash. <b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR, and pick the saved image.</li>
+                <li>Type the amount <b><span class="promo-on">179.00</span><span class="promo-off">299.00</span></b> exactly, then pay. Any QR Ph app works too (Maya, bank apps).</li>
+                <li><b>Screenshot the receipt</b> GCash shows after you pay (amount, date and Ref. No.). Don’t crop or edit it: you add it in the next step.</li>
               </ol>
             </div>
           </div>
           <div class="row">
             <a class="btn btn-ghost promo-on" href="img/gcash-179-card.png" download="purrfect-pos-gcash-179.png">Save QR</a><a class="btn btn-ghost promo-off" href="img/gcash-299-card.png" download="purrfect-pos-gcash-299.png">Save QR</a>
-            <button class="btn btn-primary" type="button" id="paidBtn">I’ve paid: next</button>
+            <button class="btn btn-primary" type="button" id="paidBtn">I’ve paid: add my receipt</button>
             <button class="btn btn-ghost" type="button" id="back1">Back</button>
           </div>
         </div>
 
         <form id="ck3" hidden novalidate>
           <h3>Add your GCash receipt</h3>
-          <p class="small">Take a screenshot of the receipt GCash shows after you pay: the one with the amount and Ref. No. We read the amount right here on your device, and the screenshot goes only to us, to confirm your payment.</p>
+          <p class="small">Add the screenshot of the receipt GCash showed after you paid. We check it right here on your device: the amount, the date and time, the Ref. No., and that it’s an original screenshot. It goes only to us, to confirm your payment.</p>
           <label class="btn btn-primary rc-pick"><span>Add receipt screenshot</span><input type="file" accept="image/*" multiple></label>
           <ul class="rc-list"></ul>
           <p class="rc-sum" aria-live="polite" hidden></p>
           <div class="rc-top" hidden>
             <div class="qrbox">
-              <img alt="GCash QR code for the rest of the payment" width="220" height="220">
+              <img src="img/gcash-qr.png" alt="Our GCash QR code" width="220" height="220">
               <div>
                 <div class="amtbig"></div>
                 <ol>
-                  <li>Pay the rest with this QR: the amount fills in by itself.</li>
+                  <li>Scan the same QR and type the amount above, then pay.</li>
                   <li><b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR.</li>
-                  <li>Then add that receipt here too.</li>
+                  <li>Screenshot that receipt and add it here too.</li>
                 </ol>
               </div>
             </div>
-            <div class="row"><a class="btn btn-ghost" download="purrfect-pos-balance.png">Save QR</a></div>
+            <div class="row"><a class="btn btn-ghost" href="img/gcash-qr-card.png" download="purrfect-pos-gcash.png">Save QR</a></div>
           </div>
           <div class="two">
             <label>Reference number <input name="gcashRef" autocomplete="off" required placeholder="filled in from your receipt" maxlength="30"></label>
@@ -679,7 +681,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
           </div>
           <p class="err" id="err3" role="alert"></p>
           <div class="row"><button class="btn btn-primary" type="submit" id="sendBtn">Send my order</button><button class="btn btn-ghost" type="button" id="back2">Back</button></div>
-          <p class="small"><button type="button" class="linkbtn rc-manual">No screenshot, or the amount reads wrong? Send it for a manual check</button></p>
+          <p class="small"><button type="button" class="linkbtn rc-manual">No screenshot, or the check got it wrong? Send it for a manual check</button></p>
         </form>
 
         <div class="pane" id="ck4" hidden>
@@ -730,43 +732,42 @@ html:not([data-promo=off]) .promo-off{display:none!important}
         <div class="pane" id="pk2" hidden>
           <h3>Pay <span class="promo-on">₱300</span><span class="promo-off">₱1,500</span> with GCash</h3>
           <div class="qrbox">
-            <img class="promo-on" src="img/gcash-300.png" alt="GCash QR code for ₱300" width="220" height="220">
-            <img class="promo-off" src="img/gcash-1500.png" alt="GCash QR code for ₱1,500" width="220" height="220">
+            <img src="img/gcash-qr.png" alt="Our GCash QR code" width="220" height="220">
             <div>
-              <div class="amtbig"><span class="promo-on">₱300.00</span><span class="promo-off">₱1,500.00</span></div>
+              <div class="amtbig">Type <span class="promo-on">₱300.00</span><span class="promo-off">₱1,500.00</span></div>
               <ol>
-                <li><b>On a computer?</b> Scan the QR with GCash on your phone.</li>
-                <li><b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR, and pick the saved image.</li>
-                <li>The amount fills in by itself. Any QR Ph app works too (Maya, bank apps).</li>
+                <li>Scan the QR with GCash. <b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR, and pick the saved image.</li>
+                <li>Type the amount <b><span class="promo-on">300.00</span><span class="promo-off">1,500.00</span></b> exactly, then pay. Any QR Ph app works too (Maya, bank apps).</li>
+                <li><b>Screenshot the receipt</b> GCash shows after you pay (amount, date and Ref. No.). Don’t crop or edit it: you add it in the next step.</li>
               </ol>
             </div>
           </div>
           <div class="row">
             <a class="btn btn-ghost promo-on" href="img/gcash-300-card.png" download="purrfect-pos-pro-gcash-300.png">Save QR</a><a class="btn btn-ghost promo-off" href="img/gcash-1500-card.png" download="purrfect-pos-pro-gcash-1500.png">Save QR</a>
-            <button class="btn btn-primary" type="button" id="pPaidBtn">I’ve paid: next</button>
+            <button class="btn btn-primary" type="button" id="pPaidBtn">I’ve paid: add my receipt</button>
             <button class="btn btn-ghost" type="button" id="pBack1">Back</button>
           </div>
         </div>
 
         <form id="pk3" hidden novalidate>
           <h3>Add your GCash receipt</h3>
-          <p class="small">Take a screenshot of the receipt GCash shows after you pay: the one with the amount and Ref. No. We read the amount right here on your device, and the screenshot goes only to us, to confirm your payment.</p>
+          <p class="small">Add the screenshot of the receipt GCash showed after you paid. We check it right here on your device: the amount, the date and time, the Ref. No., and that it’s an original screenshot. It goes only to us, to confirm your payment.</p>
           <label class="btn btn-primary rc-pick"><span>Add receipt screenshot</span><input type="file" accept="image/*" multiple></label>
           <ul class="rc-list"></ul>
           <p class="rc-sum" aria-live="polite" hidden></p>
           <div class="rc-top" hidden>
             <div class="qrbox">
-              <img alt="GCash QR code for the rest of the payment" width="220" height="220">
+              <img src="img/gcash-qr.png" alt="Our GCash QR code" width="220" height="220">
               <div>
                 <div class="amtbig"></div>
                 <ol>
-                  <li>Pay the rest with this QR: the amount fills in by itself.</li>
+                  <li>Scan the same QR and type the amount above, then pay.</li>
                   <li><b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR.</li>
-                  <li>Then add that receipt here too.</li>
+                  <li>Screenshot that receipt and add it here too.</li>
                 </ol>
               </div>
             </div>
-            <div class="row"><a class="btn btn-ghost" download="purrfect-pos-pro-balance.png">Save QR</a></div>
+            <div class="row"><a class="btn btn-ghost" href="img/gcash-qr-card.png" download="purrfect-pos-gcash.png">Save QR</a></div>
           </div>
           <div class="two">
             <label>Reference number <input name="gcashRef" autocomplete="off" required placeholder="filled in from your receipt" maxlength="30"></label>
@@ -774,7 +775,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
           </div>
           <p class="err" id="perr3" role="alert"></p>
           <div class="row"><button class="btn btn-primary" type="submit" id="pSendBtn">Send my upgrade</button><button class="btn btn-ghost" type="button" id="pBack2">Back</button></div>
-          <p class="small"><button type="button" class="linkbtn rc-manual">No screenshot, or the amount reads wrong? Send it for a manual check</button></p>
+          <p class="small"><button type="button" class="linkbtn rc-manual">No screenshot, or the check got it wrong? Send it for a manual check</button></p>
         </form>
 
         <div class="pane" id="pk4" hidden>
@@ -814,7 +815,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <details class="promo-on"><summary>Until when is the 40% off?</summary><p>Until 11:59 PM on December 31, 2026 (Manila time). Pay before then and it’s ₱179 instead of ₱299, with the same license and free updates.</p></details>
       <details><summary>Can I try it before paying?</summary><p>Yes. The <a href="pos/" target="_blank" rel="noopener" style="color:var(--accent)">free demo</a> is the full app with sample items; receipts just print “DEMO”. Add your own items there, on the device you’ll sell on: they stay when you activate. On iPhone, add it to your Home Screen first and set up in that icon.</p></details>
       <details><summary>How soon do I get my license key?</summary><p>We check each GCash payment by hand, usually within a few hours between 8 AM and 10 PM. The key comes by email and also shows on this page once confirmed.</p></details>
-      <details><summary>What if I paid the wrong amount?</summary><p>Add your GCash receipt anyway: the page reads the amount, and if it’s short it shows a QR for exactly the rest. Paid too much? Message us on Facebook and we’ll sort it out.</p></details>
+      <details><summary>What if I paid the wrong amount?</summary><p>Add your GCash receipt anyway: the page reads the amount, and if it’s short it tells you exactly how much is left to pay with the same QR. Paid too much? Message us on Facebook and we’ll sort it out.</p></details>
       <details><summary>Is Purrfect POS BIR-accredited?</summary><p>No. It is a register and sales tracker, not a BIR-accredited POS machine, so its receipts say “This is not an official receipt”. Keep issuing your BIR-registered receipts or invoices as usual.</p></details>
       <details><summary>Which printers work?</summary><p>Most Bluetooth thermal receipt printers (58 mm and 80 mm) sold on Shopee and Lazada, from Chrome on Android, Windows or Mac. If Chrome can’t find yours, the free RawBT app on Android connects it. On a computer you can also use the normal print dialog.</p></details>
       <details><summary>Does it work on iPhone?</summary><p>Yes for selling, receipts on screen and reports. iPhones can’t talk to Bluetooth printers from a web app, so for printed receipts use an Android phone or tablet, or a computer.</p></details>
@@ -897,45 +898,31 @@ html:not([data-promo=off]) .promo-off{display:none!important}
   setTimeout(run, 2200);
 })();
 
-// The receipt step of both checkouts (Nov 2026). Tesseract (vendor/tesseract-5.1.1, loaded on the pay step, runs in the buyer's browser)
-// reads each receipt screenshot's amount and Ref. No. When they add up to less than the price, the step shows a QR for exactly the rest:
-// the café's GCash payload plus EMV tag 54, the same way make_pay_qr.py makes the fixed-price QRs. The screenshots and what was read go
-// with the order (PosOrders.gs posShots_); the owner still finds the payment in GCash before confirming.
+// The receipt step of both checkouts (Nov 2026). The buyer pays our GCash QR (the café's soundbox QR exactly as printed: they type the
+// amount), screenshots the receipt and adds it here. Tesseract (vendor/tesseract-5.1.1, loaded on the pay step, runs in the buyer's
+// browser) reads it, and a receipt counts only when every check passes:
+//   amount    read from the receipt; together the receipts must reach the price, else the step asks for the rest (same QR, typed)
+//   time      the receipt's date and time (Manila) must fall between shortly before this checkout's pay step and now
+//   ref       a reference number on the receipt (GCash's 13-digit Ref. No., or a Maya or bank one)
+//   original  no AI or photo-editor marks in the file, and the pixels of a real screenshot: its flat areas are perfectly even, where
+//             AI images and photos of a screen have grain
+// Whether our name shows on the receipt is only noted for the owner. A receipt that fails can still go as a manual check. None of this
+// proves a payment (a careful fake can pass): the screenshots and the checks go with the order (PosOrders.gs posShots_), and the owner
+// still finds the payment in GCash before confirming.
 const RCPT = (() => {
-  const PAY = '00020101021128620011ph.ppmi.p2m0111GXCHPHM2XXX0321217020000449978813407050300052045814530360862630012ph.ppmi.qrph0306Molino05212170500004500588364040708L00174995802PH5916VicenteJRAmandac6006Bacoor6104410263041621';
-  const OCR = 'vendor/tesseract-5.1.1/';
-  const tlv = s => { const out = []; for (let i = 0; i < s.length;) { const n = +s.slice(i + 2, i + 4); out.push([s.slice(i, i + 2), s.slice(i + 4, i + 4 + n)]); i += 4 + n; } return out; };
-  const crc = s => { let c = 0xFFFF; for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let k = 0; k < 8; k++) c = (c & 0x8000 ? (c << 1) ^ 0x1021 : c << 1) & 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); };
-  const payload = amount => {
-    const f = tlv(PAY).filter(([t]) => t !== '54' && t !== '63');
-    f.splice(f.findIndex(([t]) => t === '53') + 1, 0, ['54', amount.toFixed(2)]);   // the amount goes right after the currency
-    const body = f.map(([t, v]) => t + String(v.length).padStart(2, '0') + v).join('') + '6304';
-    return body + crc(body);
-  };
+  const OCR = 'vendor/tesseract-5.1.1/', MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  const EVEN_MIN = 0.6;   // share of perfectly even flat blocks below which a picture isn't taken as an original screenshot
   const cents = n => Math.round(n * 100);
   const peso = n => '₱' + n.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  const qrCanvas = (text, px) => {
-    const q = qrcode(0, 'M'); q.addData(text); q.make();
-    const n = q.getModuleCount(), c = document.createElement('canvas'), g = c.getContext('2d');
-    c.width = c.height = (n + 8) * px; g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#000';
-    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) g.fillRect((k + 4) * px, (r + 4) * px, px, px);
-    return c;
+  const when = t => {   // a timestamp as Manila time: "Nov 5, 2026 6:12 PM"
+    const d = new Date(t + 8 * 3600e3), h = d.getUTCHours(), m = MON[d.getUTCMonth()];
+    return m[0].toUpperCase() + m.slice(1) + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear() + ' ' + ((h + 11) % 12 + 1) + ':' + String(d.getUTCMinutes()).padStart(2, '0') + (h < 12 ? ' AM' : ' PM');
   };
-  // the card buyers save and upload in GCash (Pay QR > Upload QR), like img/gcash-179-card.png
-  const card = (amount, title) => {
-    const q = qrCanvas(payload(amount), 10), W = Math.max(720, q.width + 80), c = document.createElement('canvas'), g = c.getContext('2d');
-    c.width = W; c.height = 262 + q.height + 130;
-    g.fillStyle = '#fff'; g.fillRect(0, 0, W, c.height); g.textAlign = 'center';
-    const line = (text, font, color, y) => { g.font = font + ' Figtree, Arial, sans-serif'; g.fillStyle = color; g.fillText(text, W / 2, y); };
-    line(title, '800 44px', '#05101d', 84); line(peso(amount), '800 84px', '#e8500c', 182); line('The rest of your payment', '600 30px', '#5a6684', 236);
-    g.drawImage(q, (W - q.width) / 2, 262);
-    line('Scan with GCash or any QR Ph app', '700 30px', '#05101d', 262 + q.height + 56); line('The amount fills in by itself', '500 26px', '#5a6684', 262 + q.height + 98);
-    return c.toDataURL('image/png');
-  };
+  const stamp = tm => tm.timed ? when(tm.at) : when(tm.at).replace(/ \d+:\d\d [AP]M$/, '');
 
   // the reader: one Tesseract worker, made on first use. Page mode 4 (one column of lines) keeps a label and its amount on one line.
   const STAGE = {'loading tesseract core': 'Getting the reader ready', 'initializing tesseract': 'Getting the reader ready', 'loading language traineddata': 'Getting the reader ready',
-    'initializing api': 'Getting the reader ready', 'recognizing text': 'Reading the amount'};
+    'initializing api': 'Getting the reader ready', 'recognizing text': 'Reading the receipt'};
   let worker = null, onStage = null;
   const script = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.append(s); });
   const reader = () => worker || (worker = (window.Tesseract ? Promise.resolve() : script(OCR + 'tesseract.min.js'))
@@ -971,10 +958,54 @@ const RCPT = (() => {
     if (m) for (const t of m[1].trim().split(/[\s-]+/)) { if (!/\d/.test(t) || !/^[A-Za-z0-9]+$/.test(t)) break; out += t; }
     return out.length >= 6 && out.length <= 20 ? out.toUpperCase() : '';
   };
+  // The receipt's date and time (Manila) as {at, timed}, or null. Dates like "Nov 5, 2026", "5 Nov 2026", "2026-11-05" or "11/05/2026"
+  // (month first, as PH apps write it, unless the first number can't be a month). The time is the first one after the date: the phone's
+  // status-bar clock comes before it. No time on the receipt: noon that day, timed false.
+  const timeOf = text => {
+    const s = String(text), M = '(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?';
+    let m, y, mo, d;
+    if ((m = s.match(new RegExp('\\b' + M + '\\s+(\\d{1,2}),?\\s+(\\d{4})', 'i')))) [mo, d, y] = [MON.indexOf(m[1].toLowerCase()), +m[2], +m[3]];
+    else if ((m = s.match(new RegExp('\\b(\\d{1,2})\\s+' + M + ',?\\s+(\\d{4})', 'i')))) [d, mo, y] = [+m[1], MON.indexOf(m[2].toLowerCase()), +m[3]];
+    else if ((m = s.match(/\b(20\d\d)-(\d\d)-(\d\d)\b/))) [y, mo, d] = [+m[1], +m[2] - 1, +m[3]];
+    else if ((m = s.match(/\b(\d{1,2})\/(\d{1,2})\/(20\d\d|\d\d)\b/))) { const a = +m[1], b = +m[2]; [mo, d] = a > 12 ? [b - 1, a] : [a - 1, b]; y = m[3].length === 2 ? 2000 + +m[3] : +m[3]; }
+    if (!m || !(mo >= 0 && mo < 12) || !(d >= 1 && d <= 31) || y < 2020) return null;
+    const end = m.index + m[0].length, times = [...s.matchAll(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s?([ap])?\.?m?\b/gi)].filter(t => +t[1] < 24 && +t[2] < 60);
+    const t = times.find(x => x.index >= end) || times.filter(x => x.index < m.index).pop();
+    let h = t ? +t[1] : 12;
+    if (t && t[3]) h = h % 12 + (t[3].toLowerCase() === 'p' ? 12 : 0);
+    return {at: Date.UTC(y, mo, d, h - 8, t ? +t[2] : 0), timed: !!t};
+  };
   const read = async (canvas, stage) => {
     onStage = stage;
-    try { const {data} = await (await reader()).recognize(canvas); return {amount: parse(data.text), ref: refOf(data.text)}; }
-    finally { onStage = null; }
+    try {
+      const {data} = await (await reader()).recognize(canvas);
+      return {amount: parse(data.text), ref: refOf(data.text), tm: timeOf(data.text), payee: /vicente|amandac|hokkaido/i.test(data.text)};
+    } finally { onStage = null; }
+  };
+
+  // Marks in the file that a phone screenshot never has: AI content credentials or labels, or a photo editor's name.
+  const MARKS = [[/c2pa|trainedAlgorithmicMedia|Made with Google AI|DALL.?E|OpenAI|Midjourney|Stable ?Diffusion|Firefly|Imagen|Ideogram/i, 'the file says an AI tool made it'],
+    [/Photoshop|Lightroom|Snapseed|PicsArt|Canva|GIMP|Pixelmator|Affinity Photo|Fotor|Pixlr|Polarr|Meitu|Facetune|PhotoDirector/i, 'the file says it was edited in a photo editor']];
+  const marks = async file => {
+    const part = async (a, b) => new TextDecoder('latin1').decode(await file.slice(a, b).arrayBuffer());
+    const text = (await part(0, 524288)) + (await part(Math.max(0, file.size - 65536), file.size));
+    return MARKS.filter(([re]) => re.test(text)).map(([, why]) => why);
+  };
+  // Share of the nearly flat 8x8 blocks that are perfectly even (one color), or null when the picture has too few flat areas to tell
+  const evenness = im => {
+    const k = Math.min(1, Math.sqrt(6e6 / (im.naturalWidth * im.naturalHeight))), c = fit(im, im.naturalWidth * k, im.naturalHeight * k);
+    const w = c.width, h = c.height, px = c.getContext('2d').getImageData(0, 0, w, h).data;
+    let flat = 0, even = 0;
+    for (let by = 0; by + 8 <= h; by += 8) for (let bx = 0; bx + 8 <= w; bx += 8) {
+      let r0 = 255, r1 = 0, g0 = 255, g1 = 0, b0 = 255, b1 = 0;
+      for (let y = by; y < by + 8; y++) for (let i = (y * w + bx) * 4, e = i + 32; i < e; i += 4) {
+        const r = px[i], g = px[i + 1], b = px[i + 2];
+        if (r < r0) r0 = r; if (r > r1) r1 = r; if (g < g0) g0 = g; if (g > g1) g1 = g; if (b < b0) b0 = b; if (b > b1) b1 = b;
+      }
+      const range = Math.max(r1 - r0, g1 - g0, b1 - b0);
+      if (range <= 24) { flat++; if (!range) even++; }
+    }
+    return flat < 300 ? null : even / flat;
   };
   const load = file => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(file); });
   const fit = (im, maxW, maxH) => {
@@ -988,52 +1019,56 @@ const RCPT = (() => {
     catch (e) { return file.name + ':' + file.size + ':' + file.lastModified; }
   };
 
-  // One receipt step inside `form` (.rc-pick, .rc-list, .rc-sum, .rc-top, .rc-manual, the gcashRef field). opts: {due() in pesos, title for the saved QR}.
+  // One receipt step inside `form` (.rc-pick, .rc-list, .rc-sum, .rc-top, .rc-manual, the gcashRef field).
+  // opts: {due() in pesos, since() = when this checkout's pay step first showed (ms), or nothing}.
   const step = (form, opts) => {
     const $q = s => form.querySelector(s), list = $q('.rc-list'), sum = $q('.rc-sum'), top = $q('.rc-top'), pick = $q('.rc-pick input'), man = $q('.rc-manual');
     const refIn = form.elements.gcashRef, errEl = $q('.err'), manText = man.textContent;
     let items = [], manual = false, autoRef = '', queue = Promise.resolve();
     const live = () => items.filter(x => !x.dup);
     const state = () => {
-      const due = opts.due(), paid = live().filter(x => x.amount != null).reduce((s, x) => s + cents(x.amount), 0) / 100;
-      return {due, paid, rest: (cents(due) - cents(paid)) / 100, busy: items.some(x => x.busy), unread: live().filter(x => !x.busy && x.amount == null).length, count: live().length};
+      const due = opts.due(), done = live().filter(x => !x.busy), good = done.filter(x => x.amount != null && !x.flags.length);
+      const paid = good.reduce((s, x) => s + cents(x.amount), 0) / 100;
+      return {due, paid, rest: (cents(due) - cents(paid)) / 100, busy: items.some(x => x.busy), bad: done.filter(x => x.amount == null || x.flags.length),
+        count: done.length, last: Math.max(0, ...good.filter(x => x.tm && x.tm.timed).map(x => x.tm.at))};
     };
     const row = x => {
       const li = document.createElement('li'), im = new Image(), t = document.createElement('div'), b = document.createElement('b'), sm = document.createElement('small'), del = document.createElement('button');
-      li.className = x.dup ? 'dup' : !x.busy && x.amount == null ? 'bad' : '';
+      li.className = x.dup ? 'dup' : !x.busy && (x.amount == null || x.flags.length) ? 'bad' : '';
       im.src = x.img; im.alt = '';
-      if (x.busy) { const sp = document.createElement('span'); sp.className = 'spin'; sp.setAttribute('aria-hidden', 'true'); b.append(sp, x.stage || 'Reading the amount…'); }
-      else if (x.dup) { b.textContent = 'Already added'; sm.textContent = 'Same Ref. No. as another screenshot, so it isn’t counted twice.'; }
-      else if (x.amount == null) { b.textContent = 'Amount not found'; sm.textContent = x.err || 'Use the GCash receipt screenshot that shows the amount and Ref. No.'; }
-      else { b.textContent = peso(x.amount); sm.textContent = x.ref ? 'Ref. No. ' + x.ref : 'Ref. No. not found: type it below.'; }
       t.append(b, sm);
+      if (x.busy) { const sp = document.createElement('span'); sp.className = 'spin'; sp.setAttribute('aria-hidden', 'true'); b.append(sp, x.stage || 'Checking the receipt…'); }
+      else if (x.dup) { b.textContent = 'Already added'; sm.textContent = 'Same Ref. No. as another screenshot, so it isn’t counted twice.'; }
+      else if (x.amount == null) { b.textContent = 'Amount not found'; sm.textContent = x.err || 'Use the GCash receipt screenshot that shows the amount, date and Ref. No.'; }
+      else {
+        const f = document.createElement('small');
+        b.textContent = peso(x.amount); sm.textContent = (x.tm ? stamp(x.tm) : 'No date') + ' · ' + (x.ref ? 'Ref. No. ' + x.ref : 'No Ref. No.');
+        f.className = x.flags.length ? 'rc-flag' : 'rc-ok';
+        f.textContent = x.flags.length ? '⚠ ' + x.flags.join('; ').replace(/^./, c => c.toUpperCase()) : '✓ Amount, date, Ref. No. and screenshot check out';
+        t.append(f);
+      }
       del.type = 'button'; del.className = 'rc-x'; del.textContent = '×'; del.setAttribute('aria-label', 'Remove this screenshot');
       del.onclick = () => { items = items.filter(y => y !== x); paint(); };
       li.append(im, t, del);
       return li;
     };
-    const showTop = rest => {
-      top.hidden = false;
-      if (top.dataset.amt === String(rest)) return;
-      top.dataset.amt = String(rest);
-      top.querySelector('.amtbig').textContent = peso(rest);
-      try { top.querySelector('img').src = qrCanvas(payload(rest), 6).toDataURL('image/png'); top.querySelector('a[download]').href = card(rest, opts.title); }
-      catch (e) { top.querySelector('img').removeAttribute('src'); }
-    };
     const paint = () => {
       list.replaceChildren(...items.map(row));
       const s = state();
       top.hidden = true; sum.hidden = false; sum.className = 'rc-sum';
-      if (s.busy) sum.textContent = 'Reading your receipt…';
-      else if (s.count && s.paid >= s.due) {
+      if (s.busy) sum.textContent = 'Checking your receipt…';
+      else if (s.bad.length) {
+        const why = [...new Set(s.bad.flatMap(x => x.amount == null ? ['we couldn’t read the amount'] : x.flags))];
+        sum.className = 'rc-sum warn';
+        sum.textContent = 'We couldn’t verify ' + (s.bad.length > 1 ? 'some of your receipts' : 'this receipt') + ': ' + why.join('; ') + '. Add the original GCash screenshot, or send it for a manual check below.';
+      } else if (s.count && s.paid >= s.due) {
         sum.className = 'rc-sum ok';
-        sum.textContent = '✓ ' + peso(s.paid) + ' received. ' + (s.paid > s.due ? 'That’s ' + peso(-s.rest) + ' more than the price: message us on Facebook if you want it back.' : 'You can send it now.');
+        sum.textContent = '✓ Verified: ' + peso(s.paid) + ' paid' + (s.last ? ' ' + when(s.last) : '') + '. '
+          + (s.paid > s.due ? 'That’s ' + peso(-s.rest) + ' more than the price: message us on Facebook if you want it back.' : 'You can send it now.');
       } else if (s.paid > 0) {
-        sum.textContent = peso(s.paid) + ' of ' + peso(s.due) + ' received. Please pay the remaining ' + peso(s.rest) + ' with this QR, then add that receipt too.'
-          + (s.unread ? ' (We couldn’t read one of your screenshots.)' : '');
-        showTop(s.rest);
-      } else if (s.unread) sum.textContent = 'We couldn’t read the amount. Add the GCash receipt screenshot that shows the amount and Ref. No., or send it for a manual check below.';
-      else if (manual) sum.textContent = 'We’ll check your payment by hand. Add your receipt if you have it, and type the reference number.';
+        sum.textContent = peso(s.paid) + ' of ' + peso(s.due) + ' received. Please pay the remaining ' + peso(s.rest) + ': scan the same QR, type ' + s.rest.toFixed(2) + ', then add that receipt too.';
+        top.hidden = false; top.querySelector('.amtbig').textContent = 'Type ' + peso(s.rest);
+      } else if (manual) sum.textContent = 'We’ll check your payment by hand. Add your receipt if you have it, and type the reference number.';
       else sum.hidden = true;
     };
     const add = async file => {
@@ -1042,13 +1077,25 @@ const RCPT = (() => {
       if (items.some(x => x.hash === hash)) { errEl.textContent = 'You already added this screenshot.'; return; }
       let im;
       try { im = await load(file); } catch (e) { errEl.textContent = 'That picture could not be opened. Add a screenshot (PNG or JPG) of your GCash receipt.'; return; }
-      const x = {hash, busy: true, amount: null, ref: '', img: fit(im, 900, 2000).toDataURL('image/jpeg', .8)}, page = fit(im, 1080, 4000);
+      const x = {hash, busy: true, amount: null, ref: '', tm: null, flags: [], notes: [], img: fit(im, 900, 2000).toDataURL('image/jpeg', .8)}, page = fit(im, 1080, 4000);
+      let even = null, marked = [];
+      try { even = evenness(im); marked = await marks(file); } catch (e) { /* the reading still runs */ }
       URL.revokeObjectURL(im.src);
       items.push(x); paint();
       try { Object.assign(x, await read(page, t => { x.stage = t; paint(); })); }
       catch (e) { x.err = 'We couldn’t check it on this device. Send it for a manual check below.'; }
       x.busy = false;
       if (!items.includes(x)) return;
+      if (x.amount != null) {
+        const now = Date.now(), lo = Math.max((opts.since() || now - 3 * 3600e3) - 30 * 60e3, now - 3 * 864e5), hi = now + 10 * 60e3;
+        if (!x.tm) x.flags.push('no date or time on it');
+        else if (x.tm.at + (x.tm.timed ? 0 : 12 * 3600e3) < lo) x.flags.push('it was paid before this order (' + stamp(x.tm) + ')');
+        else if (x.tm.at - (x.tm.timed ? 0 : 12 * 3600e3) > hi) x.flags.push('its date is in the future (' + stamp(x.tm) + ')');
+        if (!x.ref) x.flags.push('no Ref. No. on it');
+        x.flags.push(...marked);
+        if (even != null && even < EVEN_MIN) x.flags.push('it doesn’t look like an original screenshot (grainy, like an AI image or a photo of a screen)');
+        if (!x.payee) x.notes.push('our name isn’t on it');
+      }
       if (x.ref && live().some(y => y !== x && y.ref === x.ref)) x.dup = true;
       const first = live().find(y => y.ref);
       if (first && (!refIn.value.trim() || refIn.value === autoRef)) refIn.value = autoRef = first.ref;
@@ -1057,22 +1104,22 @@ const RCPT = (() => {
     pick.onchange = () => { [...pick.files].forEach(f => { queue = queue.then(() => add(f)).catch(() => {}); }); pick.value = ''; };
     man.onclick = () => { manual = !manual; man.textContent = manual ? 'Use the automatic check instead' : manText; paint(); if (manual) refIn.focus(); };
     return {
-      // why the order can't go yet ('' = it can): the receipts must add up to the price, unless the buyer asked for a manual check
+      // why the order can't go yet ('' = it can): every receipt verified and together at least the price, unless the buyer asked for a manual check
       problem: () => {
         const s = state();
-        if (s.busy) return 'One moment: we’re still reading your receipt.';
+        if (s.busy) return 'One moment: we’re still checking your receipt.';
         if (manual) return '';
         if (!s.count) return 'Add a screenshot of your GCash receipt first, or send it for a manual check.';
-        if (s.paid < s.due) return s.paid ? 'Your receipts show ' + peso(s.paid) + ' of ' + peso(s.due) + '. Please pay the remaining ' + peso(s.rest) + ' and add that receipt.'
-          : 'We couldn’t read the amount on your screenshot. Add the GCash receipt that shows the amount, or send it for a manual check.';
+        if (s.bad.length) return 'We couldn’t verify your receipt. Add the original GCash screenshot, or send it for a manual check.';
+        if (s.paid < s.due) return 'Your receipts show ' + peso(s.paid) + ' of ' + peso(s.due) + '. Please pay the remaining ' + peso(s.rest) + ' and add that receipt.';
         return '';
       },
       manual: () => manual,
-      shots: () => live().map(x => ({img: x.img, amount: x.amount, ref: x.ref})),
+      shots: () => live().map(x => ({img: x.img, amount: x.amount, ref: x.ref, time: x.tm ? stamp(x.tm) : '', flags: x.flags, notes: x.notes})),
       reset: () => { items = []; manual = false; autoRef = ''; man.textContent = manText; paint(); },
     };
   };
-  return {step, warm: () => { reader().catch(() => {}); }, payload, parse, refOf};
+  return {step, warm: () => { reader().catch(() => {}); }, parse, refOf, timeOf};
 })();
 
 (() => {
@@ -1089,7 +1136,7 @@ const RCPT = (() => {
   };
   const phone = v => { let d = String(v || '').replace(/\D/g, ''); if (d.startsWith('63')) d = '0' + d.slice(2); else if (d.startsWith('9') && d.length === 10) d = '0' + d; return /^09\d{9}$/.test(d) ? d : ''; };
   const price = () => document.documentElement.dataset.promo === 'off' ? 299 : 179;
-  const f1 = $('ck1'), f3 = $('ck3'), rc = RCPT.step(f3, {due: price, title: 'Purrfect POS'});
+  const f1 = $('ck1'), f3 = $('ck3'), rc = RCPT.step(f3, {due: price, since: () => o.payAt});
   ['name', 'business', 'email', 'mobile'].forEach(k => { if (o[k]) f1.elements[k].value = o[k]; });
   f1.onsubmit = e => {
     e.preventDefault();
@@ -1098,7 +1145,7 @@ const RCPT = (() => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))) { $('err1').textContent = 'Please enter a valid email: your license key goes there.'; f1.elements.email.focus(); return; }
     if (!phone(v('mobile'))) { $('err1').textContent = 'Enter a PH mobile number like 0917 123 4567.'; f1.elements.mobile.focus(); return; }
     $('err1').textContent = '';
-    Object.assign(o, {name: v('name'), business: v('business'), email: v('email'), mobile: phone(v('mobile')), hp: v('hp')}); save();
+    Object.assign(o, {name: v('name'), business: v('business'), email: v('email'), mobile: phone(v('mobile')), hp: v('hp'), payAt: o.payAt || Date.now()}); save();
     show('ck2'); $('checkout').scrollIntoView({behavior: 'smooth', block: 'start'});
     RCPT.warm();   // get the receipt reader while they pay
   };
@@ -1160,7 +1207,7 @@ const RCPT = (() => {
   };
   const fmtKey = v => { const c = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return /^PDPOS[A-Z0-9]{12}$/.test(c) ? 'PDPOS-' + c.slice(5, 9) + '-' + c.slice(9, 13) + '-' + c.slice(13) : ''; };
   const price = () => document.documentElement.dataset.promo === 'off' ? 1500 : 300;
-  const f1 = $('pk1'), f3 = $('pk3'), rc = RCPT.step(f3, {due: price, title: 'Purrfect POS Pro'});
+  const f1 = $('pk1'), f3 = $('pk3'), rc = RCPT.step(f3, {due: price, since: () => o.payAt});
   const fromApp = (location.hash.match(/^#pro=([A-Za-z0-9-]+)/) || [])[1];   // the app's Upgrade button: point-of-sale.html#pro=KEY
   if (fromApp) { o = {key: fmtKey(fromApp), email: o.email}; save(); history.replaceState(null, '', location.pathname + '#pro'); setTimeout(() => $('pro').scrollIntoView(), 50); }
   ['key', 'email'].forEach(k => { if (o[k]) f1.elements[k].value = o[k]; });
@@ -1170,7 +1217,7 @@ const RCPT = (() => {
     if (!key) { $('perr1').textContent = 'A license key looks like PDPOS-XXXX-XXXX-XXXX.'; f1.elements.key.focus(); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('perr1').textContent = 'Please enter a valid email: we tell you there when Pro is on.'; f1.elements.email.focus(); return; }
     $('perr1').textContent = ''; f1.elements.key.value = key;
-    Object.assign(o, {key, email}); save();
+    Object.assign(o, {key, email, payAt: o.payAt || Date.now()}); save();
     show('pk2'); $('proCheckout').scrollIntoView({behavior: 'smooth', block: 'start'});
     RCPT.warm();
   };
@@ -1217,7 +1264,6 @@ const RCPT = (() => {
   if (o.ref && o.token) wait();
 })();
 </script>
-<script src="vendor/qrcode-generator-1.4.4.js" defer></script>
 <script src="chat.js" defer></script>
 </body>
 </html>
