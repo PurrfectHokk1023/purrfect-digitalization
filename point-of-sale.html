@@ -597,7 +597,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
     </div>
     <div class="steps3">
       <div class="card"><h3>Pay <span class="promo-on">₱179</span><span class="promo-off">₱299</span> with GCash</h3><p>Fill in your details below, scan our GCash QR (the name shows as Hokkaido Ice Cream) and type the amount. Then add a screenshot of your GCash receipt: the page checks the amount, date and Ref. No. right away, and asks for the rest if it’s short.</p></div>
-      <div class="card"><h3>Get your license key</h3><p>We confirm every payment in GCash, usually within a few hours between 8 AM and 10 PM. Your key arrives by email and on this page.</p></div>
+      <div class="card"><h3>Get your license key</h3><p>When the page verifies your GCash receipt, your key comes right away, on this page and by email. A receipt it can’t verify is checked by hand, usually within a few hours between 8 AM and 10 PM.</p></div>
       <div class="card"><h3>Open the link and sell</h3><p>The link in the email activates the app by itself. One license is for 1 phone, tablet or computer.</p></div>
     </div>
   </div>
@@ -814,7 +814,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <details><summary>Is there a monthly fee?</summary><p>No. You pay once (<span class="promo-on">₱179</span><span class="promo-off">₱299</span>) and keep using it, with free updates.</p></details>
       <details class="promo-on"><summary>Until when is the 40% off?</summary><p>Until 11:59 PM on December 31, 2026 (Manila time). Pay before then and it’s ₱179 instead of ₱299, with the same license and free updates.</p></details>
       <details><summary>Can I try it before paying?</summary><p>Yes. The <a href="pos/" target="_blank" rel="noopener" style="color:var(--accent)">free demo</a> is the full app with sample items; receipts just print “DEMO”. Add your own items there, on the device you’ll sell on: they stay when you activate. On iPhone, add it to your Home Screen first and set up in that icon.</p></details>
-      <details><summary>How soon do I get my license key?</summary><p>We check each GCash payment by hand, usually within a few hours between 8 AM and 10 PM. The key comes by email and also shows on this page once confirmed.</p></details>
+      <details><summary>How soon do I get my license key?</summary><p>Right away when the page verifies your GCash receipt: the key shows on this page and comes by email. If it can’t verify the receipt (or you send it for a manual check), we check it by hand, usually within a few hours between 8 AM and 10 PM.</p></details>
       <details><summary>What if I paid the wrong amount?</summary><p>Add your GCash receipt anyway: the page reads the amount, and if it’s short it tells you exactly how much is left to pay with the same QR. Paid too much? Message us on Facebook and we’ll sort it out.</p></details>
       <details><summary>Why does GCash show Hokkaido Ice Cream?</summary><p>That’s the name on our GCash account, so it’s the right place to pay. Your GCash receipt shows it too, and that’s the receipt you add on this page.</p></details>
       <details><summary>Is Purrfect POS BIR-accredited?</summary><p>No. It is a register and sales tracker, not a BIR-accredited POS machine, so its receipts say “This is not an official receipt”. Keep issuing your BIR-registered receipts or invoices as usual.</p></details>
@@ -1204,7 +1204,7 @@ const RCPT = (() => {
       const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'order', name: o.name, business: o.business, email: o.email, mobile: o.mobile,
         gcashRef: ref, payer: f3.elements.payer.value.trim(), amount: price(), hp: o.hp || '', shots: rc.shots(), manual: rc.manual()})}).then(x => x.json());
       if (!r.ok) { $('err3').textContent = r.error || 'Something went wrong. Please try again.'; return; }
-      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: 'Checking'}); save();
+      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}, r.key ? {key: r.key} : {}); save();   // verified receipts are confirmed at once
       wait();
     } catch (err) {
       $('err3').textContent = 'Could not reach us. Check your internet connection and try again.';
@@ -1276,7 +1276,7 @@ const RCPT = (() => {
       const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'order', kind: 'pro', key: o.key, email: o.email, gcashRef: ref,
         payer: f3.elements.payer.value.trim(), amount: price(), shots: rc.shots(), manual: rc.manual()})}).then(x => x.json());
       if (!r.ok) { $('perr3').textContent = r.error || 'Something went wrong. Please try again.'; return; }
-      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: 'Checking'}); save();
+      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}, r.key ? {key: r.key} : {}); save();   // verified receipts are confirmed at once
       wait();
     } catch (err) {
       $('perr3').textContent = 'Could not reach us. Check your internet connection and try again.';
