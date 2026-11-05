@@ -1003,11 +1003,24 @@ const RCPT = (() => {
     if (t && t[3]) h = h % 12 + (t[3].toLowerCase() === 'p' ? 12 : 0);
     return {at: Date.UTC(y, mo, d, h - 8, t ? +t[2] : 0), timed: !!t};
   };
+  // Our name on the receipt (GCash shows "HokkaidoIceCream"). The big title often comes out mangled ("H lokkai dolceCrec am"), so:
+  // letters only, the usual OCR swaps undone (l, 1, | for i; 0 for o), and one wrong letter allowed.
+  const payeeOf = text => {
+    const s = String(text).toLowerCase().replace(/[l1|!]/g, 'i').replace(/0/g, 'o').replace(/[^a-z]/g, '');
+    return ['hokkaido', 'icecream', 'vicente', 'amandac'].some(w => {
+      for (let i = 0; i + w.length <= s.length; i++) {
+        let bad = 0;
+        for (let k = 0; k < w.length && bad < 2; k++) if (s[i + k] !== w[k]) bad++;
+        if (bad < 2) return true;
+      }
+      return false;
+    });
+  };
   const read = async (canvas, stage) => {
     onStage = stage;
     try {
       const {data} = await (await reader()).recognize(canvas), text = dropIcons(data);
-      return {amount: parse(text), ref: refOf(text), tm: timeOf(text), payee: /vicente|amandac|hokkaido/i.test(text)};
+      return {amount: parse(text), ref: refOf(text), tm: timeOf(text), payee: payeeOf(text)};
     } finally { onStage = null; }
   };
 
@@ -1147,7 +1160,7 @@ const RCPT = (() => {
       reset: () => { items = []; manual = false; autoRef = ''; man.textContent = manText; paint(); },
     };
   };
-  return {step, warm: () => { reader().catch(() => {}); }, parse, refOf, timeOf, dropIcons};
+  return {step, warm: () => { reader().catch(() => {}); }, parse, refOf, timeOf, dropIcons, payeeOf};
 })();
 
 (() => {
