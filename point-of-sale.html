@@ -597,7 +597,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
     </div>
     <div class="steps3">
       <div class="card"><h3>Pay <span class="promo-on">₱179</span><span class="promo-off">₱299</span> with GCash</h3><p>Fill in your details below, scan our GCash QR (the name shows as Hokkaido Ice Cream) and type the amount. Then add a screenshot of your GCash receipt: the page checks the amount, date and Ref. No. right away, and asks for the rest if it’s short.</p></div>
-      <div class="card"><h3>Get your license key</h3><p>When the page verifies your GCash receipt, your key comes right away, on this page and by email. A receipt it can’t verify is checked by hand, usually within a few hours between 8 AM and 10 PM.</p></div>
+      <div class="card"><h3>Get your license key</h3><p>When the page verifies your GCash receipt, your key comes by email right away. A receipt it can’t verify is checked by hand, usually within a few hours between 8 AM and 10 PM.</p></div>
       <div class="card"><h3>Open the link and sell</h3><p>The link in the email activates the app by itself. One license is for 1 phone, tablet or computer.</p></div>
     </div>
   </div>
@@ -686,11 +686,11 @@ html:not([data-promo=off]) .promo-off{display:none!important}
 
         <div class="pane" id="ck4" hidden>
           <div class="row" id="ckWait"><span class="spin" aria-hidden="true"></span><h3>We’re checking your payment</h3></div>
-          <p id="ckMsg">Order <b id="ckRef"></b>. We’ll email your license key to <b id="ckEmail"></b>, usually within a few hours between 8 AM and 10 PM. You can close this page; the key comes by email too.</p>
+          <p id="ckMsg">Order <b id="ckRef"></b>. We’ll email your license key to <b id="ckEmail"></b>, usually within a few hours between 8 AM and 10 PM. You can close this page.</p>
           <div id="ckDone" hidden>
-            <p>Payment confirmed. Your license key:</p>
-            <div class="keybox" id="ckKey"></div>
-            <div class="row" style="margin-top:14px"><a class="btn btn-primary" id="ckOpen" href="pos/" target="_blank" rel="noopener">Open and activate Purrfect POS</a><button class="btn btn-ghost" type="button" id="ckCopy">Copy key</button></div>
+            <h3>Payment confirmed. Thank you!</h3>
+            <p style="margin:8px 0 0">Your license key and setup guide are on their way to <b id="ckDoneEmail"></b> (order <b id="ckDoneRef"></b>). No email in a few minutes? Check Spam.</p>
+            <div class="row" style="margin-top:14px"><button class="btn btn-primary" type="button" id="ckAgain">Buy another license</button></div>
           </div>
           <p class="small">Meanwhile, set up your items in the <a href="pos/" target="_blank" rel="noopener" style="color:var(--accent)">free demo</a>: they stay when you activate. <button type="button" id="ckNew" style="background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;padding:0">Start a new order</button></p>
         </div>
@@ -782,7 +782,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
           <div class="row" id="pkWait"><span class="spin" aria-hidden="true"></span><h3>We’re checking your payment</h3></div>
           <p id="pkMsg">Upgrade <b id="pkRef"></b>. We’ll email <b id="pkEmail"></b> as soon as Pro is on, usually within a few hours between 8 AM and 10 PM. You can close this page.</p>
           <div id="pkDone" hidden>
-            <p>Payment confirmed. Pro is on for key <b id="pkKey"></b>.</p>
+            <p>Payment confirmed: Pro is on. The steps are on their way to <b id="pkDoneEmail"></b>.</p>
             <div class="row" style="margin-top:14px"><a class="btn btn-primary" id="pkOpen" href="pos/" target="_blank" rel="noopener">Open Purrfect POS</a></div>
             <p class="small">On an iPhone or iPad, open Purrfect POS from its Home Screen icon instead, then tap the clock icon and “I upgraded: check now”.</p>
           </div>
@@ -814,7 +814,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <details><summary>Is there a monthly fee?</summary><p>No. You pay once (<span class="promo-on">₱179</span><span class="promo-off">₱299</span>) and keep using it, with free updates.</p></details>
       <details class="promo-on"><summary>Until when is the 40% off?</summary><p>Until 11:59 PM on December 31, 2026 (Manila time). Pay before then and it’s ₱179 instead of ₱299, with the same license and free updates.</p></details>
       <details><summary>Can I try it before paying?</summary><p>Yes. The <a href="pos/" target="_blank" rel="noopener" style="color:var(--accent)">free demo</a> is the full app with sample items; receipts just print “DEMO”. Add your own items there, on the device you’ll sell on: they stay when you activate. On iPhone, add it to your Home Screen first and set up in that icon.</p></details>
-      <details><summary>How soon do I get my license key?</summary><p>Right away when the page verifies your GCash receipt: the key shows on this page and comes by email. If it can’t verify the receipt (or you send it for a manual check), we check it by hand, usually within a few hours between 8 AM and 10 PM.</p></details>
+      <details><summary>How soon do I get my license key?</summary><p>Right away when the page verifies your GCash receipt: it comes by email within a minute. If it can’t verify the receipt (or you send it for a manual check), we check it by hand, usually within a few hours between 8 AM and 10 PM.</p></details>
       <details><summary>What if I paid the wrong amount?</summary><p>Add your GCash receipt anyway: the page reads the amount, and if it’s short it tells you exactly how much is left to pay with the same QR. Paid too much? Message us on Facebook and we’ll sort it out.</p></details>
       <details><summary>Why does GCash show Hokkaido Ice Cream?</summary><p>That’s the name on our GCash account, so it’s the right place to pay. Your GCash receipt shows it too, and that’s the receipt you add on this page.</p></details>
       <details><summary>Is Purrfect POS BIR-accredited?</summary><p>No. It is a register and sales tracker, not a BIR-accredited POS machine, so its receipts say “This is not an official receipt”. Keep issuing your BIR-registered receipts or invoices as usual.</p></details>
@@ -1204,7 +1204,7 @@ const RCPT = (() => {
       const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'order', name: o.name, business: o.business, email: o.email, mobile: o.mobile,
         gcashRef: ref, payer: f3.elements.payer.value.trim(), amount: price(), hp: o.hp || '', shots: rc.shots(), manual: rc.manual()})}).then(x => x.json());
       if (!r.ok) { $('err3').textContent = r.error || 'Something went wrong. Please try again.'; return; }
-      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}, r.key ? {key: r.key} : {}); save();   // verified receipts are confirmed at once
+      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}); save();   // verified receipts are confirmed at once; the key only goes by email
       wait();
     } catch (err) {
       $('err3').textContent = 'Could not reach us. Check your internet connection and try again.';
@@ -1213,9 +1213,9 @@ const RCPT = (() => {
   let timer = null;
   const paint = () => {
     $('ckRef').textContent = o.ref || ''; $('ckEmail').textContent = o.email || '';
-    const paid = o.status === 'Paid' && o.key, rejected = o.status === 'Rejected';
-    $('ckWait').hidden = paid || rejected; $('ckDone').hidden = !paid;
-    if (paid) { $('ckKey').textContent = o.key; $('ckOpen').href = 'pos/#key=' + encodeURIComponent(o.key); $('ckMsg').hidden = true; }
+    const paid = o.status === 'Paid', rejected = o.status === 'Rejected';
+    $('ckWait').hidden = paid || rejected; $('ckDone').hidden = !paid; $('ckNew').hidden = paid;
+    if (paid) { $('ckDoneEmail').textContent = o.email || ''; $('ckDoneRef').textContent = o.ref || ''; $('ckMsg').hidden = true; }
     if (rejected) { $('ckMsg').hidden = false; $('ckMsg').textContent = 'We could not find your GCash payment with reference ' + (o.gcashRef || '') + '. Please reply to our email with a screenshot of your GCash receipt, or message us on Facebook.'; }
   };
   const poll = async () => {
@@ -1223,14 +1223,13 @@ const RCPT = (() => {
     if (!o.ref || !o.token || o.status === 'Paid' || o.status === 'Rejected') return;
     try {
       const r = await fetch(API + '?pos=status&ref=' + encodeURIComponent(o.ref) + '&t=' + encodeURIComponent(o.token), {cache: 'no-store'}).then(x => x.json());
-      if (r.ok) { o.status = r.status; if (r.key) o.key = r.key; save(); paint(); }
+      if (r.ok) { o.status = r.status; save(); paint(); }
     } catch (e) {}
     if (o.status !== 'Paid' && o.status !== 'Rejected') timer = setTimeout(poll, document.hidden ? 120000 : 30000);
   };
   const wait = () => { show('ck4'); paint(); poll(); };
   document.addEventListener('visibilitychange', () => { if (!document.hidden && o.ref) poll(); });
-  $('ckCopy').onclick = () => navigator.clipboard.writeText(o.key || '').then(() => { $('ckCopy').textContent = 'Copied'; setTimeout(() => { $('ckCopy').textContent = 'Copy key'; }, 1500); }).catch(() => {});
-  $('ckNew').onclick = () => { clearTimeout(timer); o = {name: o.name, business: o.business, email: o.email, mobile: o.mobile}; save(); f3.reset(); rc.reset(); show('ck1'); };
+  $('ckNew').onclick = $('ckAgain').onclick = () => { clearTimeout(timer); o = {name: o.name, business: o.business, email: o.email, mobile: o.mobile}; save(); f3.reset(); rc.reset(); show('ck1'); $('checkout').scrollIntoView({behavior: 'smooth', block: 'start'}); };
   if (o.ref && o.token) wait();
 })();
 
@@ -1276,7 +1275,7 @@ const RCPT = (() => {
       const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'order', kind: 'pro', key: o.key, email: o.email, gcashRef: ref,
         payer: f3.elements.payer.value.trim(), amount: price(), shots: rc.shots(), manual: rc.manual()})}).then(x => x.json());
       if (!r.ok) { $('perr3').textContent = r.error || 'Something went wrong. Please try again.'; return; }
-      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}, r.key ? {key: r.key} : {}); save();   // verified receipts are confirmed at once
+      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: r.status === 'Paid' ? 'Paid' : 'Checking'}); save();   // verified receipts are confirmed at once; the key only goes by email
       wait();
     } catch (err) {
       $('perr3').textContent = 'Could not reach us. Check your internet connection and try again.';
@@ -1287,7 +1286,7 @@ const RCPT = (() => {
     $('pkRef').textContent = o.ref || ''; $('pkEmail').textContent = o.email || '';
     const paid = o.status === 'Paid', rejected = o.status === 'Rejected';
     $('pkWait').hidden = paid || rejected; $('pkDone').hidden = !paid;
-    if (paid) { $('pkKey').textContent = o.key; $('pkOpen').href = 'pos/#key=' + encodeURIComponent(o.key); $('pkMsg').hidden = true; }
+    if (paid) { $('pkDoneEmail').textContent = o.email || ''; $('pkOpen').href = 'pos/#key=' + encodeURIComponent(o.key); $('pkMsg').hidden = true; }
     if (rejected) { $('pkMsg').hidden = false; $('pkMsg').textContent = 'We could not find your GCash payment with reference ' + (o.gcashRef || '') + '. Please reply to our email with a screenshot of your GCash receipt, or message us on Facebook.'; }
   };
   const poll = async () => {
