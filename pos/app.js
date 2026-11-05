@@ -3,6 +3,7 @@
    purrfectdigital.online/point-of-sale.html. Settings, items, photos and open tickets live in localStorage; receipts in
    IndexedDB ("purrfect-pos"). Nothing leaves the device except the one-time license check, unless the owner turns on the
    online back office (Settings): then receipts, the time clock and items are copied to the shop's private back office (office.html).
+   New versions install themselves: sw.js asks the server for fresh files, and the page reloads when nothing is in progress.
    Until a key is activated the app runs as a demo: sample items, a banner, and DEMO printed on receipts.
    The café's own POS (clients/purrfect-hokkaido/pos/) shares this origin and uses "pos-*" keys, so every key here
    starts with "ppos-". */
@@ -10,6 +11,7 @@
 const API = ((location.hostname === '127.0.0.1' || location.hostname === 'localhost') && (() => { try { return localStorage.getItem('pd-api'); } catch (e) { return null; } })())
   || 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';   // Purrfect Digitalization web app (PosOrders.gs); a local test server can stand in on localhost
 const BUY = 'https://purrfectdigital.online/point-of-sale.html#buy';
+const APP_V = '2026-11-05.2';   // shown in Settings; change it with CACHE in make_pos_app.py
 const PROMO = Date.now() < Date.UTC(2026, 11, 31, 16);   // year-end promo: 40% off (₱179) until 31 Dec 2026, 11:59 PM Manila
 const PRICE = PROMO ? '₱179' : '₱299';
 const WS = 'ws://127.0.0.1:40213/';   // "Server for RawBT" app on Android
@@ -1161,7 +1163,7 @@ function showSettings() {
       el('h3', {textContent: 'Backup'}), bkNote, el('div', {className: 'row2'}, [bkBtn, rsBtn]), rfile,
       el('h3', {textContent: 'License'}), licenseBox(close),
       el('p', {className: 'note'}, ['Purrfect POS by ', el('a', {href: 'https://purrfectdigital.online/', target: '_blank', rel: 'noopener', textContent: 'Purrfect Digitalization'}),
-        '. Help: ', el('a', {href: 'https://purrfectdigital.online/point-of-sale.html#help', target: '_blank', rel: 'noopener', textContent: 'guide and FAQ'}), '.']));
+        '. Help: ', el('a', {href: 'https://purrfectdigital.online/point-of-sale.html#help', target: '_blank', rel: 'noopener', textContent: 'guide and FAQ'}), '. Version ' + APP_V + '.']));
   }));
 }
 $('#setBtn').onclick = showSettings;
@@ -1177,11 +1179,8 @@ function officeBox() {
     openB.disabled = !S.office;
   };
   on.onchange = async () => {
-    S.office = on.checked; saveS();
-    if (S.office) {   // the last 60 days go up first
-      const rs = await db.range(new Date(Date.now() - 60 * 864e5).toISOString(), new Date(Date.now() + 864e5).toISOString());
-      jset(SYNC_Q, rs.filter(r => !r.demo).map(r => r.no)); toast('Online back office on'); paint(); await syncNow();
-    } else { clearTimeout(syncTimer); jset(SYNC_Q, []); toast('Online back office off. What was already sent stays there.'); }
+    if (on.checked) await officeStart(paint);
+    else { S.office = false; saveS(); clearTimeout(syncTimer); jset(SYNC_Q, []); toast('Online back office off. What was already sent stays there.'); }
     paint();
   };
   openB.onclick = openOffice;
@@ -1189,6 +1188,30 @@ function officeBox() {
   return el('div', {}, [el('label', {className: 'tog'}, [el('span', {textContent: 'Send sales, staff hours and stock to my back office'}), on]),
     el('p', {className: 'note', textContent: 'See today’s sales, who is at work and your net profit from any phone. Only you can open it: from here, or with a link we email you.'}),
     status, openB]);
+}
+async function officeStart(queued) {   // turns the back office on: the last 60 days go up first
+  S.office = true; saveS();
+  const rs = await db.range(new Date(Date.now() - 60 * 864e5).toISOString(), new Date(Date.now() + 864e5).toISOString());
+  jset(SYNC_Q, rs.filter(r => !r.demo).map(r => r.no)); toast('Online back office on'); if (queued) queued();
+  await syncNow();
+}
+// a licensed register asks once, so owners find the back office without looking in Settings (Vince, 5 Nov 2026: "IDK, fix this")
+function officeAsk() {
+  if (!licensed() || S.office || S.officeAsked || ticket.length || topVeil()) return;
+  S.officeAsked = true; saveS();
+  sheet('Online back office', (bd, close) => {
+    const on = el('button', {className: 'btn g', textContent: 'Turn on'}), later = el('button', {className: 'btn o', textContent: 'Not now'});
+    later.onclick = close;
+    on.onclick = () => guard(async () => {
+      on.disabled = true; await officeStart();
+      bd.replaceChildren(el('p', {textContent: 'It’s on. Your sales, time clock and stock are on their way to your back office.'}),
+        el('div', {className: 'row2'}, [el('button', {className: 'btn g', textContent: 'Open back office', onclick: () => { close(); openOffice(); }}),
+          el('button', {className: 'btn o', textContent: 'Done', onclick: close})]));
+    });
+    bd.append(el('p', {textContent: 'New in Purrfect POS: see today’s sales, who is at work and your net profit from any phone, wherever you are.'}),
+      el('p', {className: 'note', textContent: 'Your sales, time clock and stock are copied to your own back office. Only you can open it: from Settings › Online back office, or with a link we email you. You can turn it off there any time.'}),
+      el('div', {className: 'row2'}, [on, later]));
+  });
 }
 async function openOffice() {
   const w = window.open('about:blank', '_blank');   // opened in the tap itself, so no pop-up blocker stops it
@@ -1539,7 +1562,7 @@ $('#closeTicket').onclick = () => $('#right').classList.remove('open');
 const mq = matchMedia('(max-width:760px)'); const syncMq = () => { $('#closeTicket').hidden = !mq.matches; }; mq.addEventListener('change', syncMq); syncMq();
 
 store.keys().filter(k => /^ppos-seq-\d{6}$/.test(k) && k.slice(9) < dayKey(addDays(new Date(), -3)).slice(2).replace(/-/g, '')).forEach(store.del);
-applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT(); syncSoon(3000);
+applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT(); syncSoon(3000); setTimeout(officeAsk, 2500);
 const hashKey = (location.hash.match(/key=([A-Za-z0-9-]+)/) || [])[1];
 if (hashKey) {
   history.replaceState(null, '', location.pathname + location.search);
@@ -1548,4 +1571,20 @@ if (hashKey) {
     activate(LIC.key).then(() => { applyLicense(); toast(isPro() ? 'Purrfect POS Pro is on' : 'This key is not Pro yet.'); }).catch(e => toast(e.message));
 }
 else if (!store.get('ppos-welcomed') && !licensed()) welcome();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+// updates install themselves (owners shouldn't have to know): sw.js asks the server for fresh files on every load, the page looks for a
+// new sw.js when it comes back to the screen and every 30 minutes, and when a new one takes over it reloads, but only after 20 seconds
+// with no open ticket and no open window, so a sale is never cut off (the ticket survives a reload anyway)
+if ('serviceWorker' in navigator) {
+  const hadSW = !!navigator.serviceWorker.controller, loadedAt = Date.now();
+  let updateReady = false, idleSince = 0;
+  const look = () => navigator.serviceWorker.getRegistration().then(g => g && g.update()).catch(() => {});
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadSW && Date.now() - loadedAt > 15000) updateReady = true; });   // just opened: the files are fresh already
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) look(); });
+  setInterval(look, 30 * 60000);
+  setInterval(() => {
+    if (!updateReady) return;
+    if (ticket.length || topVeil()) { idleSince = 0; return; }
+    if (!idleSince) idleSince = Date.now(); else if (Date.now() - idleSince >= 20000) location.reload();
+  }, 5000);
+}
