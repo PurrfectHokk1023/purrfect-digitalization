@@ -145,6 +145,21 @@ h1,h2,h3,.btn,.big,.stepper output,.tile .nm,.hero b{font-family:var(--display)}
 .seg button{border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;background:#fff}
 .seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .lic{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px;background:#fafbfc}
+/* Pro: staff, time clock, overtime, schedule */
+.protag{justify-self:start;background:#ffb703;color:#0b1729;border-radius:999px;padding:3px 11px;font:800 12px var(--body);letter-spacing:.06em}
+.srow{display:grid;grid-template-columns:40px 1fr auto;gap:2px 12px;align-items:center;width:100%;text-align:left;padding:10px 2px;border-bottom:1px solid var(--line)}
+button.srow:hover{background:#f7f8fb}
+.srow .no{font-weight:600;min-width:0;overflow-wrap:anywhere}.srow .no small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.srow .amt{font-weight:600}
+.acts2{display:flex;gap:6px}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 17px var(--body);background:#6b7280}
+.stat{font-weight:700;font-size:13px;border-radius:999px;padding:3px 10px}.stat.approved{background:#dcf5e6;color:#16824a}.stat.declined{background:#f1f3f6;color:var(--muted)}
+.sched{display:grid;grid-template-columns:minmax(64px,1.2fr) repeat(7,minmax(38px,1fr));gap:5px;align-items:center}
+.sched .h{color:var(--muted);font-size:12.5px;font-weight:600;text-align:center}
+.sched .nm{font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sched button{border:1.5px solid var(--line);border-radius:8px;min-height:40px;font-weight:600;font-size:12px;padding:2px;color:var(--muted);background:#fff}
+.sched button.on{background:var(--act-soft);border-color:var(--act);color:var(--act-d)}
+@media (max-width:420px){.acts2 .btn.sm{padding:0 9px;font-size:13px}.sched button{font-size:10.5px}}
 .stepslist{display:grid;gap:8px;counter-reset:s;list-style:none}
 .stepslist li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
 .stepslist li::before{counter-increment:s;content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--act-soft);color:var(--act-d);font:700 14px/28px var(--body);text-align:center}
@@ -181,7 +196,7 @@ table.t th,table.t td{padding:8px 6px;border-bottom:1px solid var(--line);text-a
 table.t th:first-child,table.t td:first-child{text-align:left}
 table.t th{font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0b1729;color:#fff;padding:12px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 8px 20px rgb(0 0 0/.25)}
+.toast{pointer-events:none;position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0b1729;color:#fff;padding:12px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 8px 20px rgb(0 0 0/.25)}
 .mobile-bar{display:none}
 @media (max-width:760px){
   .app{grid-template-columns:1fr}
@@ -223,6 +238,7 @@ table.t th{font-size:12.5px;color:var(--muted);font-weight:600;text-transform:up
       <img class="logo" id="logo" src="icons/icon-192.png" alt="">
       <h1 id="shopName">Purrfect POS</h1>
       <button class="ib" id="heldBtn" aria-label="Open tickets" title="Open tickets"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3zm0 4h2v-2H3zm0-8h2V7H3zm4 4h14v-2H7zm0 4h14v-2H7zM7 7v2h14V7z"/></svg><span class="badge" id="heldN" hidden></span></button>
+      <button class="ib" id="clockBtn" aria-label="Time clock" title="Time clock (Pro)"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7z"/></svg><span class="badge" id="otN" hidden></span></button>
       <button class="ib" id="itemsBtn" aria-label="Items" title="Items"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></svg></button>
       <button class="ib" id="repBtn" aria-label="Sales report" title="Sales report"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></button>
       <button class="ib" id="rcptBtn" aria-label="Receipts" title="Receipts"><svg viewBox="0 0 24 24"><path d="M18 17H6v-2h12zm0-4H6v-2h12zm0-4H6V7h12zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2z"/></svg></button>

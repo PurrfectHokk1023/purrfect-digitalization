@@ -462,6 +462,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <li><a href="#features">Features</a></li>
       <li><a href="#see">See it</a></li>
       <li><a href="#how">How buying works</a></li>
+      <li><a href="#pro">Pro</a></li>
       <li><a href="#faq">FAQ</a></li>
       <li><a href="./#contact">Contact</a></li>
     </ul>
@@ -660,6 +661,83 @@ html:not([data-promo=off]) .promo-off{display:none!important}
   </div>
 </section>
 
+<section id="pro">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">Purrfect POS Pro</span>
+      <h2>Got staff? Upgrade to Pro.</h2>
+      <p class="lead">For shops with a team: staff clock in on the register, overtime waits for your OK, and the week is planned. Your same license key turns Pro, and everything you set up stays.</p>
+    </div>
+    <div class="buy">
+      <article class="card pricecard">
+        <span class="pc-badge promo-on">80% off until Dec 31</span>
+        <h3>Purrfect POS Pro</h3>
+        <div class="amt"><span class="promo-on"><span class="was">₱1,500</span>₱300</span><span class="promo-off">₱1,500</span><small>one time</small></div>
+        <ul><li>Up to 3 staff, each with their own PIN</li><li>On up to 3 phones, tablets or computers</li><li>Time clock: staff clock in and out on the register</li><li>Overtime that waits for your OK</li><li>A weekly staff schedule</li><li>Hours report for payroll (CSV)</li></ul>
+        <p class="small">Added to the license key you already have. Staff records stay on the device where they were made, like your sales.</p>
+        <a class="btn btn-ghost" href="pos/" target="_blank" rel="noopener">▶ Try Pro in the free demo</a>
+      </article>
+      <div class="card ck" id="proCheckout" aria-live="polite">
+        <ol class="ck-nav" aria-label="Pro upgrade steps"><li class="on">Your key</li><li>Pay <span class="promo-on">₱300</span><span class="promo-off">₱1,500</span></li><li>Reference no.</li></ol>
+
+        <form id="pk1" novalidate>
+          <h3>Your license key</h3>
+          <p class="small">It’s in your Purrfect POS welcome email. No license yet? <a href="#buy" style="color:var(--accent)">Buy Purrfect POS first</a>.</p>
+          <div class="two">
+            <label>License key <input name="key" autocomplete="off" autocapitalize="characters" spellcheck="false" required placeholder="PDPOS-XXXX-XXXX-XXXX" maxlength="24"></label>
+            <label>Email (we tell you when Pro is on) <input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+          </div>
+          <p class="err" id="perr1" role="alert"></p>
+          <div class="row"><button class="btn btn-primary" type="submit">Continue to payment</button></div>
+        </form>
+
+        <div class="pane" id="pk2" hidden>
+          <h3>Pay <span class="promo-on">₱300</span><span class="promo-off">₱1,500</span> with GCash</h3>
+          <div class="qrbox">
+            <img class="promo-on" src="img/gcash-300.png" alt="GCash QR code for ₱300" width="220" height="220">
+            <img class="promo-off" src="img/gcash-1500.png" alt="GCash QR code for ₱1,500" width="220" height="220">
+            <div>
+              <div class="amtbig"><span class="promo-on">₱300.00</span><span class="promo-off">₱1,500.00</span></div>
+              <ol>
+                <li><b>On a computer?</b> Scan the QR with GCash on your phone.</li>
+                <li><b>On this phone?</b> Tap Save QR, then in GCash tap Pay QR, Upload QR, and pick the saved image.</li>
+                <li>The amount fills in by itself. Any QR Ph app works too (Maya, bank apps).</li>
+              </ol>
+            </div>
+          </div>
+          <div class="row">
+            <a class="btn btn-ghost promo-on" href="img/gcash-300-card.png" download="purrfect-pos-pro-gcash-300.png">Save QR</a><a class="btn btn-ghost promo-off" href="img/gcash-1500-card.png" download="purrfect-pos-pro-gcash-1500.png">Save QR</a>
+            <button class="btn btn-primary" type="button" id="pPaidBtn">I’ve paid: next</button>
+            <button class="btn btn-ghost" type="button" id="pBack1">Back</button>
+          </div>
+        </div>
+
+        <form id="pk3" hidden novalidate>
+          <h3>Your GCash reference number</h3>
+          <p class="small">It’s the 13-digit Ref. No. on your GCash receipt. We use it to find your payment.</p>
+          <div class="two">
+            <label>Reference number <input name="gcashRef" inputmode="numeric" autocomplete="off" required placeholder="0000 000 000000" maxlength="20"></label>
+            <label>Paid from (name or last 4 digits) <input name="payer" autocomplete="off" maxlength="80" placeholder="optional"></label>
+          </div>
+          <p class="err" id="perr3" role="alert"></p>
+          <div class="row"><button class="btn btn-primary" type="submit" id="pSendBtn">Send my upgrade</button><button class="btn btn-ghost" type="button" id="pBack2">Back</button></div>
+        </form>
+
+        <div class="pane" id="pk4" hidden>
+          <div class="row" id="pkWait"><span class="spin" aria-hidden="true"></span><h3>We’re checking your payment</h3></div>
+          <p id="pkMsg">Upgrade <b id="pkRef"></b>. We’ll email <b id="pkEmail"></b> as soon as Pro is on, usually within a few hours between 8 AM and 10 PM. You can close this page.</p>
+          <div id="pkDone" hidden>
+            <p>Payment confirmed. Pro is on for key <b id="pkKey"></b>.</p>
+            <div class="row" style="margin-top:14px"><a class="btn btn-primary" id="pkOpen" href="pos/" target="_blank" rel="noopener">Open Purrfect POS</a></div>
+            <p class="small">On an iPhone or iPad, open Purrfect POS from its Home Screen icon instead, then tap the clock icon and “I upgraded: check now”.</p>
+          </div>
+          <p class="small"><button type="button" id="pkNew" style="background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;padding:0">Start a new upgrade</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section style="padding-bottom:0">
   <div class="wrap">
     <div class="head">
@@ -687,7 +765,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
       <details><summary>Does it work on iPhone?</summary><p>Yes for selling, receipts on screen and reports. iPhones can’t talk to Bluetooth printers from a web app, so for printed receipts use an Android phone or tablet, or a computer.</p></details>
       <details><summary>Where are my sales saved? Can two tablets share them?</summary><p>On the device you sell on, never on our servers. Each device keeps its own sales and report. Back up to a file every week, and restore it on a new phone. Need one report across branches or devices? That’s our <a href="./#pricing" style="color:var(--accent)">full system</a>.</p></details>
       <details><summary>I changed phones or lost my key.</summary><p>Your key is in the email we sent. Each license is for one phone, tablet or computer: message us on Facebook and we’ll move it to your new phone.</p></details>
-      <details><summary>Can I use it on more devices, or with staff?</summary><p>Each license is for one phone, tablet or computer. Purrfect POS Pro is coming soon, for up to 3 users, with staff time-in and time-out, overtime approval and schedules. <a href="https://www.facebook.com/profile.php?id=61596084187287" target="_blank" rel="noopener" style="color:var(--accent)">Message us on Facebook</a> to hear when it’s ready.</p></details>
+      <details><summary>Can I use it on more devices, or with staff?</summary><p>Each license is for one phone, tablet or computer. <a href="#pro" style="color:var(--accent)">Purrfect POS Pro</a> adds up to 3 staff on up to 3 devices, with a time clock, overtime approval and a weekly schedule: <span class="promo-on">₱300 one time until Dec 31 (80% off ₱1,500)</span><span class="promo-off">₱1,500 one time</span>. Your same key turns Pro.</p></details>
     </div>
   </div>
 </section>
@@ -774,7 +852,7 @@ html:not([data-promo=off]) .promo-off{display:none!important}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
   const show = id => {
     STEPS.forEach(s => { $(s).hidden = s !== id; });
-    document.querySelectorAll('.ck-nav li').forEach((x, i) => x.classList.toggle('on', i <= Math.min(2, STEPS.indexOf(id))));
+    document.querySelectorAll('#checkout .ck-nav li').forEach((x, i) => x.classList.toggle('on', i <= Math.min(2, STEPS.indexOf(id))));
   };
   const phone = v => { let d = String(v || '').replace(/\D/g, ''); if (d.startsWith('63')) d = '0' + d.slice(2); else if (d.startsWith('9') && d.length === 10) d = '0' + d; return /^09\d{9}$/.test(d) ? d : ''; };
   const f1 = $('ck1'), f3 = $('ck3');
@@ -828,6 +906,73 @@ html:not([data-promo=off]) .promo-off{display:none!important}
   document.addEventListener('visibilitychange', () => { if (!document.hidden && o.ref) poll(); });
   $('ckCopy').onclick = () => navigator.clipboard.writeText(o.key || '').then(() => { $('ckCopy').textContent = 'Copied'; setTimeout(() => { $('ckCopy').textContent = 'Copy key'; }, 1500); }).catch(() => {});
   $('ckNew').onclick = () => { clearTimeout(timer); o = {name: o.name, business: o.business, email: o.email, mobile: o.mobile}; save(); f3.reset(); show('ck1'); };
+  if (o.ref && o.token) wait();
+})();
+
+(() => {
+  // Pro upgrade: license key -> GCash QR -> reference number -> waiting for the owner's confirmation -> Pro is on (the same key)
+  const API = ((location.hostname === '127.0.0.1' || location.hostname === 'localhost') && localStorage.getItem('pd-api'))
+    || 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';
+  const $ = id => document.getElementById(id), KEY = 'pd-pos-pro', STEPS = ['pk1', 'pk2', 'pk3', 'pk4'];
+  let o = {};
+  try { o = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { o = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
+  const show = id => {
+    STEPS.forEach(s => { $(s).hidden = s !== id; });
+    document.querySelectorAll('#proCheckout .ck-nav li').forEach((x, i) => x.classList.toggle('on', i <= Math.min(2, STEPS.indexOf(id))));
+  };
+  const fmtKey = v => { const c = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return /^PDPOS[A-Z0-9]{12}$/.test(c) ? 'PDPOS-' + c.slice(5, 9) + '-' + c.slice(9, 13) + '-' + c.slice(13) : ''; };
+  const f1 = $('pk1'), f3 = $('pk3');
+  const fromApp = (location.hash.match(/^#pro=([A-Za-z0-9-]+)/) || [])[1];   // the app's Upgrade button: point-of-sale.html#pro=KEY
+  if (fromApp) { o = {key: fmtKey(fromApp), email: o.email}; save(); history.replaceState(null, '', location.pathname + '#pro'); setTimeout(() => $('pro').scrollIntoView(), 50); }
+  ['key', 'email'].forEach(k => { if (o[k]) f1.elements[k].value = o[k]; });
+  f1.onsubmit = e => {
+    e.preventDefault();
+    const key = fmtKey(f1.elements.key.value), email = f1.elements.email.value.trim();
+    if (!key) { $('perr1').textContent = 'A license key looks like PDPOS-XXXX-XXXX-XXXX.'; f1.elements.key.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('perr1').textContent = 'Please enter a valid email: we tell you there when Pro is on.'; f1.elements.email.focus(); return; }
+    $('perr1').textContent = ''; f1.elements.key.value = key;
+    Object.assign(o, {key, email}); save();
+    show('pk2'); $('proCheckout').scrollIntoView({behavior: 'smooth', block: 'start'});
+  };
+  $('pPaidBtn').onclick = () => { show('pk3'); setTimeout(() => f3.elements.gcashRef.focus(), 50); };
+  $('pBack1').onclick = () => show('pk1');
+  $('pBack2').onclick = () => show('pk2');
+  f3.onsubmit = async e => {
+    e.preventDefault();
+    const ref = f3.elements.gcashRef.value.replace(/\D/g, '');
+    if (ref.length < 10 || ref.length > 16) { $('perr3').textContent = 'Type the 13-digit reference number from your GCash receipt.'; f3.elements.gcashRef.focus(); return; }
+    const btn = $('pSendBtn'); btn.disabled = true; btn.textContent = 'Sending…'; $('perr3').textContent = '';
+    try {
+      const r = await fetch(API, {method: 'POST', body: JSON.stringify({pos: 'order', kind: 'pro', key: o.key, email: o.email, gcashRef: ref,
+        payer: f3.elements.payer.value.trim(), amount: document.documentElement.dataset.promo === 'off' ? 1500 : 300})}).then(x => x.json());
+      if (!r.ok) { $('perr3').textContent = r.error || 'Something went wrong. Please try again.'; return; }
+      Object.assign(o, {ref: r.ref, token: r.token, gcashRef: ref, status: 'Checking'}); save();
+      wait();
+    } catch (err) {
+      $('perr3').textContent = 'Could not reach us. Check your internet connection and try again.';
+    } finally { btn.disabled = false; btn.textContent = 'Send my upgrade'; }
+  };
+  let timer = null;
+  const paint = () => {
+    $('pkRef').textContent = o.ref || ''; $('pkEmail').textContent = o.email || '';
+    const paid = o.status === 'Paid', rejected = o.status === 'Rejected';
+    $('pkWait').hidden = paid || rejected; $('pkDone').hidden = !paid;
+    if (paid) { $('pkKey').textContent = o.key; $('pkOpen').href = 'pos/#key=' + encodeURIComponent(o.key); $('pkMsg').hidden = true; }
+    if (rejected) { $('pkMsg').hidden = false; $('pkMsg').textContent = 'We could not find your GCash payment with reference ' + (o.gcashRef || '') + '. Please reply to our email with a screenshot of your GCash receipt, or message us on Facebook.'; }
+  };
+  const poll = async () => {
+    clearTimeout(timer);
+    if (!o.ref || !o.token || o.status === 'Paid' || o.status === 'Rejected') return;
+    try {
+      const r = await fetch(API + '?pos=status&ref=' + encodeURIComponent(o.ref) + '&t=' + encodeURIComponent(o.token), {cache: 'no-store'}).then(x => x.json());
+      if (r.ok) { o.status = r.status; save(); paint(); }
+    } catch (e) {}
+    if (o.status !== 'Paid' && o.status !== 'Rejected') timer = setTimeout(poll, document.hidden ? 120000 : 30000);
+  };
+  const wait = () => { show('pk4'); paint(); poll(); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && o.ref) poll(); });
+  $('pkNew').onclick = () => { clearTimeout(timer); o = {key: o.key, email: o.email}; save(); f3.reset(); show('pk1'); };
   if (o.ref && o.token) wait();
 })();
 </script>

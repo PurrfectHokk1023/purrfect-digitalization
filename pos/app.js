@@ -1097,6 +1097,7 @@ function showSettings() {
     };
     const pinBtn = el('button', {className: 'btn o', textContent: S.pin ? 'Change or remove the owner PIN' : 'Set an owner PIN'}); pinBtn.onclick = () => { close(); setPin(); };
     const prBtn = el('button', {className: 'btn o', textContent: 'Printer'}); prBtn.onclick = () => { close(); showPrinter(); };
+    const stBtn = el('button', {className: 'btn o', textContent: 'Staff and time clock · Pro'}); stBtn.onclick = () => { close(); showStaff(); };
     const inBtn = el('button', {className: 'btn o', textContent: 'Install as an app'}); inBtn.onclick = install;
     const bkBtn = el('button', {className: 'btn o', textContent: 'Back up'}), rsBtn = el('button', {className: 'btn o', textContent: 'Restore'});
     const rfile = el('input', {type: 'file', accept: '.json,application/json', hidden: true});
@@ -1111,7 +1112,7 @@ function showSettings() {
       el('h3', {textContent: 'Selling'}), el('label', {}, ['Payment buttons']), pays, el('label', {}, ['Sr/PWD 20% applies to', sr]),
       el('div', {className: 'row2'}, [el('label', {}, ['Low-stock warning at', lowD]), el('label', {}, ['Receipt number prefix', prefix])]),
       el('p', {className: 'note', textContent: 'Give each phone or tablet its own prefix (A, B, …) so receipt numbers never repeat across devices.'}), err, save,
-      el('h3', {textContent: 'Security and device'}), pinBtn, el('div', {className: 'row2'}, [prBtn, inBtn]),
+      el('h3', {textContent: 'Security and device'}), pinBtn, el('div', {className: 'row2'}, [prBtn, inBtn]), stBtn,
       el('h3', {textContent: 'Backup'}), bkNote, el('div', {className: 'row2'}, [bkBtn, rsBtn]), rfile,
       el('h3', {textContent: 'License'}), licenseBox(close),
       el('p', {className: 'note'}, ['Purrfect POS by ', el('a', {href: 'https://purrfectdigital.online/', target: '_blank', rel: 'noopener', textContent: 'Purrfect Digitalization'}),
@@ -1154,7 +1155,8 @@ async function backup() {
   const receipts = await db.all(), photos = {};
   for (const i of ITEMS) { const p = photoOf(i.id); if (p) photos[i.id] = p; }
   download('purrfect-pos-backup-' + dayKey(new Date()) + '.json',
-    JSON.stringify({app: 'purrfect-pos', v: 1, at: new Date().toISOString(), settings: S, items: ITEMS, photos, held: held(), receipts}), 'application/json');
+    JSON.stringify({app: 'purrfect-pos', v: 2, at: new Date().toISOString(), settings: S, items: ITEMS, photos, held: held(), receipts,
+      staff: STAFF, sched: SCHED, punches: PUNCH, ot: OT}), 'application/json');
   store.set('ppos-backup-at', new Date().toISOString());
   toast('Backup downloaded (' + receipts.length + ' receipts). Keep the file somewhere safe.');
 }
@@ -1167,16 +1169,228 @@ async function restore(file) {
     S = Object.assign({}, DEFAULTS, data.settings || {}); S.shop = Object.assign({}, DEFAULTS.shop, S.shop || {}); saveS();
     ITEMS = data.items; for (const [id, p] of Object.entries(data.photos || {})) store.set('ppos-ph-' + id, p);
     jset('ppos-held', data.held || []);
+    if (Array.isArray(data.staff)) { STAFF = data.staff; SCHED = data.sched || {}; PUNCH = data.punches || []; OT = data.ot || []; saveStaff(); savePunch(); saveOT(); }   // Pro staff (v2 backups)
     try { await db.putAll(data.receipts || []); } catch (e) { toast('Some receipts could not be restored: ' + e.message); }
     for (const k in logoCache) delete logoCache[k];
     saveItems(); applyShop(); buildCats(); render(); updHeld(); toast('Backup restored');
   });
 }
 
+// ---- Pro: staff, time clock, overtime, schedule --------------------------------------------------------
+// Purrfect POS Pro (₱1,500 one time, ₱300 until 31 Dec 2026): up to 3 staff with their own PIN, on up to 3 devices; a time clock,
+// overtime that waits for the owner's OK, a weekly schedule and an hours report. Like sales, these records stay on this device.
+// A base license sees what Pro adds and how to upgrade (the same key turns Pro); the demo lets anyone try it.
+const PRO_MAX = 3, PRO_PRICE = PROMO ? '₱300' : '₱1,500', AV = ['#e65100', '#1565c0', '#2e7d32'];
+const isPro = () => licensed() && LIC.tier === 'pro';
+const proOpen = () => !licensed() || isPro();
+let STAFF = jget('ppos-staff', []);     // [{id, name, role, pin: {salt, hash}}]
+let SCHED = jget('ppos-sched', {});     // {staff id: 7 days, Sunday first: null (off) or {start: 'HH:MM', end: 'HH:MM'}}
+let PUNCH = jget('ppos-punches', []);   // [{id, staff, in, out}] ISO times; out is null while clocked in
+let OT = jget('ppos-ot', []);           // [{id, staff, day, hours, reason, status: 'waiting' | 'approved' | 'declined', at, decided}]
+const saveStaff = () => { if (!jset('ppos-staff', STAFF) || !jset('ppos-sched', SCHED)) toast('This device is out of storage: staff were not saved.'); };
+const savePunch = () => { if (!jset('ppos-punches', PUNCH)) toast('This device is out of storage: the time clock was not saved.'); };
+const saveOT = () => { jset('ppos-ot', OT); updOT(); };
+const openPunch = id => PUNCH.find(p => p.staff === id && !p.out);
+const staffOf = id => STAFF.find(s => s.id === id) || {name: 'Removed staff', role: ''};
+const hhmm = t => { const [h, m] = t.split(':').map(Number); return timeLabel(new Date(2000, 0, 1, h, m)); };
+const shortT = t => hhmm(t).replace(':00', '').replace(/\s?([AP])M/i, (x, a) => a.toLowerCase());     // '07:00' -> '7a'
+const shiftOf = (id, d) => (SCHED[id] || [])[new Date(d).getDay()] || null;
+const hrs = p => Math.max(0, ((p.out ? new Date(p.out) : new Date()) - new Date(p.in)) / 36e5);
+const fmtH = h => (Math.round(h * 100) / 100).toLocaleString('en-PH', {maximumFractionDigits: 2}) + ' h';
+function updOT() { const n = proOpen() ? OT.filter(o => o.status === 'waiting').length : 0, b = $('#otN'); b.hidden = !n; b.textContent = n; }
+const avatar = s => el('span', {className: 'av', textContent: (s.name || '?').trim().charAt(0).toUpperCase()}, []);
+const paintAv = (a, i) => { a.style.background = AV[i % AV.length]; return a; };
+const proTag = () => el('span', {className: 'protag', textContent: licensed() ? 'PRO' : 'PRO · try it in the demo'});
+
+function pinCheck(title, salt, hash, fn, note) {   // a staff member's own PIN
+  sheet(title, (bd, close) => {
+    const pin = el('input', {type: 'password', inputMode: 'numeric', autocomplete: 'off', maxLength: 8, placeholder: '••••', ariaLabel: 'PIN'});
+    const err = el('p', {className: 'warn'}), ok = el('button', {className: 'btn g', textContent: 'OK'});
+    const go = async () => { if (await hashPin(pin.value, salt) === hash) { close(); fn(); } else { err.textContent = 'Wrong PIN.'; pin.value = ''; pin.focus(); } };
+    ok.onclick = go; pin.onkeydown = e => { if (e.key === 'Enter') go(); };
+    bd.append(el('p', {className: 'note', textContent: note || 'Enter your PIN.'}), pin, err, ok);
+    setTimeout(() => pin.focus(), 60);
+  });
+}
+
+function showClock() {   // what staff use at the counter: no owner PIN, each person's own PIN
+  if (!proOpen()) return proPitch();
+  sheet('Time clock', (bd, close) => {
+    const list = el('div', {className: 'rlist'});
+    const draw = () => {
+      list.replaceChildren();
+      if (!STAFF.length) list.append(el('p', {className: 'none', textContent: 'No staff yet. Tap “Staff, schedule and overtime” to add up to ' + PRO_MAX + ' staff, each with their own PIN.'}));
+      STAFF.forEach((s, i) => {
+        const p = openPunch(s.id), sh = shiftOf(s.id, new Date());
+        const sub = p ? 'In since ' + timeLabel(p.in) : sh ? 'Shift today ' + hhmm(sh.start) + '–' + hhmm(sh.end) : 'Off today';
+        const io = el('button', {className: 'btn sm ' + (p ? 'o' : 'g'), textContent: p ? 'Clock out' : 'Clock in'});
+        io.onclick = () => pinCheck(s.name, s.pin.salt, s.pin.hash, () => {
+          if (p) { p.out = new Date().toISOString(); toast(s.name + ' clocked out at ' + timeLabel(p.out) + ' · ' + fmtH(hrs(p))); }
+          else { PUNCH.push({id: uid(), staff: s.id, in: new Date().toISOString(), out: null}); toast(s.name + ' clocked in at ' + timeLabel(new Date())); }
+          savePunch(); draw();
+        }, (p ? 'Clock out' : 'Clock in') + ': enter your PIN.');
+        const ot = el('button', {className: 'btn o sm', textContent: 'Overtime'});
+        ot.onclick = () => pinCheck(s.name, s.pin.salt, s.pin.hash, () => requestOT(s, draw), 'Overtime request: enter your PIN.');
+        list.append(el('div', {className: 'srow'}, [paintAv(avatar(s), i), el('span', {className: 'no'}, [s.name, el('small', {textContent: [s.role, sub].filter(Boolean).join(' · ')})]),
+          el('span', {className: 'acts2'}, [ot, io])]));
+      });
+    };
+    const own = el('button', {className: 'btn o', textContent: 'Staff, schedule and overtime'}); own.onclick = () => { close(); showStaff(); };
+    bd.append(proTag(), list, own, el('p', {className: 'note', textContent: 'Each staff member clocks in and out with their own PIN. Overtime waits for the owner’s OK. These records stay on this device.'}));
+    draw();
+  });
+}
+
+function requestOT(s, after) {
+  sheet('Overtime request', (bd, close) => {
+    let h = 1; const out = el('output', {textContent: fmtH(h)});
+    const minus = el('button', {textContent: '−', ariaLabel: 'Less'}), plus = el('button', {textContent: '+', ariaLabel: 'More'});
+    minus.onclick = () => { h = Math.max(.5, h - .5); out.textContent = fmtH(h); }; plus.onclick = () => { h = Math.min(8, h + .5); out.textContent = fmtH(h); };
+    const why = el('input', {placeholder: 'e.g. Inventory count', maxLength: 60});
+    const send = el('button', {className: 'btn g', textContent: 'Send to the owner'});
+    send.onclick = () => {
+      OT.push({id: uid(), staff: s.id, day: dayKey(new Date()), hours: h, reason: why.value.trim(), status: 'waiting', at: new Date().toISOString()});
+      saveOT(); close(); toast('Sent: the overtime waits for the owner’s OK'); if (after) after();
+    };
+    bd.append(el('p', {className: 'note', textContent: s.name + ' · today, ' + dayLabel(dayKey(new Date()))}), el('div', {className: 'stepper'}, [minus, out, plus]),
+      el('label', {}, ['Reason', why]), send);
+  });
+}
+
+function showStaff() {   // the owner's side: staff, overtime approvals, the weekly schedule and hours
+  if (!proOpen()) return proPitch();
+  guard(() => sheet('Staff', (bd) => {
+    const otBox = el('div', {className: 'rlist'}), staffBox = el('div', {className: 'rlist'}), sched = el('div', {className: 'sched'}), hours = el('div');
+    const add = el('button', {className: 'btn g', textContent: 'Add staff'});
+    let period = 'week';
+    const draw = () => {
+      updOT();
+      const waiting = OT.filter(o => o.status === 'waiting'), recent = OT.filter(o => o.status !== 'waiting').slice(-5).reverse();
+      otBox.replaceChildren(...(waiting.length || recent.length ? [] : [el('p', {className: 'note', textContent: 'No overtime requests. Staff send them from the time clock.'})]));
+      for (const o of [...waiting, ...recent]) {
+        const s = staffOf(o.staff), i = STAFF.indexOf(s), info = fmtH(o.hours) + ' · ' + dayLabel(o.day) + (o.reason ? ' · ' + o.reason : '');
+        const kids = [paintAv(avatar(s), Math.max(0, i)), el('span', {className: 'no'}, [s.name, el('small', {textContent: info})])];
+        if (o.status === 'waiting') {
+          const no = el('button', {className: 'btn o sm', textContent: 'Decline'}), yes = el('button', {className: 'btn g sm', textContent: 'Approve'});
+          const decide = st => () => { o.status = st; o.decided = new Date().toISOString(); saveOT(); draw(); toast('Overtime ' + st + ' for ' + s.name); };
+          no.onclick = decide('declined'); yes.onclick = decide('approved');
+          kids.push(el('span', {className: 'acts2'}, [no, yes]));
+        } else kids.push(el('span', {className: 'stat ' + o.status, textContent: o.status === 'approved' ? 'Approved' : 'Declined'}));
+        otBox.append(el('div', {className: 'srow'}, kids));
+      }
+      staffBox.replaceChildren(...STAFF.map((s, i) => {
+        const b = el('button', {className: 'srow'}, [paintAv(avatar(s), i), el('span', {className: 'no'}, [s.name, el('small', {textContent: s.role || 'Staff'})]), el('span', {className: 'amt', textContent: 'Edit'})]);
+        b.onclick = () => editStaff(s, draw); return b;
+      }));
+      if (!STAFF.length) staffBox.append(el('p', {className: 'note', textContent: 'Add the people who work the counter. Each gets a PIN for the time clock.'}));
+      add.hidden = STAFF.length >= PRO_MAX;
+      const days = [1, 2, 3, 4, 5, 6, 0];                  // Monday first on screen; stored Sunday first like Date#getDay
+      sched.replaceChildren(el('span'), ...days.map(d => el('span', {className: 'h', textContent: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]})));
+      STAFF.forEach(s => {
+        sched.append(el('span', {className: 'nm', textContent: s.name}));
+        for (const d of days) {
+          const sh = (SCHED[s.id] || [])[d], c = el('button', {className: sh ? 'on' : '', textContent: sh ? shortT(sh.start) + '–' + shortT(sh.end) : 'Off'});
+          c.onclick = () => editShift(s, d, draw); sched.append(c);
+        }
+      });
+      drawHours();
+    };
+    const seg = el('div', {className: 'seg'}, [['week', 'This week'], ['last', 'Last week'], ['month', 'This month']].map(([k, t]) => {
+      const b = el('button', {textContent: t}); b.setAttribute('aria-pressed', k === period); b.onclick = () => { period = k; seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); drawHours(); }; return b;
+    }));
+    const range = () => {
+      const t = new Date(), mon = addDays(t, -((t.getDay() + 6) % 7));
+      if (period === 'month') return [new Date(t.getFullYear(), t.getMonth(), 1), new Date(t.getFullYear(), t.getMonth() + 1, 1)];
+      return period === 'last' ? [addDays(mon, -7), mon] : [mon, addDays(mon, 7)];
+    };
+    const inRange = ([a, b], d) => { const x = new Date(d); return x >= a && x < b; };
+    const exp = el('button', {className: 'btn o', textContent: 'Export hours (CSV)'});
+    function drawHours() {
+      const r = range(), ps = PUNCH.filter(p => inRange(r, p.in)), os = OT.filter(o => o.status === 'approved' && inRange(r, o.day + 'T12:00:00'));
+      const rows = STAFF.map(s => { const mine = ps.filter(p => p.staff === s.id);
+        return [s.name, new Set(mine.map(p => dayKey(p.in))).size, fmtH(mine.reduce((a, p) => a + hrs(p), 0)), fmtH(os.filter(o => o.staff === s.id).reduce((a, o) => a + o.hours, 0))]; });
+      hours.replaceChildren(el('table', {className: 't'}, [el('thead', {}, [el('tr', {}, ['Staff', 'Days', 'Hours', 'OT approved'].map(h => el('th', {textContent: h})))]),
+        el('tbody', {}, rows.length ? rows.map(r => el('tr', {}, r.map(v => el('td', {textContent: v})))) : [el('tr', {}, [el('td', {textContent: 'No staff yet'})])])]));
+      exp.onclick = () => download('purrfect-pos-hours-' + dayKey(r[0]) + '.csv', csv([['Staff', 'Role', 'Date', 'Clock in', 'Clock out', 'Hours', 'Approved overtime (h)'],
+        ...ps.map(p => { const s = staffOf(p.staff); return [s.name, s.role, dayKey(p.in), timeLabel(p.in), p.out ? timeLabel(p.out) : 'still in', r2(hrs(p)),
+          r2(os.filter(o => o.staff === p.staff && o.day === dayKey(p.in)).reduce((a, o) => a + o.hours, 0))]; })]), 'text/csv');
+    }
+    add.onclick = () => editStaff(null, draw);
+    bd.append(proTag(), el('h3', {textContent: 'Overtime requests'}), otBox, el('h3', {textContent: 'Staff (up to ' + PRO_MAX + ')'}), staffBox, add,
+      el('h3', {textContent: 'Weekly schedule'}), el('p', {className: 'note', textContent: 'Tap a day to set the shift. The same week repeats until you change it.'}), sched,
+      el('h3', {textContent: 'Hours'}), seg, hours, exp, el('p', {className: 'note', textContent: 'Hours come from the time clock on this device. Export them for payroll.'}));
+    draw();
+  }, 'wide'));
+}
+
+function editStaff(s, after) {
+  sheet(s ? 'Edit ' + s.name : 'Add staff', (bd, close) => {
+    const name = el('input', {value: s ? s.name : '', maxLength: 24, placeholder: 'e.g. Ana'}), role = el('input', {value: s ? s.role : '', maxLength: 24, placeholder: 'e.g. Cashier'});
+    const a = el('input', {type: 'password', inputMode: 'numeric', maxLength: 8, autocomplete: 'new-password', placeholder: s ? 'leave empty to keep' : '4 to 8 digits'});
+    const err = el('p', {className: 'warn'}), save = el('button', {className: 'btn g', textContent: 'Save'});
+    save.onclick = async () => {
+      const n = name.value.trim();
+      if (!n) { err.textContent = 'Type a name.'; return; }
+      if ((!s || a.value) && !/^\d{4,8}$/.test(a.value)) { err.textContent = 'The PIN is 4 to 8 digits.'; return; }
+      if (!s && STAFF.length >= PRO_MAX) { err.textContent = 'Pro has up to ' + PRO_MAX + ' staff.'; return; }
+      const x = s || {id: uid()}; x.name = n; x.role = role.value.trim();
+      if (a.value) { const salt = uid(); x.pin = {salt, hash: await hashPin(a.value, salt)}; }
+      if (!s) { STAFF.push(x); SCHED[x.id] = [null, null, null, null, null, null, null]; }
+      saveStaff(); close(); after(); toast(n + ' saved');
+    };
+    bd.append(el('label', {}, ['Name', name]), el('label', {}, ['Role (optional)', role]), el('label', {}, [s ? 'New PIN' : 'PIN for the time clock', a]), err, save);
+    if (s) {
+      const rm = el('button', {className: 'btn o danger', textContent: 'Remove ' + s.name});
+      rm.onclick = () => confirmBox('Remove ' + s.name + '?', 'Their past time clock records stay in the hours report.', 'Remove', () => {
+        STAFF = STAFF.filter(x => x !== s); delete SCHED[s.id]; saveStaff(); close(); after();
+      });
+      bd.append(rm);
+    }
+    setTimeout(() => name.focus(), 60);
+  });
+}
+
+function editShift(s, d, after) {
+  const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d], cur = (SCHED[s.id] || [])[d];
+  sheet(s.name + ' · ' + day, (bd, close) => {
+    const start = el('input', {type: 'time', value: cur ? cur.start : '08:00'}), end = el('input', {type: 'time', value: cur ? cur.end : '17:00'});
+    const all = el('input', {type: 'checkbox'}), err = el('p', {className: 'warn'});
+    const put = v => { SCHED[s.id] = SCHED[s.id] || [null, null, null, null, null, null, null]; if (all.checked) [1, 2, 3, 4, 5].forEach(k => { SCHED[s.id][k] = v; }); SCHED[s.id][d] = v; saveStaff(); close(); after(); };
+    const save = el('button', {className: 'btn g', textContent: 'Save shift'}), off = el('button', {className: 'btn o', textContent: 'Day off'});
+    save.onclick = () => { if (!start.value || !end.value) { err.textContent = 'Set the start and end.'; return; } put({start: start.value, end: end.value}); };
+    off.onclick = () => put(null);
+    bd.append(el('div', {className: 'row2'}, [el('label', {}, ['Start', start]), el('label', {}, ['End', end])]),
+      el('label', {className: 'tog'}, [el('span', {textContent: 'Also Monday to Friday'}), all]), err, el('div', {className: 'row2'}, [off, save]));
+  });
+}
+
+function proPitch() {   // a base license: what Pro adds and how the same key turns Pro
+  sheet('Purrfect POS Pro', (bd, close) => {
+    const up = el('a', {className: 'btn g', href: UPGRADE + '=' + LIC.key, target: '_blank', rel: 'noopener', textContent: 'Upgrade · ' + PRO_PRICE + (PROMO ? ' (80% off)' : '')});
+    const err = el('p', {className: 'warn'}), chk = el('button', {className: 'btn o', textContent: 'I upgraded: check now'});
+    chk.onclick = async () => {
+      chk.disabled = true; err.textContent = '';
+      try { await activate(LIC.key); applyLicense(); if (isPro()) { close(); toast('Purrfect POS Pro is on'); } else err.textContent = 'This key is not Pro yet. We confirm each payment by hand, usually within a few hours between 8 AM and 10 PM.'; }
+      catch (e) { err.textContent = e.message; } finally { chk.disabled = false; }
+    };
+    bd.append(el('span', {className: 'protag', textContent: 'PRO'}),
+      el('ul', {className: 'stepslist'}, ['Up to 3 staff, each with their own PIN, on up to 3 phones, tablets or computers.', 'A time clock: staff clock in and out right on the register.',
+        'Overtime that waits for your OK.', 'A weekly staff schedule, and an hours report you can export for payroll.'].map(t => el('li', {textContent: t}))),
+      el('p', {className: 'note', textContent: (PROMO ? '₱300 one time until Dec 31 (80% off ₱1,500). ' : '₱1,500, one time. ') + 'Your same license key turns Pro, and everything on this device stays.'}),
+      up, chk, err);
+  });
+}
+$('#clockBtn').onclick = showClock;
+
 // ---- license ------------------------------------------------------------------------------------------
+const UPGRADE = 'https://purrfectdigital.online/point-of-sale.html#pro';
 function licenseBox(closeParent) {
-  if (licensed()) return el('div', {className: 'lic'}, [el('p', {className: 'ok', textContent: '✓ Licensed' + (LIC.name ? ' to ' + LIC.name : '')}),
-    el('p', {className: 'note', textContent: 'Key ' + LIC.key.slice(0, 6) + '••••-••••-' + LIC.key.slice(-4) + ' · activated ' + when(LIC.at)})]);
+  if (licensed()) {
+    const box = el('div', {className: 'lic'}, [el('p', {className: 'ok', textContent: '✓ Licensed' + (isPro() ? ' · Pro' : '') + (LIC.name ? ' to ' + LIC.name : '')}),
+      el('p', {className: 'note', textContent: 'Key ' + LIC.key.slice(0, 6) + '••••-••••-' + LIC.key.slice(-4) + ' · activated ' + when(LIC.at) + (isPro() ? ' · up to 3 staff and 3 devices' : ' · 1 device')})]);
+    if (!isPro()) { const b = el('button', {className: 'btn o', textContent: 'Purrfect POS Pro · ' + PRO_PRICE}); b.onclick = () => { if (closeParent) closeParent(); proPitch(); }; box.append(b); }
+    return box;
+  }
   const act = el('button', {className: 'btn g', textContent: 'Enter license key'}); act.onclick = () => { if (closeParent) closeParent(); showActivate(); };
   return el('div', {className: 'lic'}, [el('p', {textContent: 'Demo mode. A license (' + (PROMO ? '₱179 until Dec 31, 40% off ₱299' : '₱299, one time') + ') removes the DEMO marks from receipts.'}),
     el('div', {className: 'row2'}, [act, el('a', {className: 'btn o', href: BUY, target: '_blank', rel: 'noopener', textContent: 'Buy · ' + PRICE})])]);
@@ -1189,8 +1403,8 @@ async function activate(raw) {
   try { r = await fetch(API + '?pos=activate&key=' + encodeURIComponent(key) + '&dev=' + encodeURIComponent(DEV), {cache: 'no-store'}).then(x => x.json()); }
   catch (e) { throw new Error('No internet connection. Activating needs the internet once; after that the app works offline.'); }
   if (!r || !r.ok) throw new Error((r && r.error) || 'That key was not accepted.');
-  LIC = {key, name: r.name || '', at: new Date().toISOString()};
-  jset('ppos-license', LIC);
+  LIC = {key, name: r.name || '', tier: r.tier === 'pro' ? 'pro' : 'base', at: (LIC && LIC.key === key && LIC.at) || new Date().toISOString()};
+  jset('ppos-license', LIC); updOT();
 }
 function showActivate(prefill) {
   sheet('Activate Purrfect POS', (bd, close) => {
@@ -1247,8 +1461,13 @@ $('#closeTicket').onclick = () => $('#right').classList.remove('open');
 const mq = matchMedia('(max-width:760px)'); const syncMq = () => { $('#closeTicket').hidden = !mq.matches; }; mq.addEventListener('change', syncMq); syncMq();
 
 store.keys().filter(k => /^ppos-seq-\d{6}$/.test(k) && k.slice(9) < dayKey(addDays(new Date(), -3)).slice(2).replace(/-/g, '')).forEach(store.del);
-applyShop(); applyLicense(); buildCats(); render(); updHeld();
+applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT();
 const hashKey = (location.hash.match(/key=([A-Za-z0-9-]+)/) || [])[1];
-if (hashKey) { history.replaceState(null, '', location.pathname + location.search); if (!licensed()) showActivate(hashKey); }
+if (hashKey) {
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!licensed()) showActivate(hashKey);
+  else if (hashKey.toUpperCase() === LIC.key && !isPro())   // the "Pro is on" email opens the app with the key: pick up the upgrade
+    activate(LIC.key).then(() => { applyLicense(); toast(isPro() ? 'Purrfect POS Pro is on' : 'This key is not Pro yet.'); }).catch(e => toast(e.message));
+}
 else if (!store.get('ppos-welcomed') && !licensed()) welcome();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
