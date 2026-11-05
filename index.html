@@ -528,6 +528,29 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
 }
 @media (max-width:480px){.nav .wrap{gap:10px}.nav .btn{padding:0 13px;font-size:13.5px;height:40px}}
 
+/* Purrfect POS ad under Solutions (5 Nov): the ₱179 year-end promo (40% off ₱299 until 31 Dec 2026, Manila); the script in the ad
+   sets html[data-promo] so .promo-on shows during it and .promo-off after, with no flash of the wrong price */
+html[data-promo=off] .promo-on{display:none!important}
+html:not([data-promo=off]) .promo-off{display:none!important}
+.posad{margin-top:28px;display:grid;grid-template-columns:1fr 1.05fr;gap:28px;align-items:center;padding:28px;position:relative;overflow:hidden;border:1px solid rgba(255,106,26,.35);
+  background:radial-gradient(520px 320px at 100% 0%,rgba(255,106,26,.16),transparent 70%),var(--surface)}
+.posad .copy{display:grid;gap:14px;min-width:0}
+.posad .kicker{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.posad .new{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:999px;padding:4px 10px}
+.posad .until{font:600 13px var(--body);color:var(--accent)}
+.posad h3{font:800 clamp(26px,3vw,36px)/1.1 var(--display);margin:0}
+.posad .price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.posad .price b{font:800 clamp(44px,5vw,60px)/1 var(--display);letter-spacing:-.03em;color:var(--accent)}
+.posad .price s{font:600 22px var(--display);color:var(--muted)}
+.posad .price span{font-size:15px;color:var(--muted)}
+.posad ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:15px}
+.posad li{display:grid;grid-template-columns:16px 1fr;gap:8px}
+.posad li::before{content:"✓";color:var(--teal);font-weight:700}
+.posad .shot{position:relative;min-width:0;margin:0}
+.posad .shot img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 24px 60px -24px rgba(0,0,0,.6);display:block}
+.posad .shot figcaption{position:absolute;left:14px;bottom:14px;background:rgba(5,16,29,.86);color:#fff;font:600 13px var(--body);padding:7px 12px;border-radius:999px}
+@media (max-width:900px){.posad{grid-template-columns:1fr;padding:22px}.posad .shot{order:-1}}
+@media (max-width:480px){.posad ul{grid-template-columns:1fr}}
 /* Tablet and phone polish (5 Nov): plans side by side on tablets, finger-sized chips and links on phones */
 @media (min-width:720px) and (max-width:900px){.plans{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.plan{padding:22px 18px}}
 @media (max-width:767px){.switch button{min-height:40px;padding:8px 14px}.promo a{display:inline-block;padding:6px 2px}}
@@ -551,6 +574,7 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
       <li><a href="#full360">360°</a></li>
       <li><a href="ecommerce.html">E-commerce</a></li>
       <li><a href="leasing.html">Leasing</a></li>
+      <li><a href="point-of-sale.html">Point of Sale</a></li>
       <li><a href="#solutions">Solutions</a></li>
       <li><a href="#case">Case study</a></li>
       <li><a href="#pricing">Pricing</a></li>
@@ -842,6 +866,19 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
         <p class="use">Daily cash-up · expenses · payables</p>
       </article>
     </div>
+
+    <script>document.documentElement.dataset.promo = Date.now() < Date.UTC(2026, 11, 31, 16) ? 'on' : 'off';   // POS ad: ₱179 until 31 Dec 2026, 11:59 PM Manila</script>
+    <aside class="card posad" aria-label="Purrfect POS offer">
+      <div class="copy">
+        <div class="kicker"><span class="new">New</span><span class="until promo-on">Year-end promo · 40% off until Dec 31</span><span class="until promo-off">One payment · no monthly fee</span></div>
+        <h3>Just need a register? Get Purrfect POS.</h3>
+        <div class="price"><span class="promo-on"><b>₱179</b> <s>₱299</s></span><span class="promo-off"><b>₱299</b></span><span>one time, no monthly fee</span></div>
+        <p class="lead" style="font-size:16px">Ring up sales, print receipts on a Bluetooth printer and see your daily sales, on the phone or tablet you already have. Works offline.</p>
+        <ul><li>Sr/PWD 20% with signature line</li><li>Cash, GCash, Maya, card</li><li>Stock counts and low alerts</li><li>Daily sales report</li></ul>
+        <div class="cta-row"><a class="btn btn-primary" href="point-of-sale.html#buy">Buy for <span class="promo-on">₱179</span><span class="promo-off">₱299</span></a><a class="btn btn-ghost" href="pos/" target="_blank" rel="noopener">▶ Try the free demo</a></div>
+      </div>
+      <figure class="shot"><img src="img/pos-shot-register.webp" alt="Purrfect POS on a tablet: item tiles and a ticket with a Sr/PWD discount" width="1600" height="1000" loading="lazy"><figcaption>Purrfect POS on a tablet</figcaption></figure>
+    </aside>
   </div>
 </section>
 
@@ -1072,6 +1109,7 @@ a.card:hover,.card:hover{border-color:rgba(255,106,26,.38);box-shadow:inset 0 1p
       <a href="./">Home</a>
       <a href="ecommerce.html">E-commerce</a>
       <a href="leasing.html">Leasing</a>
+      <a href="point-of-sale.html">Point of Sale</a>
       <a href="demo.html">Seller live demo</a>
       <a href="leasing-demo.html">Leasing live demo</a>
       <a href="resort-demo.html">Resort live demo</a>
