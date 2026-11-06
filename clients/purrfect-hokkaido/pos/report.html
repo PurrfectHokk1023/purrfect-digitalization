@@ -375,7 +375,7 @@ function drawChart(ps, sel) {
 function drawCash() {
   const br = state.branch === 'All' ? ['Dasma', 'Bayanan'] : [state.branch];
   $('#cashTitle').textContent = (state.branch === 'All' ? 'Dasma and Bayanan' : state.branch) + ' cash-up';
-  $('#cashNote').textContent = state.branch === 'Dasma' ? 'From the summary block of the Daily Sales Dasma tab. Missing amount = net sales − receivables − payables − petty cash − cash on hand − BPI − GCash net.'
+  $('#cashNote').textContent = state.branch === 'Dasma' ? 'From the summary block of the Daily Sales Dasma tab. Total cash = petty cash + cash on hand + (BPI + receivables − payables) + GCash net.'
     : 'From the summary block of the Daily Sales ' + (state.branch === 'All' ? 'Dasma and Bayanan tabs.' : 'Bayanan tab.');
   const tb = $('#cashBody'); tb.replaceChildren();
   for (const b of br) {
