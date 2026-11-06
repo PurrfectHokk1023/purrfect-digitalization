@@ -372,6 +372,15 @@ function drawChart(ps, sel) {
   });
 }
 
+// The cash-up rows wear the same fill, font colour, size, bold and italic as their cells in the sheet's summary block
+// (Vince, 7 Nov: "match the font size, color as I do it on Gsheet"); the style comes with the report data.
+function paintCell(td, s) {
+  if (!s) return td;
+  Object.assign(td.style, {background: s.bg, borderBottomColor: s.bg, color: s.color, fontSize: s.size ? s.size + 'pt' : '',
+    fontWeight: s.bold ? '700' : '400', fontStyle: s.italic ? 'italic' : 'normal'});
+  return td;
+}
+
 function drawCash() {
   const br = state.branch === 'All' ? ['Dasma', 'Bayanan'] : [state.branch];
   $('#cashTitle').textContent = (state.branch === 'All' ? 'Dasma and Bayanan' : state.branch) + ' cash-up';
@@ -383,7 +392,8 @@ function drawCash() {
     for (const r of state.data.cashup.filter(x => x.branch === b)) {
       const v = r.amount == null ? null : Number(r.amount);
       tb.append(el('tr', {className: r.kind === 'check' ? 'warn' : r.kind === 'sales' ? 'total' : r.kind === 'gcash' ? 'sub' : ''},
-        [el('td', {textContent: r.item}), el('td', {textContent: v == null ? '' : peso(v), className: v != null && v < 0 ? 'neg' : ''})]));
+        [paintCell(el('td', {textContent: r.item}), r.style && r.style.label),
+         paintCell(el('td', {textContent: v == null ? '' : peso(v), className: v != null && v < 0 ? 'neg' : ''}), r.style && r.style.value)]));
     }
   }
 }
