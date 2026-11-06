@@ -13,7 +13,7 @@
 <style>
 /* Purrfect Digitalization Sales (Vince, 6 Nov 2026: "like Purrfect Hokkaido Cafe"): the owner's live sales page. Unlisted and noindex;
    the login is checked by the Leads web app (Sales.gs), which also sends the data: POS orders and demo leads, no personal details.
-   Test rows are flagged there and never counted. Leads tab (6 Nov): demo bookings with contact details. Same look as the Purrfect POS back office. */
+   Test rows are flagged there and never counted. Leads tab (6 Nov): demo bookings with contact details. POS customers tab (6 Nov): every license, account type, dates, live or not. Same look as the Purrfect POS back office. */
 :root{--bar:#0b1729;--act:#c24e0e;--bg:#eef1f6;--card:#fff;--ink:#131c3a;--muted:#5b6478;--line:#dde2ea;--good:#1f7a45;--red:#b42318;--warn:#a15c07;--chart:#e8601a;
   --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--body:Figtree,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:light}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -72,6 +72,10 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
 .pill.Checking,.pill.New,.pill[class*="Demo"]{background:#fdf1e1;color:var(--warn)}
 .pill.Rejected,.pill.Revoked,.pill.Lost{background:#fde8e6;color:var(--red)}
 .pill.Test{background:#eef1f6;color:#9aa1b1}
+.pill.Live{background:#e3f3e9;color:var(--good)}
+.pill.Installed{background:#e7eefb;color:#2952a3}
+.pill.Pro{background:var(--bar);color:#fff}
+.live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:6px;box-shadow:0 0 0 3px #d5efdf}
 .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:2px}
 .tabs button{padding:10px 16px;font-weight:700;font-family:var(--display);font-size:15px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--act)}
@@ -128,6 +132,7 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
     <div class="tabs" role="tablist">
       <button type="button" role="tab" id="t-sales" aria-selected="true" aria-controls="p-sales">Sales</button>
       <button type="button" role="tab" id="t-leads" aria-selected="false" aria-controls="p-leads">Leads<b id="newcount" hidden></b></button>
+      <button type="button" role="tab" id="t-pos" aria-selected="false" aria-controls="p-pos">POS customers</button>
     </div>
 
     <div id="p-sales" role="tabpanel" aria-labelledby="t-sales" style="display:grid;gap:14px">
@@ -158,6 +163,24 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
       <div class="leadlist" id="leadlist"></div>
       <p class="note">Everyone who booked a demo on the website, newest first. Change a lead's status in the Leads sheet (Status column).</p>
     </div>
+
+    <div id="p-pos" role="tabpanel" aria-labelledby="t-pos" hidden style="display:grid;gap:14px">
+      <div class="tiles" id="ptiles"></div>
+      <div class="lfilter">
+        <div class="seg" id="pstate" role="group" aria-label="Customer status">
+          <button type="button" data-s="" aria-pressed="true">All</button>
+          <button type="button" data-s="Live">Live</button>
+          <button type="button" data-s="Installed">Installed</button>
+          <button type="button" data-s="Not installed">Not installed</button>
+          <button type="button" data-s="Checking">Waiting for check</button>
+          <button type="button" data-s="Pro">Pro</button>
+        </div>
+        <input type="search" id="pq" placeholder="Search name, business, phone, ref…" aria-label="Search customers">
+      </div>
+      <div class="leadlist" id="custlist"></div>
+      <p class="note"><b>Live</b> = the register sent sales or a check-in to the back office in the last 24 hours (only when the owner turned the back office on).
+        <b>Installed</b> = the key was put into the app on a device. <b>Not installed</b> = paid, key emailed, not used yet.</p>
+    </div>
   </div>
 </main>
 
@@ -170,7 +193,7 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);   // Manila
   const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
-  let data = null, range = 'all', timer = 0, lstatus = '';
+  let data = null, range = 'all', timer = 0, lstatus = '', pstate = '';
 
   const store = {
     get() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.until > Date.now() ? s : null; } catch (e) { return null; } },
@@ -203,12 +226,18 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
   $('refresh').addEventListener('click', () => load());
   $('tests').addEventListener('change', draw);
   const tab = which => {
-    ['sales', 'leads'].forEach(t => { $('t-' + t).setAttribute('aria-selected', t === which); $('p-' + t).hidden = t !== which; });
+    ['sales', 'leads', 'pos'].forEach(t => { $('t-' + t).setAttribute('aria-selected', t === which); $('p-' + t).hidden = t !== which; });
     try { sessionStorage.setItem('pd-sales-tab', which); } catch (e) {}
   };
   $('t-sales').addEventListener('click', () => tab('sales'));
   $('t-leads').addEventListener('click', () => tab('leads'));
-  try { if (sessionStorage.getItem('pd-sales-tab') === 'leads') tab('leads'); } catch (e) {}
+  $('t-pos').addEventListener('click', () => tab('pos'));
+  try { const s = sessionStorage.getItem('pd-sales-tab'); if (s === 'leads' || s === 'pos') tab(s); } catch (e) {}
+  $('pstate').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    pstate = b.dataset.s; [...$('pstate').children].forEach(x => x.setAttribute('aria-pressed', x === b)); drawPos();
+  });
+  $('pq').addEventListener('input', () => drawPos());
   $('lstatus').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     lstatus = b.dataset.s; [...$('lstatus').children].forEach(x => x.setAttribute('aria-pressed', x === b)); drawLeads();
@@ -291,6 +320,7 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
         + `<td>${o.status === 'Paid' ? (isAuto(o) ? 'Automatically' : 'By hand') : ''}</td></tr>`).join('')
         : '<tr><td colspan="6" class="empty">No orders in this period yet.</td></tr>');
     drawLeads();
+    drawPos();
   }
 
   // Leads tab: one card per demo booking, with buttons to reach them
@@ -337,6 +367,45 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
           ${web ? `<a href="${esc(web)}" target="_blank" rel="noopener noreferrer">FB / website</a>` : ''}</div>
       </article>`; }).join('')
       : '<p class="empty">No demo leads match yet.</p>';
+  }
+
+  // POS customers tab: every license order, its account type and whether the shop is using it
+  const ago = s => { const t = Date.parse(String(s || '').replace(' ', 'T') + ':00+08:00'); if (!t) return '';
+    const m = Math.round((Date.now() - t) / 60e3); return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+  const state = c => { if (c.status !== 'Paid') return c.status || 'Checking';
+    const t = Date.parse(String(c.sync || '').replace(' ', 'T') + ':00+08:00');
+    return t && Date.now() - t < 864e5 ? 'Live' : c.devices ? 'Installed' : 'Not installed'; };
+  function drawPos() {
+    if (!data || !data.customers) { $('custlist').innerHTML = '<p class="empty">Loading customers…</p>'; return; }
+    const showT = $('tests').checked, q = $('pq').value.trim().toLowerCase();
+    const real = data.customers.filter(c => !c.test), paid = real.filter(c => c.status === 'Paid');
+    $('ptiles').innerHTML = [
+      ['main', 'Customers', paid.length, real.filter(c => c.status === 'Checking').length + ' waiting for check'],
+      ['', 'Live now', paid.filter(c => state(c) === 'Live').length, 'used in the last 24 h'],
+      ['', 'Installed', paid.filter(c => state(c) !== 'Not installed').length, 'key put into the app'],
+      [paid.filter(c => state(c) === 'Not installed').length ? 'wait' : '', 'Not installed', paid.filter(c => state(c) === 'Not installed').length, 'follow up'],
+      ['', 'Pro accounts', paid.filter(c => c.tier === 'Pro').length, 'Basic: ' + paid.filter(c => c.tier !== 'Pro').length],
+    ].map(([c, l, n, s]) => `<div class="tile ${c}"><span>${l}</span><b class="num">${n}</b><small>${esc(s)}</small></div>`).join('');
+    const list = data.customers.filter(c => (showT || !c.test)
+      && (!pstate || (pstate === 'Pro' ? c.tier === 'Pro' : state(c) === pstate))
+      && (!q || [c.name, c.business, c.mobile, c.email, c.ref, c.shop].join(' ').toLowerCase().includes(q)))
+      .sort((a, b) => b.at.localeCompare(a.at));
+    $('custlist').innerHTML = list.length ? list.map(c => {
+      const s = state(c), tel = digits(c.mobile);
+      return `<article class="lead ${c.test ? 'test' : ''}">
+        <div class="hd"><h3>${esc(c.business || c.shop || c.name || 'No name')}<small>${esc(c.name)}${c.shop && c.shop !== c.business ? ' · shop name in app: ' + esc(c.shop) : ''}</small></h3>
+          <span>${s === 'Live' ? '<span class="live" aria-hidden="true"></span>' : ''}<span class="pill ${esc(s.replace(/ /g, ''))}">${esc(s === 'Checking' ? 'Waiting for check' : s)}</span>
+            <span class="pill ${c.tier === 'Pro' ? 'Pro' : ''}">${c.tier}</span>${c.test ? ' <span class="pill Test">Test</span>' : ''}</span></div>
+        <div class="meta"><span>Ordered <b>${esc(c.at)}</b></span>${c.paid ? `<span>Paid <b>${esc(c.paid)}</b></span>` : ''}
+          ${c.status !== 'Paid' && c.decided ? `<span>${esc(c.status)} <b>${esc(c.decided)}</b></span>` : ''}
+          ${c.proAt ? `<span>Pro since <b>${esc(c.proAt)}</b></span>` : ''}<span>Amount <b>${peso(c.amount)}</b></span>
+          <span>Ref <b>${esc(c.ref)}</b></span>${c.key4 ? `<span>Key <b>…${esc(c.key4)}</b></span>` : ''}
+          <span>Devices <b>${c.devices} of ${c.limit}</b></span>
+          ${c.sync ? `<span>Last back office sync <b>${esc(c.sync)}</b> (${esc(ago(c.sync))})</span>` : `<span>Back office <b>off</b></span>`}</div>
+        <div class="acts">${tel ? `<a class="p" href="tel:${esc(tel)}">Call ${esc(c.mobile)}</a><a href="sms:${esc(tel)}">Text</a>` : ''}
+          ${c.email ? `<a href="mailto:${esc(encodeURIComponent(c.email).replace(/%40/g, '@'))}">Email</a>` : ''}</div>
+      </article>`; }).join('')
+      : '<p class="empty">No POS customers match yet.</p>';
   }
 
   document.addEventListener('visibilitychange', () => { if (!document.hidden && store.get()) load(); });
