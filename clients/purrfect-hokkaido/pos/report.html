@@ -214,6 +214,12 @@ td.wrap{text-align:left;white-space:normal}
       <div class="vsum"><div><span>Refunded</span><b id="vRef">—</b><span id="vRefN"></span></div><div><span>Voided</span><b id="vVoid">—</b><span id="vVoidN"></span></div></div>
       <div class="tbox"><table><thead><tr><th>Date</th><th>Type</th><th>Receipt</th><th>Amount</th><th class="hide-narrow">Reason</th><th class="hide-narrow">Items</th></tr></thead><tbody id="vBody"></tbody></table></div>
     </section>
+    <section class="card wide" id="barpay">
+      <h2>Mobile Ice Cream Bar payments</h2>
+      <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab.</p>
+      <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
+      <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
+    </section>
   </div>
   </section>
 </div>
@@ -314,6 +320,7 @@ function draw() {
   drawCash();
   drawProducts(sel);
   drawVoids(sel);
+  drawBar(sel);
 }
 
 function drawChart(ps, sel) {
@@ -399,6 +406,19 @@ function drawVoids(sel) {
   if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 6, className: 'wrap', textContent: 'No refunds or voids in this period.', style: 'color:var(--muted)'})])); return; }
   for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.type}), el('td', {textContent: v.receipt}),
     el('td', {className: 'neg', textContent: peso(v.amount)}), el('td', {className: 'wrap hide-narrow', textContent: v.reason}), el('td', {className: 'wrap hide-narrow', textContent: v.items})]));
+}
+
+// Mobile Ice Cream Bar payments (6 Nov): rows from BarPay.gs, sent through the menu app's pay-bar.html
+function drawBar(sel) {
+  const [a, b] = rangeOf(sel), rows = (state.data.bar || []).filter(v => v.date >= a && v.date <= b).sort((x, y) => (y.date + y.time).localeCompare(x.date + x.time));
+  const ok = rows.filter(v => v.status === 'Verified'), chk = rows.filter(v => v.status !== 'Verified');
+  $('#bOk').textContent = peso(ok.reduce((s, v) => s + v.due, 0)); $('#bOkN').textContent = ok.length + (ok.length === 1 ? ' payment' : ' payments');
+  $('#bChk').textContent = peso(chk.reduce((s, v) => s + v.due, 0)); $('#bChkN').textContent = chk.length + (chk.length === 1 ? ' payment' : ' payments');
+  const tb = $('#bBody'); tb.replaceChildren();
+  if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 8, className: 'wrap', textContent: 'No mobile bar payments in this period.', style: 'color:var(--muted)'})])); return; }
+  for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.ref}), el('td', {className: 'wrap', textContent: v.name}),
+    el('td', {className: 'wrap', textContent: v.pay}), el('td', {textContent: peso(v.due)}), el('td', {textContent: v.status === 'Verified' ? '✓ Verified' : '⚠ ' + (v.status || 'Needs check')}),
+    el('td', {className: 'hide-narrow', textContent: v.event}), el('td', {className: 'wrap hide-narrow', textContent: v.pkg})]));
 }
 
 // ---- inventory (supplies + recipes) ---------------------------------------------------------------
