@@ -193,13 +193,13 @@ td.wrap{text-align:left;white-space:normal}
 
   <section class="card" id="barpay">
       <div class="chead"><h2>Mobile Ice Cream Bar payments</h2><a class="btn" href="https://docs.google.com/spreadsheets/d/17ttN6SlCfKaZqSWCxYEb-aqY4UQxxk4JBVsI8OMtxRk/edit#gid=462039945" target="_blank" rel="noopener">Open sheet ↗</a></div>
-      <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab.</p>
-      <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
+      <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab. Verified and confirmed payments are counted in Dasma's gross sales on the day they were sent, with the 1% GCash fee under expenses.</p>
+      <div class="vsum"><div><span>Verified + confirmed</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
       <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
     </section>
   <section class="card" id="rentals">
     <div class="chead"><h2>Café rentals</h2><a class="btn" href="https://docs.google.com/spreadsheets/d/17ttN6SlCfKaZqSWCxYEb-aqY4UQxxk4JBVsI8OMtxRk/edit#gid=1515671005" target="_blank" rel="noopener">Open sheet ↗</a></div>
-    <p class="note">Whole-café bookings from the menu app's rent page, by the day they were booked. <b>Verified</b> = the receipt checks passed; <b>Needs check</b> = check by hand, then set Status to Confirmed (or Rejected to free the date) in the Online Orders sheet's "Café Rentals" tab. Booked dates and hours are blocked on the calendar.</p>
+    <p class="note">Whole-café bookings from the menu app's rent page, by the day they were booked. <b>Verified</b> = the receipt checks passed; <b>Needs check</b> = check by hand, then set Status to Confirmed (or Rejected to free the date) in the Online Orders sheet's "Café Rentals" tab. Booked dates and hours are blocked on the calendar. Verified and confirmed payments are counted in Dasma's gross sales on the day they were booked, with the 1% GCash fee under expenses.</p>
     <div class="vsum"><div><span>Paid (verified + confirmed)</span><b id="rOk">—</b><span id="rOkN"></span></div><div><span>Needs check</span><b id="rChk">—</b><span id="rChkN"></span></div><div><span>Upcoming bookings</span><b id="rUp">—</b><span id="rUpN"></span></div></div>
     <div class="tbox"><table><thead><tr><th>Booked</th><th>Ref</th><th>Name</th><th>Date &amp; time</th><th>Paid</th><th>Status</th><th class="hide-narrow">Booking</th><th class="hide-narrow">Total</th></tr></thead><tbody id="rBody"></tbody></table></div>
   </section>
@@ -420,13 +420,13 @@ function drawVoids(sel) {
 // Mobile Ice Cream Bar payments (6 Nov): rows from BarPay.gs, sent through the menu app's pay-bar.html
 function drawBar(sel) {
   const [a, b] = rangeOf(sel), rows = (state.data.bar || []).filter(v => v.date >= a && v.date <= b).sort((x, y) => (y.date + y.time).localeCompare(x.date + x.time));
-  const ok = rows.filter(v => v.status === 'Verified'), chk = rows.filter(v => v.status !== 'Verified');
+  const ok = rows.filter(v => PAID.includes(v.status)), chk = rows.filter(v => v.status === 'Needs check');
   $('#bOk').textContent = peso(ok.reduce((s, v) => s + v.due, 0)); $('#bOkN').textContent = ok.length + (ok.length === 1 ? ' payment' : ' payments');
   $('#bChk').textContent = peso(chk.reduce((s, v) => s + v.due, 0)); $('#bChkN').textContent = chk.length + (chk.length === 1 ? ' payment' : ' payments');
   const tb = $('#bBody'); tb.replaceChildren();
   if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 8, className: 'wrap', textContent: 'No mobile bar payments in this period.', style: 'color:var(--muted)'})])); return; }
   for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.ref}), el('td', {className: 'wrap', textContent: v.name}),
-    el('td', {className: 'wrap', textContent: v.pay}), el('td', {textContent: peso(v.due)}), el('td', {textContent: v.status === 'Verified' ? '✓ Verified' : '⚠ ' + (v.status || 'Needs check')}),
+    el('td', {className: 'wrap', textContent: v.pay}), el('td', {textContent: peso(v.due)}), el('td', {textContent: PAID.includes(v.status) ? '✓ ' + v.status : v.status === 'Needs check' || !v.status ? '⚠ Needs check' : v.status}),
     el('td', {className: 'hide-narrow', textContent: v.event}), el('td', {className: 'wrap hide-narrow', textContent: v.pkg})]));
 }
 
@@ -619,6 +619,18 @@ document.querySelectorAll('.tabs [data-tab]').forEach(b => b.onclick = () => {
 });
 $('#invQ').oninput = drawInv;
 
+// Mobile bar + café rental payments (Vince, 6 Nov: "reflect all payments in the gross sales, note that there's 1% cut of
+// payment made thru gcash"). Verified or Confirmed payments are added to the Dasma day they were sent: the amount to
+// gross, the 1% GCash fee to expenses. Needs check payments wait until they are Verified or Confirmed in the sheet.
+const GCASH_FEE = 0.01, PAID = ['Verified', 'Confirmed'];
+function addGcashSales(d) {
+  const pays = (d.bar || []).concat(d.rent || []).filter(v => PAID.includes(v.status) && v.due > 0 && v.date);
+  for (const v of pays) {
+    const fee = r2(v.due * GCASH_FEE);
+    d.daily.push({date: v.date, branch: 'Dasma', gross: v.due, expenses: fee, net: r2(v.due - fee), gcash: true});
+  }
+}
+
 // ---- load -------------------------------------------------------------------------------------------
 let loading = false;
 async function load(fresh) {
@@ -629,7 +641,7 @@ async function load(fresh) {
     const r = await fetch(API + '?pos=report&token=' + encodeURIComponent(session.token) + (fresh ? '&fresh=1' : ''), {cache: 'no-store'}).then(x => x.json());
     if (r.relogin) { session = null; localStorage.removeItem('pos-session'); showLogin(r.error); return; }
     if (!r.ok) throw new Error(r.error || 'no data');
-    state.data = r; state.at = new Date(r.at);
+    addGcashSales(r); state.data = r; state.at = new Date(r.at);
     $('#warn').hidden = !(r.warnings && r.warnings.length); $('#warn').textContent = (r.warnings || []).join(' · ');
     $('#live').classList.remove('stale');
     draw();
