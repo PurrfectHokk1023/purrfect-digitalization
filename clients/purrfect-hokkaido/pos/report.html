@@ -48,7 +48,8 @@ select,.btn{font:inherit;font-size:13px;border:1px solid var(--line);border-radi
 .tile:nth-child(2){border-top-color:var(--orange)}.tile:nth-child(3){border-top-color:var(--teal)}.tile:nth-child(4){border-top-color:var(--green)}
 .tile h3{font-size:14px;font-weight:600;color:var(--teal)}
 .big{font-size:30px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.15}
-.chg{font-size:12px;color:var(--muted)}.chg .good{color:var(--ok)}.chg .bad{color:var(--bad)}
+.chg{font-size:12px;color:var(--muted)}
+.gsrc{display:grid;gap:1px;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}.gsrc div{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}.chg .good{color:var(--ok)}.chg .bad{color:var(--bad)}
 .since{color:var(--muted)}.since b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .grid{display:grid;gap:14px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:stretch}
 @media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
@@ -184,7 +185,7 @@ td.wrap{text-align:left;white-space:normal}
 
   <p class="period" id="period">—</p>
   <div class="tiles">
-    <div class="tile"><h3>Gross sales</h3><div class="big" id="tGross">—</div><div class="chg" id="cGross"></div></div>
+    <div class="tile"><h3>Gross sales</h3><div class="big" id="tGross">—</div><div class="gsrc" id="gSrc"></div><div class="chg" id="cGross"></div></div>
     <div class="tile"><h3>Expenses</h3><div class="big" id="tExp">—</div><div class="chg" id="cExp"></div></div>
     <div class="tile"><h3>Net sales</h3><div class="big" id="tNet">—</div><div class="chg" id="cNet"></div></div>
     <div class="tile"><h3>Net margin (net ÷ gross)</h3><div class="big" id="tMargin">—</div><div class="chg" id="cMargin"></div></div>
@@ -277,8 +278,8 @@ function periods() {
   const m = new Map();
   for (const r of rows) {
     const k = bucket(state.view, r.date);
-    const g = m.get(k) || {start: k, gross: 0, expenses: 0, net: 0, days: new Set()};
-    g.gross += r.gross; g.expenses += r.expenses; g.net += r.net; g.days.add(r.date); m.set(k, g);
+    const g = m.get(k) || {start: k, gross: 0, expenses: 0, net: 0, days: new Set(), src: {cafe: 0, bar: 0, rent: 0}};
+    g.src[r.src || 'cafe'] += r.gross; g.gross += r.gross; g.expenses += r.expenses; g.net += r.net; g.days.add(r.date); m.set(k, g);
   }
   [...m.keys()].sort().forEach((k, i, ks) => {
     const g = m.get(k), p = i ? m.get(ks[i - 1]) : null;
@@ -315,7 +316,8 @@ function draw() {
     const s = el('span', {className: (v > 0) === upGood ? 'good' : 'bad', textContent: (v > 0 ? '▲ +' : '▼ −') + (isPct ? (Math.abs(v) * 100).toFixed(1) + ' pts' : peso(Math.abs(v)))});
     e.append(s, ' vs previous');
   };
-  $('#tGross').textContent = peso(sel.gross); chg('#cGross', sel.gross, sel.prev && sel.prev.gross, true);
+  $('#tGross').textContent = peso(sel.gross);
+  $('#gSrc').replaceChildren(...[['Café', 'cafe'], ['Mobile Bar', 'bar'], ['Café Rental', 'rent']].map(([t, k]) => el('div', {}, [el('span', {textContent: t}), el('span', {textContent: peso(r2(sel.src[k]))})]))); chg('#cGross', sel.gross, sel.prev && sel.prev.gross, true);
   $('#tExp').textContent = peso(sel.expenses); chg('#cExp', sel.expenses, sel.prev && sel.prev.expenses, false);
   $('#tNet').textContent = peso(sel.net); chg('#cNet', sel.net, sel.prev && sel.prev.net, true);
   $('#tMargin').textContent = sel.margin == null ? '—' : pct(sel.margin); chg('#cMargin', sel.margin, sel.prev && sel.prev.margin, true, true);
@@ -624,10 +626,10 @@ $('#invQ').oninput = drawInv;
 // gross, the 1% GCash fee to expenses. Needs check payments wait until they are Verified or Confirmed in the sheet.
 const GCASH_FEE = 0.01, PAID = ['Verified', 'Confirmed'];
 function addGcashSales(d) {
-  const pays = (d.bar || []).concat(d.rent || []).filter(v => PAID.includes(v.status) && v.due > 0 && v.date);
+  const pays = (d.bar || []).map(v => ({...v, src: 'bar'})).concat((d.rent || []).map(v => ({...v, src: 'rent'}))).filter(v => PAID.includes(v.status) && v.due > 0 && v.date);
   for (const v of pays) {
     const fee = r2(v.due * GCASH_FEE);
-    d.daily.push({date: v.date, branch: 'Dasma', gross: v.due, expenses: fee, net: r2(v.due - fee), gcash: true});
+    d.daily.push({date: v.date, branch: 'Dasma', gross: v.due, expenses: fee, net: r2(v.due - fee), gcash: true, src: v.src});
   }
 }
 
