@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales · Purrfect Digitalization</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b1729">
+<link rel="icon" type="image/png" sizes="64x64" href="../img/mark-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Purrfect Digitalization Sales (Vince, 6 Nov 2026: "like Purrfect Hokkaido Cafe"): the owner's live sales page. Unlisted and noindex;
+   the login is checked by the Leads web app (Sales.gs), which also sends the data: POS orders and demo leads, no personal details.
+   Test rows are flagged there and never counted. Same look as the Purrfect POS back office. */
+:root{--bar:#0b1729;--act:#c24e0e;--bg:#eef1f6;--card:#fff;--ink:#131c3a;--muted:#5b6478;--line:#dde2ea;--good:#1f7a45;--red:#b42318;--warn:#a15c07;--chart:#e8601a;
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--body:Figtree,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.45 var(--body);min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+h1,h2,.num,.btn{font-family:var(--display)}
+:focus-visible{outline:3px solid #ffb07a;outline-offset:2px}
+.bar{background:var(--bar);color:#fff;display:flex;align-items:center;gap:12px;padding:12px max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));padding-top:max(12px,env(safe-area-inset-top))}
+.bar img{width:30px;height:30px;border-radius:8px;background:#fff}
+.bar h1{font-size:17px;line-height:1.15;flex:1;min-width:0}
+.bar h1 small{display:block;font:500 12px var(--body);opacity:.75}
+.bar button{color:#fff;opacity:.85;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 12px}
+main{max-width:1100px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left));display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.card h2{font-size:16px}
+.note{color:var(--muted);font-size:13.5px}
+.warn{color:var(--red);font-size:14px;font-weight:600}
+.warn:empty{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;font-weight:700;font-size:15px;background:var(--act);color:#fff}
+.btn[disabled]{opacity:.55;cursor:default}
+label{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+input[type=text],input[type=password]{background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 12px;height:46px;font-size:16px;color:var(--ink);width:100%;min-width:0}
+.signin{max-width:420px;margin:32px auto;width:100%}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--bar);color:#fff;border-color:var(--bar)}
+.sync{font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sync button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px}
+.sync label{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:4px}
+.tile span{font-size:12.5px;color:var(--muted);font-weight:600}
+.tile .num{font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile small{font-size:12px;color:var(--muted)}
+.tile.main{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.tile.wait .num{color:var(--warn)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.bars{display:flex;align-items:flex-end;justify-content:space-around;gap:4px;height:150px;padding-top:24px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;min-width:6px;max-width:56px;background:var(--chart);border-radius:4px 4px 0 0;position:relative}
+.bars div.zero{background:var(--line);height:2px!important}
+.bars div:hover::after,.bars div:focus::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bar);color:#fff;font-size:12px;padding:4px 8px;border-radius:8px;white-space:nowrap;z-index:2}
+.barlab{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.scroll{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tr.test td{color:#9aa1b1}
+tr.total td{font-weight:700;border-top:1px solid var(--line)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:#eef1f6;color:var(--muted)}
+.pill.Paid,.pill.Won{background:#e3f3e9;color:var(--good)}
+.pill.Checking,.pill.New,.pill[class*="Demo"]{background:#fdf1e1;color:var(--warn)}
+.pill.Rejected,.pill.Revoked,.pill.Lost{background:#fde8e6;color:var(--red)}
+.pill.Test{background:#eef1f6;color:#9aa1b1}
+#svc td:first-child{white-space:normal}
+#svc td:first-child .pill{display:table;margin-top:3px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+</style>
+</head>
+<body>
+<header class="bar">
+  <img src="../img/mark-64.png" alt="">
+  <h1>Purrfect Digitalization<small>Sales</small></h1>
+  <button type="button" id="out" hidden>Sign out</button>
+</header>
+
+<main>
+  <form class="card signin" id="login" hidden autocomplete="on">
+    <h2>Sign in</h2>
+    <label>Username<input type="text" id="user" name="username" autocomplete="username" autocapitalize="none" required></label>
+    <label>Password<input type="password" id="pass" name="password" autocomplete="current-password" required></label>
+    <p class="warn" id="lerr" role="alert"></p>
+    <button class="btn" id="lbtn">Sign in</button>
+  </form>
+
+  <div id="dash" hidden style="display:grid;gap:14px">
+    <div class="top">
+      <div class="seg" id="range" role="group" aria-label="Period">
+        <button type="button" data-r="today">Today</button>
+        <button type="button" data-r="7">7 days</button>
+        <button type="button" data-r="30">30 days</button>
+        <button type="button" data-r="all" aria-pressed="true">All time</button>
+      </div>
+      <div class="sync"><span id="at">Loading…</span><button type="button" id="refresh">Refresh</button>
+        <label><input type="checkbox" id="tests"> Show test rows</label></div>
+    </div>
+    <p class="warn" id="derr" role="alert"></p>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="cols">
+      <section class="card"><h2>Sales by day</h2><div class="bars" id="bars"></div><div class="barlab" id="barlab"></div>
+        <p class="note">Paid orders, by the day they were sent. Tests aren't counted.</p></section>
+      <section class="card"><h2>Services</h2><div class="scroll"><table id="svc"></table></div></section>
+    </div>
+
+    <section class="card"><h2>POS orders</h2><div class="scroll"><table id="orders"></table></div></section>
+    <section class="card"><h2>Demo leads</h2><div class="scroll"><table id="leads"></table></div></section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const API = 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';
+  const LAUNCH = '2026-11-05', KEY = 'pd-sales-session', OPEN = ['New', 'Contacted', 'Demo booked'];
+  const $ = id => document.getElementById(id);
+  const peso = n => '₱' + Math.round(n).toLocaleString('en-PH');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);   // Manila
+  const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+  let data = null, range = 'all', timer = 0;
+
+  const store = {
+    get() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.until > Date.now() ? s : null; } catch (e) { return null; } },
+    set(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} },
+    clear() { try { localStorage.removeItem(KEY); } catch (e) {} } };
+
+  async function call(body) {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+    return r.json();
+  }
+
+  function show(signedIn) {
+    $('login').hidden = signedIn; $('dash').hidden = !signedIn; $('out').hidden = !signedIn;
+    if (!signedIn) { clearInterval(timer); setTimeout(() => $('user').focus(), 0); }
+  }
+
+  $('login').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('lerr').textContent = ''; $('lbtn').disabled = true; $('lbtn').textContent = 'Signing in…';
+    try {
+      const r = await call({ pos: 'salesLogin', user: $('user').value, pass: $('pass').value });
+      if (!r.ok) { $('lerr').textContent = r.error || 'Could not sign in.'; return; }
+      store.set({ token: r.token, until: r.until }); $('pass').value = '';
+      start();
+    } catch (err) { $('lerr').textContent = 'No connection. Check the internet and try again.'; }
+    finally { $('lbtn').disabled = false; $('lbtn').textContent = 'Sign in'; }
+  });
+
+  $('out').addEventListener('click', () => { store.clear(); data = null; show(false); });
+  $('refresh').addEventListener('click', () => load());
+  $('tests').addEventListener('change', draw);
+  $('range').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    range = b.dataset.r;
+    [...$('range').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+    draw();
+  });
+
+  async function load() {
+    const s = store.get(); if (!s) return show(false);
+    $('at').textContent = 'Updating…';
+    try {
+      const r = await call({ pos: 'sales', token: s.token });
+      if (r.relogin) { store.clear(); return show(false); }
+      if (!r.ok) throw new Error(r.error);
+      data = r; $('derr').textContent = ''; draw();
+    } catch (err) {
+      $('derr').textContent = 'Could not load the latest numbers. Showing what was loaded before.';
+      $('at').textContent = data ? 'Updated ' + data.at : 'Not loaded';
+    }
+  }
+
+  function start() { show(true); load(); clearInterval(timer); timer = setInterval(load, 60e3); }
+
+  const day = s => String(s || '').slice(0, 10);
+  function from() { const t = today(); return range === 'today' ? t : range === 'all' ? '0000' : addDays(t, 1 - Number(range)); }
+  const isAuto = o => o.status === 'Paid' && o.decided && Math.abs(Date.parse(o.decided.replace(' ', 'T')) - Date.parse(o.at.replace(' ', 'T'))) <= 2 * 60e3;
+
+  function draw() {
+    if (!data) return;
+    const f = from(), showT = $('tests').checked;
+    const inR = x => day(x.at) >= f;
+    const real = data.orders.filter(o => !o.test && inR(o)), paid = real.filter(o => o.status === 'Paid');
+    const lic = paid.filter(o => o.kind === 'license'), pro = paid.filter(o => o.kind === 'pro');
+    const leadsR = data.leads.filter(l => !l.test && inR(l));
+    const sum = a => a.reduce((t, o) => t + o.amount, 0);
+    const waiting = data.orders.filter(o => !o.test && o.status === 'Checking').length;
+
+    $('at').textContent = 'Updated ' + data.at + ' · refreshes every minute';
+    $('tiles').innerHTML = [
+      ['main', 'Paid sales', peso(sum(paid)), paid.length + ' paid order' + (paid.length === 1 ? '' : 's')],
+      ['', 'POS licenses', lic.length, peso(sum(lic))],
+      ['', 'Pro upgrades', pro.length, peso(sum(pro))],
+      [waiting ? 'wait' : '', 'Waiting for check', waiting, 'all time'],
+      ['', 'Demo leads', leadsR.length, leadsR.filter(l => OPEN.includes(l.status)).length + ' open'],
+      ['', 'Won', leadsR.filter(l => l.status === 'Won').length, 'demo leads'],
+      ['', 'Shops on back office', data.shops, 'all time'],
+    ].map(([c, l, n, s]) => `<div class="tile ${c}"><span>${l}</span><b class="num">${n}</b><small>${esc(s)}</small></div>`).join('');
+
+    // Sales by day: launch (or the period start) to today, one bar per day
+    const t = today(), start = range === 'all' ? LAUNCH : f, days = [];
+    for (let d = start; d <= t && days.length < 400; d = addDays(d, 1)) days.push(d);
+    const byDay = {}; paid.forEach(o => { byDay[day(o.at)] = (byDay[day(o.at)] || 0) + o.amount; });
+    const max = Math.max(1, ...days.map(d => byDay[d] || 0));
+    $('bars').innerHTML = days.map(d => { const v = byDay[d] || 0;
+      return `<div tabindex="0" class="${v ? '' : 'zero'}" style="height:${(v / max * 100).toFixed(1)}%" data-tip="${d.slice(5)}: ${peso(v)}"></div>`; }).join('');
+    $('barlab').innerHTML = `<span>${days[0].slice(5)}</span><span>${days[days.length - 1].slice(5)}</span>`;
+
+    // Services: on-demand sales, then demo leads by business type
+    const types = {}; leadsR.forEach(l => { const k = l.type || 'Not given'; (types[k] = types[k] || { n: 0, open: 0, won: 0 }); types[k].n++;
+      if (OPEN.includes(l.status)) types[k].open++; if (l.status === 'Won') types[k].won++; });
+    $('svc').innerHTML = '<tr><th>Service</th><th class="r">Sold</th><th class="r">Sales</th></tr>'
+      + `<tr><td>Purrfect POS license <span class="pill">₱179 promo · ₱299</span></td><td class="r">${lic.length}</td><td class="r">${peso(sum(lic))}</td></tr>`
+      + `<tr><td>Purrfect POS Pro <span class="pill">₱300 promo · ₱1,500</span></td><td class="r">${pro.length}</td><td class="r">${peso(sum(pro))}</td></tr>`
+      + `<tr class="total"><td>On-demand total</td><td class="r">${paid.length}</td><td class="r">${peso(sum(paid))}</td></tr>`
+      + '<tr><th>Demo systems (by booking)</th><th class="r">Leads</th><th class="r">Open · Won</th></tr>'
+      + (Object.keys(types).length ? Object.entries(types).sort((a, b) => b[1].n - a[1].n)
+          .map(([k, v]) => `<tr><td>${esc(k)}</td><td class="r">${v.n}</td><td class="r">${v.open} · ${v.won}</td></tr>`).join('')
+        : '<tr><td colspan="3" class="empty">No demo leads in this period yet.</td></tr>');
+
+    // Tables: newest first; tests only when asked, greyed
+    const rowsO = data.orders.filter(o => inR(o) && (showT || !o.test)).sort((a, b) => b.at.localeCompare(a.at));
+    $('orders').innerHTML = '<tr><th>Sent</th><th>Ref</th><th>What</th><th class="r">Amount</th><th>Status</th><th>Confirmed</th></tr>'
+      + (rowsO.length ? rowsO.map(o => `<tr class="${o.test ? 'test' : ''}"><td>${esc(o.at)}</td><td>${esc(o.ref)}</td><td>${o.kind === 'pro' ? 'Pro upgrade' : 'POS license'}</td>`
+        + `<td class="r">${peso(o.amount)}</td><td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.test ? ' <span class="pill Test">Test</span>' : ''}</td>`
+        + `<td>${o.status === 'Paid' ? (isAuto(o) ? 'Automatically' : 'By hand') : ''}</td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty">No orders in this period yet.</td></tr>');
+    const rowsL = data.leads.filter(l => inR(l) && (showT || !l.test)).sort((a, b) => b.at.localeCompare(a.at));
+    $('leads').innerHTML = '<tr><th>Received</th><th>Business type</th><th>Plan</th><th>Status</th><th>Demo day</th><th>Format</th><th class="r">Branches</th></tr>'
+      + (rowsL.length ? rowsL.map(l => `<tr class="${l.test ? 'test' : ''}"><td>${esc(l.at)}</td><td>${esc(l.type)}</td><td>${esc(l.plan)}</td>`
+        + `<td><span class="pill ${esc(l.status)}">${esc(l.status || 'New')}</span>${l.test ? ' <span class="pill Test">Test</span>' : ''}</td>`
+        + `<td>${esc(day(l.demo))}</td><td>${esc(l.format)}</td><td class="r">${esc(l.branches)}</td></tr>`).join('')
+        : '<tr><td colspan="7" class="empty">No demo leads in this period yet.</td></tr>');
+  }
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && store.get()) load(); });
+  store.get() ? start() : show(false);
+})();
+</script>
+</body>
+</html>
