@@ -1,4 +1,4 @@
-const CACHE = 'ph-83353fe4feb7';
+const CACHE = 'ph-d0835dfb7533';
 const PRECACHE = [
  "./",
  "card.html",
@@ -51,6 +51,7 @@ const PRECACHE = [
  "order.html",
  "pay-bar.html",
  "print.html",
+ "rent.html",
  "vendor/qrcode.js",
  "vendor/receipt.js"
 ];
