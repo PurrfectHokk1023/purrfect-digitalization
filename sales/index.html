@@ -13,7 +13,7 @@
 <style>
 /* Purrfect Digitalization Sales (Vince, 6 Nov 2026: "like Purrfect Hokkaido Cafe"): the owner's live sales page. Unlisted and noindex;
    the login is checked by the Leads web app (Sales.gs), which also sends the data: POS orders and demo leads, no personal details.
-   Test rows are flagged there and never counted. Same look as the Purrfect POS back office. */
+   Test rows are flagged there and never counted. Leads tab (6 Nov): demo bookings with contact details. Same look as the Purrfect POS back office. */
 :root{--bar:#0b1729;--act:#c24e0e;--bg:#eef1f6;--card:#fff;--ink:#131c3a;--muted:#5b6478;--line:#dde2ea;--good:#1f7a45;--red:#b42318;--warn:#a15c07;--chart:#e8601a;
   --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--body:Figtree,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:light}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -72,6 +72,25 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
 .pill.Checking,.pill.New,.pill[class*="Demo"]{background:#fdf1e1;color:var(--warn)}
 .pill.Rejected,.pill.Revoked,.pill.Lost{background:#fde8e6;color:var(--red)}
 .pill.Test{background:#eef1f6;color:#9aa1b1}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:2px}
+.tabs button{padding:10px 16px;font-weight:700;font-family:var(--display);font-size:15px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--act)}
+.tabs b{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--act);color:#fff;font-size:12px;line-height:20px;text-align:center}
+.lfilter{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.lfilter input{flex:1 1 220px;max-width:320px;height:40px}
+.leadlist{display:grid;gap:10px}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px;min-width:0}
+.lead.test{opacity:.6}
+.lead .hd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;justify-content:space-between}
+.lead h3{font-family:var(--display);font-size:17px;line-height:1.2;min-width:0;overflow-wrap:anywhere}
+.lead h3 small{display:block;font:500 13.5px var(--body);color:var(--muted)}
+.lead .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--muted)}
+.lead .meta b{color:var(--ink);font-weight:600}
+.lead .txt{font-size:14px;overflow-wrap:anywhere}
+.lead .txt span{color:var(--muted);font-weight:600}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.acts a{display:inline-flex;align-items:center;min-height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line);font-weight:600;font-size:13.5px;color:var(--ink);text-decoration:none;background:#fff}
+.acts a.p{background:var(--act);border-color:var(--act);color:#fff}
 #svc td:first-child{white-space:normal}
 #svc td:first-child .pill{display:table;margin-top:3px}
 .empty{color:var(--muted);font-size:14px;padding:6px 0}
@@ -106,6 +125,12 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
     </div>
     <p class="warn" id="derr" role="alert"></p>
 
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="t-sales" aria-selected="true" aria-controls="p-sales">Sales</button>
+      <button type="button" role="tab" id="t-leads" aria-selected="false" aria-controls="p-leads">Leads<b id="newcount" hidden></b></button>
+    </div>
+
+    <div id="p-sales" role="tabpanel" aria-labelledby="t-sales" style="display:grid;gap:14px">
     <div class="tiles" id="tiles"></div>
 
     <div class="cols">
@@ -115,7 +140,24 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
     </div>
 
     <section class="card"><h2>POS orders</h2><div class="scroll"><table id="orders"></table></div></section>
-    <section class="card"><h2>Demo leads</h2><div class="scroll"><table id="leads"></table></div></section>
+    </div>
+
+    <div id="p-leads" role="tabpanel" aria-labelledby="t-leads" hidden style="display:grid;gap:14px">
+      <div class="tiles" id="ltiles"></div>
+      <div class="lfilter">
+        <div class="seg" id="lstatus" role="group" aria-label="Lead status">
+          <button type="button" data-s="" aria-pressed="true">All</button>
+          <button type="button" data-s="New">New</button>
+          <button type="button" data-s="Contacted">Contacted</button>
+          <button type="button" data-s="Demo booked">Demo booked</button>
+          <button type="button" data-s="Won">Won</button>
+          <button type="button" data-s="Lost">Lost</button>
+        </div>
+        <input type="search" id="lq" placeholder="Search name, business, phone…" aria-label="Search leads">
+      </div>
+      <div class="leadlist" id="leadlist"></div>
+      <p class="note">Everyone who booked a demo on the website, newest first. Change a lead's status in the Leads sheet (Status column).</p>
+    </div>
   </div>
 </main>
 
@@ -128,7 +170,7 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);   // Manila
   const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
-  let data = null, range = 'all', timer = 0;
+  let data = null, range = 'all', timer = 0, lstatus = '';
 
   const store = {
     get() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.until > Date.now() ? s : null; } catch (e) { return null; } },
@@ -160,6 +202,18 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
   $('out').addEventListener('click', () => { store.clear(); data = null; show(false); });
   $('refresh').addEventListener('click', () => load());
   $('tests').addEventListener('change', draw);
+  const tab = which => {
+    ['sales', 'leads'].forEach(t => { $('t-' + t).setAttribute('aria-selected', t === which); $('p-' + t).hidden = t !== which; });
+    try { sessionStorage.setItem('pd-sales-tab', which); } catch (e) {}
+  };
+  $('t-sales').addEventListener('click', () => tab('sales'));
+  $('t-leads').addEventListener('click', () => tab('leads'));
+  try { if (sessionStorage.getItem('pd-sales-tab') === 'leads') tab('leads'); } catch (e) {}
+  $('lstatus').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    lstatus = b.dataset.s; [...$('lstatus').children].forEach(x => x.setAttribute('aria-pressed', x === b)); drawLeads();
+  });
+  $('lq').addEventListener('input', () => drawLeads());
   $('range').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     range = b.dataset.r;
@@ -236,12 +290,53 @@ tr.total td{font-weight:700;border-top:1px solid var(--line)}
         + `<td class="r">${peso(o.amount)}</td><td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.test ? ' <span class="pill Test">Test</span>' : ''}</td>`
         + `<td>${o.status === 'Paid' ? (isAuto(o) ? 'Automatically' : 'By hand') : ''}</td></tr>`).join('')
         : '<tr><td colspan="6" class="empty">No orders in this period yet.</td></tr>');
-    const rowsL = data.leads.filter(l => inR(l) && (showT || !l.test)).sort((a, b) => b.at.localeCompare(a.at));
-    $('leads').innerHTML = '<tr><th>Received</th><th>Business type</th><th>Plan</th><th>Status</th><th>Demo day</th><th>Format</th><th class="r">Branches</th></tr>'
-      + (rowsL.length ? rowsL.map(l => `<tr class="${l.test ? 'test' : ''}"><td>${esc(l.at)}</td><td>${esc(l.type)}</td><td>${esc(l.plan)}</td>`
-        + `<td><span class="pill ${esc(l.status)}">${esc(l.status || 'New')}</span>${l.test ? ' <span class="pill Test">Test</span>' : ''}</td>`
-        + `<td>${esc(day(l.demo))}</td><td>${esc(l.format)}</td><td class="r">${esc(l.branches)}</td></tr>`).join('')
-        : '<tr><td colspan="7" class="empty">No demo leads in this period yet.</td></tr>');
+    drawLeads();
+  }
+
+  // Leads tab: one card per demo booking, with buttons to reach them
+  const digits = s => String(s || '').replace(/[^\d+]/g, '');
+  const safeUrl = (u, site) => { u = String(u || '').trim(); if (!u) return '';
+    if (!/^https?:\/\//i.test(u)) u = /^[\w.-]+\.[a-z]{2,}/i.test(u) ? 'https://' + u : '';
+    return u && (!site || u.startsWith('https://purrfectdigital.online/')) ? u : ''; };
+  const hhmm = s => { const m = String(s || '').match(/(\d{1,2}):(\d\d)\s*$/); if (!m) return String(s || '');
+    const h = +m[1]; return (h % 12 || 12) + (m[2] === '00' ? '' : ':' + m[2]) + (h < 12 ? ' AM' : ' PM'); };
+  function drawLeads() {
+    if (!data) return;
+    const f = from(), showT = $('tests').checked, t = today(), wk = addDays(t, 7), q = $('lq').value.trim().toLowerCase();
+    const all = data.leads.filter(l => day(l.at) >= f && (showT || !l.test));
+    const real = all.filter(l => !l.test), st = l => l.status || 'New';
+    const upcoming = real.filter(l => day(l.demo) >= t && day(l.demo) <= wk && st(l) !== 'Lost').length;
+    const fresh = data.leads.filter(l => !l.test && st(l) === 'New').length;
+    $('newcount').hidden = !fresh; $('newcount').textContent = fresh;
+    $('ltiles').innerHTML = [
+      ['main', 'Demo leads', real.length, 'in this period'],
+      [real.filter(l => st(l) === 'New').length ? 'wait' : '', 'New, not contacted', real.filter(l => st(l) === 'New').length, 'reach them first'],
+      ['', 'Demo booked', real.filter(l => st(l) === 'Demo booked').length, upcoming + ' in the next 7 days'],
+      ['', 'Won', real.filter(l => st(l) === 'Won').length, 'became customers'],
+    ].map(([c, l, n, s]) => `<div class="tile ${c}"><span>${l}</span><b class="num">${n}</b><small>${esc(s)}</small></div>`).join('');
+    const list = all.filter(l => (!lstatus || st(l) === lstatus)
+      && (!q || [l.name, l.business, l.mobile, l.email, l.type, l.ref].join(' ').toLowerCase().includes(q)))
+      .sort((a, b) => b.at.localeCompare(a.at));
+    $('leadlist').innerHTML = list.length ? list.map(l => {
+      const tel = digits(l.mobile), web = safeUrl(l.web), demo = safeUrl(l.demoLink, true), brief = safeUrl(l.briefLink, true);
+      const when = day(l.demo) ? day(l.demo) + (l.time ? ' · ' + hhmm(l.time) : '') : '';
+      return `<article class="lead ${l.test ? 'test' : ''}">
+        <div class="hd"><h3>${esc(l.name || 'No name')}<small>${esc(l.business)}${l.type ? ' · ' + esc(l.type) : ''}</small></h3>
+          <span><span class="pill ${esc(st(l))}">${esc(st(l))}</span>${l.test ? ' <span class="pill Test">Test</span>' : ''}</span></div>
+        <div class="meta"><span>Received <b>${esc(l.at)}</b></span>${l.plan ? `<span>Plan <b>${esc(l.plan)}</b></span>` : ''}
+          ${when ? `<span>Demo <b>${esc(when)}</b></span>` : ''}${l.format ? `<span><b>${esc(l.format)}</b></span>` : ''}
+          ${l.via ? `<span>Confirm by <b>${esc(l.via)}</b></span>` : ''}${l.branches ? `<span>Branches <b>${esc(l.branches)}</b></span>` : ''}
+          ${l.ref ? `<span>Ref <b>${esc(l.ref)}</b></span>` : ''}</div>
+        ${l.goals ? `<p class="txt"><span>Goals:</span> ${esc(l.goals)}</p>` : ''}
+        ${l.details ? `<p class="txt"><span>Details:</span> ${esc(l.details)}</p>` : ''}
+        ${l.notes ? `<p class="txt"><span>Notes:</span> ${esc(l.notes)}</p>` : ''}
+        <div class="acts">${tel ? `<a class="p" href="tel:${esc(tel)}">Call ${esc(l.mobile)}</a><a href="sms:${esc(tel)}">Text</a>` : ''}
+          ${l.email ? `<a href="mailto:${esc(encodeURIComponent(l.email).replace(/%40/g, '@'))}">Email</a>` : ''}
+          ${demo ? `<a href="${esc(demo)}" target="_blank" rel="noopener">Their demo</a>` : ''}
+          ${brief ? `<a href="${esc(brief)}" target="_blank" rel="noopener">Demo brief</a>` : ''}
+          ${web ? `<a href="${esc(web)}" target="_blank" rel="noopener noreferrer">FB / website</a>` : ''}</div>
+      </article>`; }).join('')
+      : '<p class="empty">No demo leads match yet.</p>';
   }
 
   document.addEventListener('visibilitychange', () => { if (!document.hidden && store.get()) load(); });
