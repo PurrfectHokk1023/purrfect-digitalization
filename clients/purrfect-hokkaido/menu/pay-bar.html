@@ -48,6 +48,7 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
 .btn.alt{background:#fff;color:var(--navy);border:2px solid var(--navy)}
 .btn.link{background:none;color:var(--navy);height:auto;font-weight:600;font-size:15px;text-decoration:underline}
 .btn[disabled]{opacity:.6}
+.rnote{color:#c81e1e;font-size:13.5px;font-weight:600}
 .err{color:#b42318;font-weight:600;font-size:15px}.err:empty{display:none}
 .small{font-size:13.5px;color:var(--muted);line-height:1.35}
 .hp{position:absolute;left:-9999px}
@@ -80,6 +81,8 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
     <section class="box">
       <h2><i>1</i>Your booking</h2>
       <label>Your name<input name="name" autocomplete="name" maxlength="40" required></label>
+      <label>Email<input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="you@example.com" required>
+        <span class="rnote">This is where we send your sales invoice / receipt.</span></label>
       <label>Mobile number<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0917 123 4567" required></label>
       <label>Package<select name="pkg" id="pkg"><option value="p1">Package 1: ₱4,500 for 50 pax</option><option value="p2">Package 2: ₱7,500 for 50 pax</option><option value="p3">Package 3: ₱11,000 for 100 pax</option><option value="p4">Package 4: ₱15,000 for 150 pax</option><option value="custom">Custom quote (the total we sent you)</option></select></label>
       <label id="totalWrap" hidden>Total of your quote (₱)<input name="total" inputmode="decimal" placeholder="e.g. 9500"></label>
@@ -165,6 +168,7 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
   f.addEventListener('submit', async e => {
     e.preventDefault(); err.textContent = '';
     if (!E.name.value.trim()) { err.textContent = 'Please enter your name.'; E.name.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(E.email.value.trim())) { err.textContent = 'Please enter your email: we send your receipt there.'; E.email.focus(); return; }
     if (!E.eventDate.value) { err.textContent = 'Please pick your event date.'; E.eventDate.focus(); return; }
     if (!due()) { err.textContent = E.pkg.value === 'custom' ? 'Please type the total of your quote.' : 'Please type the amount.'; return; }
     const why = rc.problem(); if (why) { err.textContent = why; return; }
@@ -172,14 +176,14 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
     if (ref.length < 6) { err.textContent = 'Type the reference number from your GCash receipt.'; E.gcashRef.focus(); return; }
     $('send').disabled = true; $('send').textContent = 'Sending…';
     try {
-      const body = {bar: 'pay', name: E.name.value, phone: E.phone.value, pkg: E.pkg.value, total: E.total.value, eventDate: E.eventDate.value,
+      const body = {bar: 'pay', name: E.name.value, email: E.email.value.trim(), phone: E.phone.value, pkg: E.pkg.value, total: E.total.value, eventDate: E.eventDate.value,
         pax: E.pax.value, venue: E.venue.value, pay: E.pay.value, amount: E.amount.value, gcashRef: ref, shots: rc.shots(), manual: rc.manual(), website: E.website.value};
       const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(body)}).then(x => x.json());
       if (!r.ok) { err.textContent = r.error || 'Something went wrong. Please try again.'; return; }
       f.hidden = true; $('done').hidden = false; $('dref').textContent = r.ref;
       $('dmsg').textContent = r.status === 'Verified'
-        ? 'Your receipt checked out (' + peso(r.due) + '). We’ll confirm your booking on Messenger or by text within the day.'
-        : 'We got it and will check your payment by hand, then confirm your booking on Messenger or by text within the day.';
+        ? 'Your receipt checked out (' + peso(r.due) + '). Your booking confirmation and receipt are on their way to ' + E.email.value.trim() + '.'
+        : 'We got it and will check your payment by hand. Once it’s confirmed, we’ll email your booking confirmation and receipt to ' + E.email.value.trim() + '.';
       scrollTo(0, 0);
     } catch (x) { err.textContent = 'No connection. Check your internet and try again.'; }
     finally { $('send').disabled = false; $('send').textContent = 'Send payment'; }

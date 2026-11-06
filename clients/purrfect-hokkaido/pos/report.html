@@ -190,6 +190,13 @@ td.wrap{text-align:left;white-space:normal}
   </div>
   <p class="since" id="since">—</p>
 
+  <section class="card" id="barpay">
+      <h2>Mobile Ice Cream Bar payments</h2>
+      <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab.</p>
+      <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
+      <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
+    </section>
+
   <div class="grid">
     <section class="card" id="trend">
       <h2 id="trendTitle">Sales by day</h2>
@@ -213,12 +220,6 @@ td.wrap{text-align:left;white-space:normal}
       <p class="note">Voids and refunds made in PH Point of Sale for the period picked above, by the date they were done.</p>
       <div class="vsum"><div><span>Refunded</span><b id="vRef">—</b><span id="vRefN"></span></div><div><span>Voided</span><b id="vVoid">—</b><span id="vVoidN"></span></div></div>
       <div class="tbox"><table><thead><tr><th>Date</th><th>Type</th><th>Receipt</th><th>Amount</th><th class="hide-narrow">Reason</th><th class="hide-narrow">Items</th></tr></thead><tbody id="vBody"></tbody></table></div>
-    </section>
-    <section class="card wide" id="barpay">
-      <h2>Mobile Ice Cream Bar payments</h2>
-      <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab.</p>
-      <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
-      <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
     </section>
   </div>
   </section>
