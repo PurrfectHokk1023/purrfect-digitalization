@@ -55,6 +55,7 @@ select,.btn{font:inherit;font-size:13px;border:1px solid var(--line);border-radi
 .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card.wide{grid-column:1/-1}
 .card h2{font-size:18px;font-weight:600;color:var(--navy)}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.chead .btn{text-decoration:none}
 .note{font-size:12px;color:var(--muted)}
 .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;gap:6px;align-items:center}.legend i{width:11px;height:11px;border-radius:2px}
@@ -191,13 +192,13 @@ td.wrap{text-align:left;white-space:normal}
   <p class="since" id="since">—</p>
 
   <section class="card" id="barpay">
-      <h2>Mobile Ice Cream Bar payments</h2>
+      <div class="chead"><h2>Mobile Ice Cream Bar payments</h2><a class="btn" href="https://docs.google.com/spreadsheets/d/17ttN6SlCfKaZqSWCxYEb-aqY4UQxxk4JBVsI8OMtxRk/edit#gid=462039945" target="_blank" rel="noopener">Open sheet ↗</a></div>
       <p class="note">GCash payments sent from the menu app's mobile bar page (pay-bar.html), by the day they were sent. <b>Verified</b> = every receipt passed the phone's checks (amount, date, Ref. No., original screenshot) and covers the amount; <b>Needs check</b> = check it by hand. Either way, find the payment in GCash before confirming the booking. Screenshots are in the owner email; rows in the Online Orders sheet's "Mobile Bar Payments" tab.</p>
       <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
       <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
     </section>
   <section class="card" id="rentals">
-    <h2>Café rentals</h2>
+    <div class="chead"><h2>Café rentals</h2><a class="btn" href="https://docs.google.com/spreadsheets/d/17ttN6SlCfKaZqSWCxYEb-aqY4UQxxk4JBVsI8OMtxRk/edit#gid=1515671005" target="_blank" rel="noopener">Open sheet ↗</a></div>
     <p class="note">Whole-café bookings from the menu app's rent page, by the day they were booked. <b>Verified</b> = the receipt checks passed; <b>Needs check</b> = check by hand, then set Status to Confirmed (or Rejected to free the date) in the Online Orders sheet's "Café Rentals" tab. Booked dates and hours are blocked on the calendar.</p>
     <div class="vsum"><div><span>Paid (verified + confirmed)</span><b id="rOk">—</b><span id="rOkN"></span></div><div><span>Needs check</span><b id="rChk">—</b><span id="rChkN"></span></div><div><span>Upcoming bookings</span><b id="rUp">—</b><span id="rUpN"></span></div></div>
     <div class="tbox"><table><thead><tr><th>Booked</th><th>Ref</th><th>Name</th><th>Date &amp; time</th><th>Paid</th><th>Status</th><th class="hide-narrow">Booking</th><th class="hide-narrow">Total</th></tr></thead><tbody id="rBody"></tbody></table></div>
@@ -439,7 +440,7 @@ function drawRent(sel) {
   $('#rChk').textContent = peso(chk.reduce((s, v) => s + v.due, 0)); $('#rChkN').textContent = chk.length + (chk.length === 1 ? ' booking' : ' bookings');
   $('#rUp').textContent = String(up.length); $('#rUpN').textContent = up.length ? 'next: ' + up.sort((x, y) => (x.on + x.start).localeCompare(y.on + y.start))[0].on : 'none yet';
   const tb = $('#rBody'); tb.replaceChildren();
-  if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 8, className: 'wrap', textContent: 'No café rentals booked in this period.', style: 'color:var(--muted)'})])); return; }
+  if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 8, className: 'wrap', textContent: up.length ? 'No café rentals booked in this period. The ' + up.length + ' upcoming ' + (up.length === 1 ? 'booking was' : 'bookings were') + ' made on another day: pick a wider period, or Open sheet.' : 'No café rentals booked in this period.', style: 'color:var(--muted)'})])); return; }
   for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.ref}), el('td', {className: 'wrap', textContent: v.name}),
     el('td', {textContent: v.on + ', ' + tm(v.start) + '–' + tm(v.end)}), el('td', {textContent: peso(v.due)}),
     el('td', {textContent: v.status === 'Verified' || v.status === 'Confirmed' ? '✓ ' + v.status : v.status === 'Needs check' ? '⚠ Needs check' : v.status}),
