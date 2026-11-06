@@ -514,6 +514,30 @@ function saveHistory(sale) {
   if (old) { try { const s = JSON.parse(old); if (!loadHistory().some(x => x.no === s.no)) saveHistory(s); } catch (e) {} try { localStorage.removeItem('pos-last'); } catch (e) {} }
 })();
 
+// Sales sync (6 Nov): every finished sale also goes to the POS Sales tab so the Sales Report shows the day's
+// sales live. Sales wait in a queue on this device until the server confirms them (offline-safe, retried).
+const SYNCQ = 'pos-sync-q', DEV = store.get('pos-dev') || (() => { const d = Math.random().toString(36).slice(2, 8); store.set('pos-dev', d); return d; })();
+const syncQ = () => { try { return JSON.parse(store.get(SYNCQ) || '[]'); } catch (e) { return []; } };
+const setQ = q => { try { localStorage.setItem(SYNCQ, JSON.stringify(q)); } catch (e) {} };
+let syncing = false;
+function queueSale(packed) { const q = syncQ(); if (!q.some(x => x.no === packed.no)) { q.push(packed); setQ(q); } flushSales(); }
+function flushSales() {
+  const q = syncQ();
+  if (syncing || !q.length || !session || !session.token) return;
+  syncing = true;
+  api.post({pos: 'sales', token: session.token, dev: DEV, sales: q.slice(0, 100)}).then(r => {
+    if (r && r.ok) { const ok = new Set(r.saved || []); setQ(syncQ().filter(x => !ok.has(x.no))); }
+  }).catch(() => {}).finally(() => { syncing = false; if (syncQ().length && navigator.onLine) setTimeout(flushSales, 60000); });
+}
+(() => {   // first run after this update: queue today's receipts already on this device
+  if (store.get('pos-sync-start')) return;
+  const today = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+  store.set('pos-sync-start', today);
+  loadHistory().filter(x => new Date(Date.parse(x.at) + 8 * 3600e3).toISOString().slice(0, 10) === today).forEach(x => { const q = syncQ(); if (!q.some(y => y.no === x.no)) { q.push(x); setQ(q); } });
+})();
+addEventListener('online', flushSales);
+setInterval(flushSales, 120000);
+
 function markHistory(no, patch) {
   const h = loadHistory(), x = h.find(r => r.no === no);
   if (!x) return;
@@ -533,6 +557,7 @@ function done(type, tendered, no) {
                 lines: ticket.map(l => ({key: l.key, qty: l.qty, disc: l === top, discQty: l === top ? 1 : 0, name: tidy(byKey[l.key].name), price: byKey[l.key].price})),
                 senior: senior.on ? {id: senior.id, name: senior.name} : {id: '', name: ''}, cashier: settings.cashier};
   saveHistory(sale);
+  queueSale(pack(sale));
   if (settings.autoprint) printSale(sale);
   sheet('Sale complete', (bd, close, x) => {
     x.textContent = 'New sale';
@@ -937,13 +962,14 @@ $('#lgForm').onsubmit = e => {
   const btn = $('#lgBtn'); btn.disabled = true; $('#lgErr').textContent = '';
   api.post({pos: 'login', user: $('#lgUser').value, pass: $('#lgPass').value}).then(r => {
     if (!r.ok) { $('#lgErr').textContent = r.error || 'Could not log in.'; return; }
-    session = {role: r.role, token: r.token, until: r.until}; jset(SESSION, session);
+    session = {role: r.role, token: r.token, until: r.until}; jset(SESSION, session); flushSales();
     store.set('pos-user', $('#lgUser').value.trim()); $('#lgPass').value = '';
     $('#login').hidden = true; applyRole(); toast('Logged in as ' + roleName());
   }).catch(() => { $('#lgErr').textContent = 'No internet connection. Logging in needs the internet once.'; })
     .finally(() => { btn.disabled = false; });
 };
 if (!session || session.until < Date.now()) { session = null; showLogin(); }
+else flushSales();
 applyRole();
 setInterval(() => { if (session && session.until < Date.now()) logout('Your session ended. Please log in again.'); }, 60000);
 

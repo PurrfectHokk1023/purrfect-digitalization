@@ -624,6 +624,17 @@ $('#invQ').oninput = drawInv;
 // Mobile bar + café rental payments (Vince, 6 Nov: "reflect all payments in the gross sales, note that there's 1% cut of
 // payment made thru gcash"). Verified or Confirmed payments are added to the Dasma day they were sent: the amount to
 // gross, the 1% GCash fee to expenses. Needs check payments wait until they are Verified or Confirmed in the sheet.
+// Café sales from the Purrfect POS (Vince, 6 Nov: "sync it from ... Purrfect POS, to get realtime sales"). For every
+// day the register synced, Dasma's café gross = POS net sales (after discounts, less refunds/voids), live during the day;
+// that day's expenses still come from the branch sheet. Days without POS sales keep the sheet's numbers.
+function usePosSales(d) {
+  for (const p of d.possales || []) {
+    if (!p.receipts) continue;
+    const rows = d.daily.filter(r => r.branch === 'Dasma' && r.date === p.date && !r.gcash);
+    if (rows.length) rows.forEach((r, i) => { r.gross = i ? 0 : p.net; r.net = r2(r.gross - r.expenses); r.pos = true; });
+    else d.daily.push({date: p.date, branch: 'Dasma', gross: p.net, expenses: 0, net: p.net, pos: true});
+  }
+}
 const GCASH_FEE = 0.01, PAID = ['Verified', 'Confirmed'];
 function addGcashSales(d) {
   const pays = (d.bar || []).map(v => ({...v, src: 'bar'})).concat((d.rent || []).map(v => ({...v, src: 'rent'}))).filter(v => PAID.includes(v.status) && v.due > 0 && v.date);
@@ -643,7 +654,7 @@ async function load(fresh) {
     const r = await fetch(API + '?pos=report&token=' + encodeURIComponent(session.token) + (fresh ? '&fresh=1' : ''), {cache: 'no-store'}).then(x => x.json());
     if (r.relogin) { session = null; localStorage.removeItem('pos-session'); showLogin(r.error); return; }
     if (!r.ok) throw new Error(r.error || 'no data');
-    addGcashSales(r); state.data = r; state.at = new Date(r.at);
+    usePosSales(r); addGcashSales(r); state.data = r; state.at = new Date(r.at);
     $('#warn').hidden = !(r.warnings && r.warnings.length); $('#warn').textContent = (r.warnings || []).join(' · ');
     $('#live').classList.remove('stale');
     draw();
