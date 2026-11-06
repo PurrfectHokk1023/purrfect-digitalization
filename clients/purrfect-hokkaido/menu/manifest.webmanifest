@@ -44,6 +44,16 @@
    ]
   },
   {
+   "name": "My loyalty card",
+   "url": "card.html",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
    "name": "Menu",
    "url": "./",
    "icons": [

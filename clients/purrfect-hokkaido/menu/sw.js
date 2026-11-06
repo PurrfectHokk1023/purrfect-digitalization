@@ -1,6 +1,7 @@
-const CACHE = 'ph-d07e3f20b2c8';
+const CACHE = 'ph-762c9c05f872';
 const PRECACHE = [
  "./",
+ "card.html",
  "clock/index.html",
  "clock.html",
  "icons/apple-touch-icon.png",
@@ -48,7 +49,8 @@ const PRECACHE = [
  "install.html",
  "manifest.webmanifest",
  "order.html",
- "print.html"
+ "print.html",
+ "vendor/qrcode.js"
 ];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys()
