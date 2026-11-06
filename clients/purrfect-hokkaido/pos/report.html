@@ -196,6 +196,12 @@ td.wrap{text-align:left;white-space:normal}
       <div class="vsum"><div><span>Verified</span><b id="bOk">—</b><span id="bOkN"></span></div><div><span>Needs check</span><b id="bChk">—</b><span id="bChkN"></span></div></div>
       <div class="tbox"><table><thead><tr><th>Sent</th><th>Ref</th><th>Name</th><th>Payment</th><th>Amount</th><th>Status</th><th class="hide-narrow">Event</th><th class="hide-narrow">Package</th></tr></thead><tbody id="bBody"></tbody></table></div>
     </section>
+  <section class="card" id="rentals">
+    <h2>Café rentals</h2>
+    <p class="note">Whole-café bookings from the menu app's rent page, by the day they were booked. <b>Verified</b> = the receipt checks passed; <b>Needs check</b> = check by hand, then set Status to Confirmed (or Rejected to free the date) in the Online Orders sheet's "Café Rentals" tab. Booked dates and hours are blocked on the calendar.</p>
+    <div class="vsum"><div><span>Paid (verified + confirmed)</span><b id="rOk">—</b><span id="rOkN"></span></div><div><span>Needs check</span><b id="rChk">—</b><span id="rChkN"></span></div><div><span>Upcoming bookings</span><b id="rUp">—</b><span id="rUpN"></span></div></div>
+    <div class="tbox"><table><thead><tr><th>Booked</th><th>Ref</th><th>Name</th><th>Date &amp; time</th><th>Paid</th><th>Status</th><th class="hide-narrow">Booking</th><th class="hide-narrow">Total</th></tr></thead><tbody id="rBody"></tbody></table></div>
+  </section>
 
   <div class="grid">
     <section class="card" id="trend">
@@ -322,6 +328,7 @@ function draw() {
   drawProducts(sel);
   drawVoids(sel);
   drawBar(sel);
+  drawRent(sel);
 }
 
 function drawChart(ps, sel) {
@@ -420,6 +427,23 @@ function drawBar(sel) {
   for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.ref}), el('td', {className: 'wrap', textContent: v.name}),
     el('td', {className: 'wrap', textContent: v.pay}), el('td', {textContent: peso(v.due)}), el('td', {textContent: v.status === 'Verified' ? '✓ Verified' : '⚠ ' + (v.status || 'Needs check')}),
     el('td', {className: 'hide-narrow', textContent: v.event}), el('td', {className: 'wrap hide-narrow', textContent: v.pkg})]));
+}
+
+// Café rentals (6 Nov): rows from Rent.gs, booked through the menu app's rent.html
+function drawRent(sel) {
+  const [a, b] = rangeOf(sel), all = state.data.rent || [], rows = all.filter(v => v.date >= a && v.date <= b).sort((x, y) => (y.date + y.time).localeCompare(x.date + x.time));
+  const paid = rows.filter(v => v.status === 'Verified' || v.status === 'Confirmed'), chk = rows.filter(v => v.status === 'Needs check');
+  const tm = h => ((h % 12) || 12) + (h < 12 || h === 24 ? ' AM' : ' PM'), todayIso = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+  const up = all.filter(v => v.on >= todayIso && ['Verified', 'Needs check', 'Confirmed'].includes(v.status));
+  $('#rOk').textContent = peso(paid.reduce((s, v) => s + v.due, 0)); $('#rOkN').textContent = paid.length + (paid.length === 1 ? ' booking' : ' bookings');
+  $('#rChk').textContent = peso(chk.reduce((s, v) => s + v.due, 0)); $('#rChkN').textContent = chk.length + (chk.length === 1 ? ' booking' : ' bookings');
+  $('#rUp').textContent = String(up.length); $('#rUpN').textContent = up.length ? 'next: ' + up.sort((x, y) => (x.on + x.start).localeCompare(y.on + y.start))[0].on : 'none yet';
+  const tb = $('#rBody'); tb.replaceChildren();
+  if (!rows.length) { tb.append(el('tr', {}, [el('td', {colSpan: 8, className: 'wrap', textContent: 'No café rentals booked in this period.', style: 'color:var(--muted)'})])); return; }
+  for (const v of rows) tb.append(el('tr', {}, [el('td', {textContent: label('day', v.date, true) + ', ' + v.time}), el('td', {textContent: v.ref}), el('td', {className: 'wrap', textContent: v.name}),
+    el('td', {textContent: v.on + ', ' + tm(v.start) + '–' + tm(v.end)}), el('td', {textContent: peso(v.due)}),
+    el('td', {textContent: v.status === 'Verified' || v.status === 'Confirmed' ? '✓ ' + v.status : v.status === 'Needs check' ? '⚠ Needs check' : v.status}),
+    el('td', {className: 'wrap hide-narrow', textContent: v.booking}), el('td', {className: 'hide-narrow', textContent: peso(v.total)})]));
 }
 
 // ---- inventory (supplies + recipes) ---------------------------------------------------------------

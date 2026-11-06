@@ -49,6 +49,20 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
 .btn.link{background:none;color:var(--navy);height:auto;font-weight:600;font-size:15px;text-decoration:underline}
 .btn[disabled]{opacity:.6}
 .rnote{color:#c81e1e;font-size:13.5px;font-weight:600}
+.cal{border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px}
+.cal .lbl,.lbl{font-weight:600;font-size:15px;color:var(--navy)}
+.calh{display:flex;align-items:center;justify-content:space-between}
+.calh button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;line-height:1;color:var(--navy);cursor:pointer}
+.calh button:disabled{opacity:.35;cursor:default}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dow span{font-size:12px;color:var(--muted);font-weight:600}
+.days .d{aspect-ratio:1;border:0;border-radius:10px;background:#eef6ee;color:#1f5f35;font:600 15px Fredoka,sans-serif;cursor:pointer}
+.days .d:disabled{background:none;color:#c1c6d2;cursor:default}
+.days .d.full{text-decoration:line-through}
+.days .d.on{background:var(--navy);color:#fff}
+.times{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
+.times .tm{height:44px;border-radius:12px;border:2px solid var(--line);background:#fff;font:600 14.5px Fredoka,sans-serif;color:var(--navy);cursor:pointer}
+.times .tm.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .err{color:#b42318;font-weight:600;font-size:15px}.err:empty{display:none}
 .small{font-size:13.5px;color:var(--muted);line-height:1.35}
 .hp{position:absolute;left:-9999px}
@@ -87,10 +101,18 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
       <label>Package<select name="pkg" id="pkg"><option value="p1">Package 1: ₱4,500 for 50 pax</option><option value="p2">Package 2: ₱7,500 for 50 pax</option><option value="p3">Package 3: ₱11,000 for 100 pax</option><option value="p4">Package 4: ₱15,000 for 150 pax</option><option value="custom">Custom quote (the total we sent you)</option></select></label>
       <label id="totalWrap" hidden>Total of your quote (₱)<input name="total" inputmode="decimal" placeholder="e.g. 9500"></label>
       <div class="two">
-        <label>Event date<input name="eventDate" type="date" required></label>
         <label>Guests (pax)<input name="pax" inputmode="numeric" placeholder="e.g. 80"></label>
+        <label>Venue (city or address)<input name="venue" maxlength="120" placeholder="e.g. Dasmariñas, Cavite"></label>
       </div>
-      <label>Venue (city or address)<input name="venue" maxlength="120" placeholder="e.g. Dasmariñas, Cavite"></label>
+      <input type="hidden" name="eventDate">
+      <div class="cal">
+        <p class="lbl">Event date</p>
+        <div class="calh"><button type="button" id="prev" aria-label="Previous month">‹</button><b id="mon"></b><button type="button" id="next" aria-label="Next month">›</button></div>
+        <div class="dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+        <div class="days" id="days"></div>
+        <p class="small" id="calnote">Loading free dates…</p>
+      </div>
+      <div id="timesWrap" hidden><p class="lbl" id="dayLbl"></p><div class="times" id="times"></div></div>
       <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     </section>
 
@@ -152,7 +174,6 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
   const peso = n => '₱' + Number(n).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   const money = v => { const n = Math.round(Number(String(v || '').replace(/[₱,\s]/g, '')) * 100) / 100; return isFinite(n) && n > 0 ? n : 0; };
   const p = new URLSearchParams(location.search).get('p'); if (p && PKG['p' + p]) E.pkg.value = 'p' + p;
-  E.eventDate.min = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
   const total = () => E.pkg.value === 'custom' ? money(E.total.value) : PKG[E.pkg.value];
   const due = () => { const t = total(), k = E.pay.value; return k === 'other' ? money(E.amount.value) : k === 'full' ? t : Math.round(t * 50) / 100; };
   const paint = () => {
@@ -161,7 +182,37 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
     document.querySelectorAll('#opts b[data-k]').forEach(b => { b.textContent = t ? peso(b.dataset.k === 'full' ? t : t / 2) : ''; });
     $('due').textContent = due() ? peso(due()) : '—';
   };
-  f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
+  // one ice cream cart (6 Nov): a downpayment or full payment books the date from a start time for the 4-hour service; booked hours
+  // (GET ?bar=slots) are greyed out. A balance or other payment is for a booking already made: date only, no slot.
+  const HRS = 4, FIRST = 8, LASTEND = 24, MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const iso = d => d.toISOString().slice(0, 10), addD = (s, n) => iso(new Date(Date.parse(s + 'T00:00:00Z') + n * 864e5));
+  const today = iso(new Date(Date.now() + 8 * 3600e3)), lastDay = addD(today, 365);
+  const tm = h => ((h % 12) || 12) + (h < 12 || h === 24 ? ' AM' : ' PM');
+  let booked = [], start = null, view = today.slice(0, 7);
+  const slot = () => E.pay.value === 'down' || E.pay.value === 'full';
+  const starts = d => { const out = []; for (let s = FIRST; s + HRS <= LASTEND; s++) if (!booked.some(b => b.date === d && s < b.end && b.start < s + HRS)) out.push(s); return out; };
+  const drawCal = () => {
+    const [y, m] = view.split('-').map(Number), dow = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), n = new Date(Date.UTC(y, m, 0)).getUTCDate(), day = E.eventDate.value;
+    $('mon').textContent = MON[m - 1] + ' ' + y; $('prev').disabled = view <= today.slice(0, 7); $('next').disabled = view >= lastDay.slice(0, 7);
+    let html = '<span></span>'.repeat(dow);
+    for (let d = 1; d <= n; d++) { const ds = view + '-' + String(d).padStart(2, '0'), open = ds >= today && ds <= lastDay, ok = open && (!slot() || starts(ds).length);
+      html += `<button type="button" class="d${ds === day ? ' on' : ''}${open && !ok ? ' full' : ''}" data-day="${ds}" ${ok ? '' : 'disabled'}>${d}</button>`; }
+    $('days').innerHTML = html;
+    const show = slot() && !!day; $('timesWrap').hidden = !show; if (!show) return;
+    const ok = starts(day); if (start != null && !ok.includes(start)) start = null;
+    $('dayLbl').textContent = 'Start time (the cart serves for ' + HRS + ' hours)';
+    $('times').innerHTML = ok.length ? ok.map(s => `<button type="button" class="tm${s === start ? ' on' : ''}" data-start="${s}">${tm(s)} – ${tm(s + HRS)}</button>`).join('') : '<p class="small">The cart is fully booked that day.</p>';
+  };
+  document.addEventListener('click', e => {
+    const d = e.target.closest('[data-day]'); if (d) { E.eventDate.value = d.dataset.day; start = null; drawCal(); return; }
+    const t = e.target.closest('[data-start]'); if (t) { start = +t.dataset.start; drawCal(); }
+  });
+  $('prev').onclick = () => { const [y, m] = view.split('-').map(Number); view = iso(new Date(Date.UTC(y, m - 2, 1))).slice(0, 7); drawCal(); };
+  $('next').onclick = () => { const [y, m] = view.split('-').map(Number); view = iso(new Date(Date.UTC(y, m, 1))).slice(0, 7); drawCal(); };
+  const loadSlots = () => fetch(API + '?bar=slots', {cache: 'no-store'}).then(r => r.json()).then(r => { booked = r.booked || []; $('calnote').textContent = 'Green dates are free. Struck-out dates are fully booked.'; drawCal(); })
+    .catch(() => { $('calnote').textContent = 'Could not load the free dates. Check your internet and reload.'; });
+  loadSlots();
+  f.addEventListener('input', paint); f.addEventListener('change', () => { paint(); drawCal(); }); paint(); drawCal();
   const rc = RCPT.step(f, {due, since: () => Date.now() - 3 * 864e5});
   f.querySelector('.rc-pick input').addEventListener('click', () => RCPT.warm(), {once: true});
   const err = f.querySelector('.err');
@@ -169,17 +220,18 @@ ol{padding-left:20px;display:grid;gap:6px;font-size:15.5px;text-align:left}
     e.preventDefault(); err.textContent = '';
     if (!E.name.value.trim()) { err.textContent = 'Please enter your name.'; E.name.focus(); return; }
     if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(E.email.value.trim())) { err.textContent = 'Please enter your email: we send your receipt there.'; E.email.focus(); return; }
-    if (!E.eventDate.value) { err.textContent = 'Please pick your event date.'; E.eventDate.focus(); return; }
+    if (!E.eventDate.value) { err.textContent = 'Please pick your event date on the calendar.'; return; }
+    if (slot() && start == null) { err.textContent = 'Please pick a start time for the cart.'; return; }
     if (!due()) { err.textContent = E.pkg.value === 'custom' ? 'Please type the total of your quote.' : 'Please type the amount.'; return; }
     const why = rc.problem(); if (why) { err.textContent = why; return; }
     const ref = E.gcashRef.value.replace(/[^A-Za-z0-9]/g, '');
     if (ref.length < 6) { err.textContent = 'Type the reference number from your GCash receipt.'; E.gcashRef.focus(); return; }
     $('send').disabled = true; $('send').textContent = 'Sending…';
     try {
-      const body = {bar: 'pay', name: E.name.value, email: E.email.value.trim(), phone: E.phone.value, pkg: E.pkg.value, total: E.total.value, eventDate: E.eventDate.value,
+      const body = {bar: 'pay', name: E.name.value, email: E.email.value.trim(), phone: E.phone.value, pkg: E.pkg.value, total: E.total.value, eventDate: E.eventDate.value, start: slot() ? start : '',
         pax: E.pax.value, venue: E.venue.value, pay: E.pay.value, amount: E.amount.value, gcashRef: ref, shots: rc.shots(), manual: rc.manual(), website: E.website.value};
       const r = await fetch(API, {method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(body)}).then(x => x.json());
-      if (!r.ok) { err.textContent = r.error || 'Something went wrong. Please try again.'; return; }
+      if (!r.ok) { err.textContent = r.error || 'Something went wrong. Please try again.'; if (r.taken) { start = null; loadSlots(); } return; }
       f.hidden = true; $('done').hidden = false; $('dref').textContent = r.ref;
       $('dmsg').textContent = r.status === 'Verified'
         ? 'Your receipt checked out (' + peso(r.due) + '). Your booking confirmation and receipt are on their way to ' + E.email.value.trim() + '.'
