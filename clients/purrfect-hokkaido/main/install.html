@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- client: purrfect-hokkaido --><meta name="robots" content="noindex, nofollow"><script>(function(){var m=location.hash.match(/^#ph-carry=([A-Za-z0-9_-]+)/);if(!m)return;var h='';try{var o=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));h=o.h||'';var s=o.ls||{};for(var k in s)if(/^(ph|pos)-/.test(k)&&localStorage.getItem(k)===null)localStorage.setItem(k,s[k]);}catch(e){}history.replaceState(null,'',location.pathname+location.search+h);})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get the app · Purrfect Hokkaido</title>
+<meta name="description" content="Install the Purrfect Hokkaido app: menu, prices and pickup orders on your home screen.">
+<meta name="theme-color" content="#122565">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Purrfect Hokkaido">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wdth,wght@75..125,400..700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAEAEA;--navy:#122565;--ink:#1A2A44;--price:#EB4E06;--yellow:#FCF41C;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:460px;margin:0 auto;padding:36px 16px calc(32px + env(safe-area-inset-bottom));text-align:center}
+.appicon{width:112px;height:112px;border-radius:26px;box-shadow:0 6px 20px rgba(18,37,101,.25)}
+h1{margin-top:16px;font-weight:700;font-size:30px;line-height:1.1;color:var(--navy)}
+.lead{margin-top:8px;font-size:17px;line-height:1.35}
+.perks{margin:18px auto 0;display:grid;gap:8px;text-align:left;max-width:330px;list-style:none;font-size:16px}
+.perks li{display:flex;gap:10px;align-items:center;background:#fff;border-radius:12px;padding:10px 12px}
+.perks b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--yellow);display:grid;place-items:center;font-size:14px}
+.how{margin-top:22px;background:var(--navy);color:#fff;border-radius:18px;padding:18px 16px;text-align:left}
+.how h2{font-size:19px;font-weight:700;color:var(--yellow)}
+.how ol{margin-top:10px;padding-left:22px;display:grid;gap:8px;font-size:16.5px;line-height:1.35}
+.how strong{color:var(--yellow);font-weight:600}
+.ico{width:20px;height:20px;vertical-align:-4px;margin:0 2px}
+button.install{display:block;width:100%;height:56px;margin-top:22px;border:0;border-radius:14px;background:var(--price);color:#fff;font:700 20px/1 Fredoka,system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(235,78,6,.3)}
+.done{margin-top:22px;font-size:17px;font-weight:600;color:var(--navy)}
+a.menu{display:inline-block;margin-top:22px;color:var(--navy);font-weight:600;font-size:17px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <img class="appicon" src="icons/icon-512.png" alt="" width="112" height="112">
+  <h1>Get the Purrfect Hokkaido app</h1>
+  <p class="lead">Our menu, prices and pickup orders, one tap away on your home screen.</p>
+  <ul class="perks"><li><b>1</b>See every product and price</li><li><b>2</b>Order ahead, pay with GCash or at the counter</li><li><b>3</b>Menu opens even without signal</li></ul>
+  <button type="button" class="install" id="install" hidden>Install the app</button>
+  <p class="done" id="done" hidden>Installed! Find Purrfect Hokkaido on your home screen.</p>
+  <section class="how" id="iphone" hidden><h2>On iPhone (Safari)</h2><ol>
+    <li>Tap <strong>Share</strong> <svg class="ico" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 11v9h14v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> at the bottom of the screen</li>
+    <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+    <li>Tap <strong>Add</strong>. The cat icon appears on your home screen.</li></ol></section>
+  <section class="how" id="android" hidden><h2>On Android</h2><ol>
+    <li>Tap the <strong>⋮</strong> menu at the top right of Chrome</li>
+    <li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong></li>
+    <li>Tap <strong>Install</strong>. The cat icon appears on your home screen.</li></ol></section>
+  <section class="how" id="inapp" hidden><h2>Open it in your browser first</h2><ol>
+    <li>Tap the <strong>⋯</strong> menu of this app (top right or bottom right)</li>
+    <li>Tap <strong>Open in browser</strong> (or <strong id="inapp-b">Open in Chrome</strong>)</li>
+    <li>Then come back to this page there and install</li></ol></section>
+  <a class="menu" href="./">Just open the menu →</a>
+</main>
+<script>
+(() => {
+  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) return location.replace('./');
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !/Android/.test(ua));
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|TikTok/i.test(ua);
+  const show = id => { document.getElementById(id).hidden = false; };
+  const btn = document.getElementById('install');
+  let ask = null;
+  if (inApp) { show('inapp'); if (ios) document.getElementById('inapp-b').textContent = 'Open in Safari'; }
+  else if (ios) show('iphone');
+  else show('android');  // steps stay as the fallback until Chrome offers its own install prompt
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); ask = e; btn.hidden = false; document.getElementById('android').hidden = true; });
+  addEventListener('appinstalled', () => { btn.hidden = true; show('done'); });
+  btn.addEventListener('click', async () => {
+    if (!ask) return;
+    ask.prompt(); const c = await ask.userChoice; ask = null;
+    btn.hidden = true;
+    if (c.outcome === 'accepted') show('done'); else show('android');
+  });
+})();
+</script>
+</body>
+</html>
