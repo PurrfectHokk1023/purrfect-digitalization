@@ -641,8 +641,19 @@ $('#invQ').oninput = drawInv;
 // Café sales = Loyverse + Purrfect POS (Vince, 7 Nov: "sync loyverse and Purrfect POS sales in Sales Report"). The Dasma
 // sheet's Gross Sales is Loyverse net sales (synced hourly); the café moved to the Purrfect POS on 7 Nov 16:23, so a
 // day's POS net sales (after refunds and voids) are added on top. lv / pos keep the two parts for the Café breakdown.
+// From 8 Nov the server sends d.cafe: Loyverse and POS net per day from 7 Nov, straight from the two registers, with a sale
+// rung in both counted once (the register still asks cashiers to ring Loyverse too). The sheet's Gross Sales for those
+// days is now Loyverse + POS as well (DailySync), so it is replaced here, not added to. Older servers: the path below.
 function usePosSales(d) {
   for (const r of d.daily) if (r.branch === 'Dasma' && !r.gcash) { r.lv = r.gross; r.pos = 0; }
+  if ('cafe' in d) {   // null = the server couldn't read them: keep the sheet, which DailySync already sets to Loyverse + POS
+    for (const c of d.cafe || []) {
+      const row = d.daily.find(r => r.branch === 'Dasma' && r.date === c.date && !r.gcash), g = r2(c.lv + c.pos);
+      if (row) { row.lv = c.lv; row.pos = c.pos; row.gross = g; row.net = r2(g - row.expenses); }
+      else if (g) d.daily.push({date: c.date, branch: 'Dasma', gross: g, expenses: 0, net: g, lv: c.lv, pos: c.pos});
+    }
+    return;
+  }
   for (const p of d.possales || []) {
     if (!p.receipts) continue;
     const row = d.daily.find(r => r.branch === 'Dasma' && r.date === p.date && !r.gcash);
