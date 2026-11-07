@@ -494,7 +494,7 @@ $('#chargeBtn').onclick = () => {
 const HIST = 'pos-history', KEEP_DAYS = 30;
 const pack = s => ({no: s.no, at: new Date(s.at).toISOString(), type: s.type, tendered: s.tendered, sub: s.sub, disc: s.disc, total: s.total,
   change: s.change, qty: s.qty, cashier: s.cashier || '', senior: s.senior && s.senior.id ? s.senior : undefined,
-  lines: s.lines.map(l => [l.name, l.price, l.qty, l.disc ? 1 : 0, l.discQty || 0])});
+  lines: s.lines.map(l => [l.name, l.price, l.qty, l.disc ? 1 : 0, l.discQty || 0, l.key || ''])});   // key = Loyverse item name (Sales Report, 7 Nov)
 const unpack = h => ({...h, at: new Date(h.at), senior: h.senior || {id: '', name: ''}, lines: h.lines.map(([name, price, qty, disc, dq]) => ({name, price, qty, disc: !!disc, discQty: dq || (disc ? qty : 0)}))});
 function loadHistory() {
   let h = [];

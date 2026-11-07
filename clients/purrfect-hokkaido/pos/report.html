@@ -49,7 +49,7 @@ select,.btn{font:inherit;font-size:13px;border:1px solid var(--line);border-radi
 .tile h3{font-size:14px;font-weight:600;color:var(--teal)}
 .big{font-size:30px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.15}
 .chg{font-size:12px;color:var(--muted)}
-.gsrc{display:grid;gap:1px;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}.gsrc div{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}.chg .good{color:var(--ok)}.chg .bad{color:var(--bad)}
+.gsrc{display:grid;gap:1px;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}.gsrc div{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}.gsrc .sub{padding-left:12px;font-size:11px;opacity:.85}.chg .good{color:var(--ok)}.chg .bad{color:var(--bad)}
 .since{color:var(--muted)}.since b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .grid{display:grid;gap:14px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:stretch}
 @media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
@@ -219,7 +219,7 @@ td.wrap{text-align:left;white-space:normal}
     </section>
     <section class="card wide" id="products">
       <h2>Products sold</h2>
-      <p class="note">From Loyverse receipts at the Dasma counter for the period picked above; refunds taken off. Most sold first; the top three are outlined in orange.</p>
+      <p class="note">From Loyverse and Purrfect POS receipts at the Dasma counter for the period picked above; refunds and voids taken off. Most sold first; the top three are outlined in orange.</p>
       <p class="since" id="psum">—</p>
       <div class="prod" id="prod"></div>
     </section>
@@ -278,8 +278,8 @@ function periods() {
   const m = new Map();
   for (const r of rows) {
     const k = bucket(state.view, r.date);
-    const g = m.get(k) || {start: k, gross: 0, expenses: 0, net: 0, days: new Set(), src: {cafe: 0, bar: 0, rent: 0}};
-    g.src[r.src || 'cafe'] += r.gross; g.gross += r.gross; g.expenses += r.expenses; g.net += r.net; g.days.add(r.date); m.set(k, g);
+    const g = m.get(k) || {start: k, gross: 0, expenses: 0, net: 0, days: new Set(), src: {cafe: 0, bar: 0, rent: 0, lv: 0, pos: 0}};
+    g.src[r.src || 'cafe'] += r.gross; g.src.lv += r.lv || 0; g.src.pos += r.pos || 0; g.gross += r.gross; g.expenses += r.expenses; g.net += r.net; g.days.add(r.date); m.set(k, g);
   }
   [...m.keys()].sort().forEach((k, i, ks) => {
     const g = m.get(k), p = i ? m.get(ks[i - 1]) : null;
@@ -317,7 +317,8 @@ function draw() {
     e.append(s, ' vs previous');
   };
   $('#tGross').textContent = peso(sel.gross);
-  $('#gSrc').replaceChildren(...[['Café', 'cafe'], ['Mobile Bar', 'bar'], ['Café Rental', 'rent']].map(([t, k]) => el('div', {}, [el('span', {textContent: t}), el('span', {textContent: peso(r2(sel.src[k]))})]))); chg('#cGross', sel.gross, sel.prev && sel.prev.gross, true);
+  const srcLines = [['Café', 'cafe'], ...(sel.src.pos ? [['Loyverse', 'lv', 1], ['Purrfect POS', 'pos', 1]] : []), ['Mobile Bar', 'bar'], ['Café Rental', 'rent']];
+  $('#gSrc').replaceChildren(...srcLines.map(([t, k, sub]) => el('div', {className: sub ? 'sub' : ''}, [el('span', {textContent: t}), el('span', {textContent: peso(r2(sel.src[k]))})]))); chg('#cGross', sel.gross, sel.prev && sel.prev.gross, true);
   $('#tExp').textContent = peso(sel.expenses); chg('#cExp', sel.expenses, sel.prev && sel.prev.expenses, false);
   $('#tNet').textContent = peso(sel.net); chg('#cNet', sel.net, sel.prev && sel.prev.net, true);
   $('#tMargin').textContent = sel.margin == null ? '—' : pct(sel.margin); chg('#cMargin', sel.margin, sel.prev && sel.prev.margin, true, true);
@@ -406,14 +407,14 @@ function drawProducts(sel) {
   }
   const rows = [...m.values()].filter(r => r.sold > 0).sort((x, y) => y.sold - x.sold || y.sales - x.sales);
   const tot = rows.reduce((t, r) => ({sold: t.sold + r.sold, sales: t.sales + r.sales}), {sold: 0, sales: 0});
-  $('#psum').replaceChildren(el('b', {textContent: String(tot.sold)}), ' items sold across ', el('b', {textContent: String(rows.length)}), ' products, worth ', el('b', {textContent: peso(tot.sales)}), '.');
-  if (!rows.length) { box.append(el('p', {className: 'empty', textContent: 'No product sales recorded in Loyverse for this period.'})); return; }
+  $('#psum').replaceChildren(el('b', {textContent: String(r2(tot.sold))}), ' items sold across ', el('b', {textContent: String(rows.length)}), ' products, worth ', el('b', {textContent: peso(tot.sales)}), '.');
+  if (!rows.length) { box.append(el('p', {className: 'empty', textContent: 'No product sales recorded in Loyverse or the Purrfect POS for this period.'})); return; }
   rows.forEach((r, i) => {
     const t = tidy(r.item), src = state.data.images[r.item];
     const pic = src ? el('img', {src, alt: '', loading: 'lazy'}) : el('div', {className: 'ph', textContent: t.name.replace(/[^A-Za-z ]/g, '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()});
     if (src) pic.onerror = () => pic.replaceWith(el('div', {className: 'ph', textContent: t.name.slice(0, 2).toUpperCase()}));
     const nm = el('div', {className: 'nm'}, [el('b', {}, [...(i < 3 ? [el('span', {className: 'rk', textContent: '#' + (i + 1)})] : []), t.name]), el('span', {textContent: [t.size, r.category].filter(Boolean).join(' · ')})]);
-    box.append(el('div', {className: 'p' + (i < 3 ? ' top' : '')}, [pic, nm, el('div', {className: 'ct'}, [el('b', {textContent: String(r.sold)}), el('span', {textContent: 'sold · ' + peso(r.sales)})])]));
+    box.append(el('div', {className: 'p' + (i < 3 ? ' top' : '')}, [pic, nm, el('div', {className: 'ct'}, [el('b', {textContent: String(r2(r.sold))}), el('span', {textContent: 'sold · ' + peso(r.sales)})])]));
   });
 }
 
@@ -637,12 +638,16 @@ $('#invQ').oninput = drawInv;
 // Café sales from the Purrfect POS (Vince, 6 Nov: "sync it from ... Purrfect POS, to get realtime sales"). For every
 // day the register synced, Dasma's café gross = POS net sales (after discounts, less refunds/voids), live during the day;
 // that day's expenses still come from the branch sheet. Days without POS sales keep the sheet's numbers.
+// Café sales = Loyverse + Purrfect POS (Vince, 7 Nov: "sync loyverse and Purrfect POS sales in Sales Report"). The Dasma
+// sheet's Gross Sales is Loyverse net sales (synced hourly); the café moved to the Purrfect POS on 7 Nov 16:23, so a
+// day's POS net sales (after refunds and voids) are added on top. lv / pos keep the two parts for the Café breakdown.
 function usePosSales(d) {
+  for (const r of d.daily) if (r.branch === 'Dasma' && !r.gcash) { r.lv = r.gross; r.pos = 0; }
   for (const p of d.possales || []) {
     if (!p.receipts) continue;
-    const rows = d.daily.filter(r => r.branch === 'Dasma' && r.date === p.date && !r.gcash);
-    if (rows.length) rows.forEach((r, i) => { r.gross = i ? 0 : p.net; r.net = r2(r.gross - r.expenses); r.pos = true; });
-    else d.daily.push({date: p.date, branch: 'Dasma', gross: p.net, expenses: 0, net: p.net, pos: true});
+    const row = d.daily.find(r => r.branch === 'Dasma' && r.date === p.date && !r.gcash);
+    if (row) { row.pos = p.net; row.gross = r2(row.gross + p.net); row.net = r2(row.gross - row.expenses); }
+    else d.daily.push({date: p.date, branch: 'Dasma', gross: p.net, expenses: 0, net: p.net, lv: 0, pos: p.net});
   }
 }
 const GCASH_FEE = 0.01, PAID = ['Verified', 'Confirmed'];
