@@ -11,7 +11,7 @@
 const API = ((location.hostname === '127.0.0.1' || location.hostname === 'localhost') && (() => { try { return localStorage.getItem('pd-api'); } catch (e) { return null; } })())
   || 'https://script.google.com/macros/s/AKfycbzLxG6AdWT0htxRveNG7Ur-wyLq063d_GvQweaE492pvUSCA2aOi1_QTaO0aiEtNWPL/exec';   // Purrfect Digitalization web app (PosOrders.gs); a local test server can stand in on localhost
 const BUY = 'https://purrfectdigital.online/point-of-sale.html#buy';
-const APP_V = '2026-11-05.2';   // shown in Settings; change it with CACHE in make_pos_app.py
+const APP_V = '2026-11-08.1';   // shown in Settings; change it with CACHE in make_pos_app.py
 const PROMO = Date.now() < Date.UTC(2026, 11, 31, 16);   // year-end promo: 40% off (₱179) until 31 Dec 2026, 11:59 PM Manila
 const PRICE = PROMO ? '₱179' : '₱299';
 const WS = 'ws://127.0.0.1:40213/';   // "Server for RawBT" app on Android
@@ -35,7 +35,7 @@ const topVeil = () => { const vs = document.querySelectorAll('.veil'); return vs
 // ---- settings, license, items -------------------------------------------------------------------------
 const DEFAULTS = {shop: {name: '', lines: [], tin: '', footer: 'Thank you! Please come again.', notOfficial: true},
   logo: '', paper: '32', printer: 'auto', printerName: '', copies: 1, autoprint: true, cashier: '', prefix: '',
-  pays: ['Cash', 'GCash', 'Maya', 'Card'], srMode: 'all', lowDefault: 5, pin: null, catOrder: []};
+  pays: ['Cash', 'GCash', 'Maya', 'Card'], srMode: 'all', lowDefault: 5, pin: null, catOrder: [], cam: ''};
 const PAY_TYPES = ['Cash', 'GCash', 'Maya', 'Card', 'Bank transfer', 'Other'];
 let S = Object.assign({}, DEFAULTS, jget('ppos-settings', {}));
 S.shop = Object.assign({}, DEFAULTS.shop, S.shop || {});
@@ -1159,6 +1159,7 @@ function showSettings() {
       el('div', {className: 'row2'}, [el('label', {}, ['Low-stock warning at', lowD]), el('label', {}, ['Receipt number prefix', prefix])]),
       el('p', {className: 'note', textContent: 'Give each phone or tablet its own prefix (A, B, …) so receipt numbers never repeat across devices.'}), err, save,
       el('h3', {textContent: 'Security and device'}), pinBtn, el('div', {className: 'row2'}, [prBtn, inBtn]), stBtn,
+      el('h3', {textContent: 'Shop camera'}), camBoxSetting(),
       el('h3', {textContent: 'Online back office'}), officeBox(),
       el('h3', {textContent: 'Backup'}), bkNote, el('div', {className: 'row2'}, [bkBtn, rsBtn]), rfile,
       el('h3', {textContent: 'License'}), licenseBox(close),
@@ -1167,6 +1168,18 @@ function showSettings() {
   }));
 }
 $('#setBtn').onclick = showSettings;
+
+function camBoxSetting() {   // applies at once (no Save): Off / this device's webcam
+  const sel = el('select', {}, [new Option('Off', ''), new Option('This device\'s webcam (live + record)', 'local')]);
+  sel.value = S.cam || '';
+  sel.onchange = () => {
+    if (!sel.value && !camClose()) { sel.value = 'local'; return; }
+    S.cam = sel.value; saveS(); store.set('ppos-cam-hide', ''); camSync();
+    toast(S.cam ? 'Camera on: it shows in the upper right' : 'Camera off');
+  };
+  return el('div', {}, [el('label', {}, ['Camera', sel]),
+    el('p', {className: 'note', textContent: 'Watch your counter in the corner of the POS with this computer\'s own webcam. Record saves video to a folder on this computer, a new file every 5 minutes; Motion records only when something moves and stops 30 seconds after things go still. Nothing is uploaded. Best on a computer in Chrome or Edge.'})]);
+}
 
 function officeBox() {
   if (!licensed()) return el('p', {className: 'note', textContent: 'Activate your license to check sales, staff and profit from any phone in the online back office.'});
@@ -1556,13 +1569,236 @@ function welcome() {
   store.set('ppos-welcomed', '1');
 }
 
+// ---- shop camera (8 Nov 2026, from the café POS; Vince: "Add camera to POS first") ------------------------------------
+// Settings > Shop camera turns on this device's own webcam, live in an upper-right widget. Record saves video to a folder
+// picked on this computer (File System Access, handle kept in IndexedDB "ppos-cam") or, without one, to Downloads, with a
+// new file every 5 minutes. Motion records only while something moves. Nothing is uploaded: the video stays on this device.
+// The widget reopens after a reload unless closed; closing frees the webcam.
+const CAM_QUIET = 30 * 1000, CAM_TICK = 500;   // Motion mode: stop after 30 s with no movement; look at the picture twice a second
+const CAM_SPLIT = 5 * 60 * 1000;   // a new file every 5 min: a file is only complete once closed, so a crash or power cut loses at most 5 min
+const camIco = d => '<svg viewBox="0 0 24 24"><path d="' + d + '"/></svg>';
+let camBox = null, camStream = null, rec = null, camDir = null, motion = null;
+const camMac = /Mac/.test(navigator.platform || navigator.userAgent) && navigator.maxTouchPoints < 2;   // a Mac, not an iPad
+const camOn = () => S.cam === 'local';
+function camSync() {
+  $('#camBtn').hidden = !camOn();
+  if (!camOn()) camClose(true);
+  else if (!camBox && !store.get('ppos-cam-hide')) camOpen();
+}
+function camClose(quiet) {
+  if (rec && !quiet && !confirm('Stop recording and close the camera?')) return false;
+  motionOff(); recStop();
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  if (camBox) { camBox.remove(); camBox = null; }
+  return true;
+}
+const camIdb = (mode, fn) => new Promise((res, rej) => {
+  const r = indexedDB.open('ppos-cam', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('kv');
+  r.onerror = () => rej(r.error);
+  r.onsuccess = () => { const tx = r.result.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = () => res(q.result); tx.onerror = () => rej(tx.error); };
+});
+const camDirReady = (window.indexedDB ? camIdb('readonly', st => st.get('dir')) : Promise.resolve(null)).then(h => { camDir = h || null; }, () => {});
+function camPlace() {   // wide screens: docked at the top of the ticket column (covers nothing); phones: floating, upper right
+  if (!camBox) return;
+  if (matchMedia('(max-width:760px)').matches) { if (camBox.parentNode !== document.body) document.body.append(camBox); }
+  else if (camBox.parentNode !== $('#right')) $('#right .bar').after(camBox);
+  const v = camBox.querySelector('video'); if (v) v.play().catch(() => {});
+}
+function camOpen() {
+  if (camBox) { if (camClose()) store.set('ppos-cam-hide', '1'); return; }
+  store.set('ppos-cam-hide', '');
+  const min = el('button', {ariaLabel: 'Minimise', title: 'Minimise'}), big = el('button', {ariaLabel: 'Enlarge', title: 'Enlarge'}), x = el('button', {ariaLabel: 'Close camera', title: 'Close'});
+  min.innerHTML = camIco('M5 11h14v2H5z'); big.innerHTML = camIco('M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z');
+  x.innerHTML = camIco('M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z');
+  const clock = el('span', {className: 'rec', hidden: true});
+  const box = camBox = el('div', {className: 'cam', role: 'region', ariaLabel: 'Shop camera'}, [el('header', {}, [el('span', {textContent: 'Live camera'}), clock, min, big, x])]);
+  camPlace();
+  min.onclick = () => { box.classList.remove('big'); box.classList.toggle('min'); };
+  big.onclick = () => { box.classList.remove('min'); box.classList.toggle('big'); };
+  x.onclick = () => { if (camClose()) store.set('ppos-cam-hide', '1'); };
+  const video = el('video', {autoplay: true, muted: true, playsInline: true});
+  const msg = el('div', {className: 'msg', textContent: 'Starting the camera…'}), retry = el('button', {textContent: 'Retry'});
+  const recBtn = el('button', {className: 'dot', textContent: 'Record', disabled: true}), where = el('span');
+  const folder = el('button', {textContent: 'Folder', title: 'Choose the folder on this computer where recordings are saved'});
+  folder.hidden = !window.showDirectoryPicker;
+  const showWhere = () => { where.textContent = 'Saving to: ' + (camDir ? camDir.name : 'Downloads'); };
+  showWhere(); camDirReady.then(showWhere);
+  const motionBtn = el('button', {textContent: 'Motion', disabled: true, title: 'Record only when something moves; stops 30 s after it goes still'});
+  box.append(msg, el('footer', {}, [where, folder, motionBtn, recBtn]));
+  folder.onclick = async () => {
+    try {
+      const d = await showDirectoryPicker({id: 'shop-camera', mode: 'readwrite', startIn: 'videos'});
+      camDir = d; await camIdb('readwrite', st => st.put(d, 'dir')); showWhere(); toast('Recordings will be saved in ' + d.name);
+    } catch (e) { if (e.name !== 'AbortError') toast('Could not use that folder'); }
+  };
+  const ensureFolder = async () => {   // a folder with write permission, asked for during the click (needs it)
+    if (!camDir && window.showDirectoryPicker) {
+      await folder.onclick();
+      if (!camDir) { toast('Choose a folder on this computer for the recordings'); return false; }
+    }
+    if (camDir) {
+      let ok = await camDir.queryPermission({mode: 'readwrite'});
+      if (ok !== 'granted') ok = await camDir.requestPermission({mode: 'readwrite'});
+      if (ok !== 'granted') { toast('No permission to save in ' + camDir.name); return false; }
+    }
+    return true;
+  };
+  motionBtn.onclick = async () => {
+    if (motion) { motionOff(true); store.set('ppos-cam-motion', ''); return; }
+    if (!camStream || !(await ensureFolder())) return;
+    store.set('ppos-cam-motion', '1'); motionOn(video, recBtn, motionBtn, clock);
+  };
+  recBtn.onclick = async () => {
+    if (motion) return;
+    if (rec) { recStop(); return; }
+    if (!camStream) return;
+    if (!camDir && window.showDirectoryPicker) {   // pick the folder first: files every 5 min to Downloads would stall behind Chrome's multiple-downloads prompt
+      await folder.onclick();
+      if (!camDir) { toast('Choose a folder on this computer for the recordings'); return; }
+    }
+    recBtn.disabled = true;
+    try { await recStart(camStream, recBtn, clock); } catch (e) { toast('Could not start recording: ' + (e.message || e.name)); }
+    recBtn.disabled = !camStream;
+  };
+  const stopped = text => { motionOff(); recStop(); camStream = null; recBtn.disabled = motionBtn.disabled = true; (video.isConnected ? video : msg).replaceWith(msg); msg.textContent = text; msg.append(el('br'), retry); };
+  const start = async () => {
+    if (camStream || box !== camBox) return;
+    if (!msg.isConnected) video.replaceWith(msg);
+    msg.textContent = 'Starting the camera…';
+    try {
+      if (!navigator.mediaDevices) throw Object.assign(new Error(), {name: 'NoMedia'});
+      const st = await navigator.mediaDevices.getUserMedia({video: {width: {ideal: 1280}, height: {ideal: 720}}, audio: false});
+      if (box !== camBox) { st.getTracks().forEach(t => t.stop()); return; }
+      camStream = st; video.srcObject = st; msg.replaceWith(video); recBtn.disabled = motionBtn.disabled = false;
+      if (store.get('ppos-cam-motion') && !motion) {   // Motion was on before a reload: resume if the folder is still allowed (no click to ask)
+        const ok = !camDir ? !window.showDirectoryPicker : await camDir.queryPermission({mode: 'readwrite'}).then(p => p === 'granted', () => false);
+        if (ok) motionOn(video, recBtn, motionBtn, clock); else toast('Tap Motion to start watching for movement again');
+      }
+      st.getVideoTracks()[0].onended = () => { if (box === camBox && camStream === st) stopped('The camera stopped (unplugged or taken by another app).'); };
+    } catch (e) {
+      if (box !== camBox) return;
+      stopped(e.name === 'NoMedia' ? 'This browser can\'t open a camera here.'
+        : e.name === 'NotAllowedError' ? 'Camera access is blocked. Click the camera icon in the address bar and choose Allow'
+          + (camMac ? '. On a Mac, also turn on this browser in System Settings > Privacy & Security > Camera (then restart the browser)' : '') + ', then Retry.'
+        : e.name === 'NotFoundError' ? 'No webcam found on this device.'
+        : e.name === 'NotReadableError' ? 'The webcam is busy in another app (' + (camMac ? 'FaceTime, Photo Booth, Zoom' : 'Zoom or the Camera app') + '). Close it, then Retry.'
+        : 'Could not open the camera (' + e.name + ').');
+    }
+  };
+  retry.onclick = start;
+  start();
+}
+// Motion mode (Vince, 8 Nov: "give option just to record if there are motion, if none, stop recording automatically").
+// Twice a second a 96x54 grey copy of the picture is compared with the last one; a pixel "moved" if it changed by more
+// than 25 levels. Movement = over 1.2% of pixels moved in two looks in a row (so a flicker or one noisy frame doesn't
+// count). It starts a recording (same files and folder as Record) and stops it 30 s after the last movement.
+function motionOn(video, recBtn, btn, clock) {
+  motionOff();
+  const cv = document.createElement('canvas'); cv.width = 96; cv.height = 54;
+  const cx = cv.getContext('2d', {willReadFrequently: true});
+  const m = motion = {btn, recBtn, prev: null, hits: 0, last: 0, starting: false};
+  btn.textContent = 'Motion on'; btn.classList.add('on'); recBtn.disabled = true; recBtn.title = 'Turn Motion off to record by hand';
+  m.timer = setInterval(() => {
+    if (motion !== m || !camStream || video.readyState < 2) return;
+    cx.drawImage(video, 0, 0, 96, 54);
+    const px = cx.getImageData(0, 0, 96, 54).data, g = new Uint8Array(96 * 54);
+    for (let i = 0; i < g.length; i++) g[i] = (px[i * 4] * 3 + px[i * 4 + 1] * 6 + px[i * 4 + 2]) / 10;
+    let moved = 0;
+    if (m.prev) for (let i = 0; i < g.length; i++) if (Math.abs(g[i] - m.prev[i]) > 25) moved++;
+    m.prev = g;
+    m.hits = moved / g.length > 0.012 ? m.hits + 1 : 0;
+    const now = Date.now();
+    if (m.hits >= 2) {
+      m.last = now;
+      if (!rec && !m.starting) {
+        m.starting = true;
+        recStart(camStream, recBtn, clock).catch(e => toast('Could not start recording: ' + (e.message || e.name))).finally(() => { m.starting = false; if (motion === m) recBtn.disabled = true; });
+      }
+    } else if (rec && !m.starting && now - m.last > CAM_QUIET) recStop();
+  }, CAM_TICK);
+}
+function motionOff(stopRec) {
+  const m = motion; if (!m) return;
+  motion = null; clearInterval(m.timer);
+  m.btn.textContent = 'Motion'; m.btn.classList.remove('on'); m.recBtn.title = ''; m.recBtn.disabled = !camStream;
+  if (stopRec) recStop();
+}
+const recType = () => ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+const recName = ext => 'shop-camera_' + new Date().toLocaleString('sv-SE').replace(' ', '_').replace(/:/g, '-') + '.' + ext;   // this device's own clock
+async function recFile(ext) {   // a writable file in the chosen folder, or null (then the recording goes to Downloads)
+  if (!camDir) return null;
+  let ok = await camDir.queryPermission({mode: 'readwrite'});
+  if (ok !== 'granted') ok = await camDir.requestPermission({mode: 'readwrite'});
+  if (ok !== 'granted') { toast('No permission for ' + camDir.name + ': saving to Downloads'); return null; }
+  const name = recName(ext);
+  return {name, dir: camDir.name, d: camDir, w: await (await camDir.getFileHandle(name, {create: true})).createWritable()};
+}
+const camWhere = text => { const w = camBox && camBox.querySelector('footer span'); if (w) w.textContent = text; };
+async function recStart(stream, btn, clock, noDir) {
+  const type = recType();
+  if (!type) throw new Error('this browser can\'t record video');
+  const ext = type.startsWith('video/mp4') ? 'mp4' : 'webm';
+  const file = noDir ? null : await recFile(ext).catch(e => {
+    toast('Can\'t save in ' + (camDir ? camDir.name : 'the folder') + ' (' + (e.name === 'NotFoundError' ? 'folder missing' : e.name) + '): recording to Downloads');
+    return null;
+  });
+  if (stream !== camStream || rec) { if (file) file.w.abort(); return; }
+  if (camDir && !file) camWhere('Saving to: Downloads (folder unavailable)');
+  const r = {mr: new MediaRecorder(stream, {mimeType: type, videoBitsPerSecond: 2500000}), file, chunks: [], q: Promise.resolve(), t0: Date.now(), btn, clock, ext,
+    name: file ? file.name : recName(ext)};
+  r.mr.ondataavailable = e => {
+    if (!e.data.size) return;
+    if (!r.file) { r.chunks.push(e.data); return; }
+    r.q = r.q.then(() => r.err || r.file.w.write(e.data)).catch(err => {   // first write error: tell, then keep recording to Downloads
+      if (r.err) return; r.err = err;
+      toast('Could not write to ' + r.file.dir + ' (' + (err.name || err) + '). Recording continues to Downloads.');
+      camWhere('Saving to: Downloads (folder unavailable)');
+      if (rec === r) { recStop(); recStart(stream, btn, clock, true).catch(() => toast('Recording stopped')); }
+    });
+  };
+  r.mr.onerror = e => toast('Recording error: ' + ((e.error && e.error.name) || 'unknown'));
+  r.mr.onstop = () => { if (rec === r) { recStop(); toast('Recording stopped unexpectedly. What was recorded has been saved.'); } recSave(r); };
+  r.mr.start(1000);
+  r.tick = setInterval(() => { const s = Math.floor((Date.now() - r.t0) / 1000); clock.textContent = '● ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }, 500);
+  r.split = setTimeout(() => {   // next file; keeps Downloads mode if the folder already failed
+    if (rec !== r) return;
+    recStop(); btn.disabled = true;
+    recStart(stream, btn, clock, !r.file).catch(() => toast('Recording stopped: could not start the next file')).finally(() => { btn.disabled = !camStream || !!motion; });
+  }, CAM_SPLIT);
+  rec = r; btn.textContent = 'Stop'; btn.classList.add('on'); btn.classList.remove('dot'); clock.hidden = false; clock.textContent = '● 00:00';
+}
+function recStop() {
+  const r = rec; if (!r) return;
+  rec = null; clearInterval(r.tick); clearTimeout(r.split);
+  if (r.mr.state !== 'inactive') r.mr.stop();   // onstop saves, after the last chunk
+  r.btn.textContent = 'Record'; r.btn.classList.remove('on'); r.btn.classList.add('dot'); r.clock.hidden = true;
+}
+function recSave(r) {
+  if (r.saved) return; r.saved = true;
+  if (r.file) {
+    r.q.then(() => { if (r.err) throw r.err; return r.file.w.close(); }).then(() => { if (!motion) toast('Saved ' + r.file.name + ' in ' + r.file.dir); }, () => {
+      toast('Could not finish ' + r.file.name);
+      r.file.w.abort().catch(() => {}).then(() => r.file.d.removeEntry(r.file.name)).catch(() => {});   // drop the empty file
+    });
+    return;
+  }
+  if (!r.chunks.length) return;
+  const blob = new Blob(r.chunks, {type: r.mr.mimeType}), a = el('a', {href: URL.createObjectURL(blob), download: r.name});
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  if (!motion) toast('Saved ' + r.name + ' to Downloads');
+}
+addEventListener('beforeunload', e => { if (rec) { e.preventDefault(); e.returnValue = ''; } });
+addEventListener('pagehide', () => { if (rec) recStop(); });   // best effort: finish the current file when the page goes away
+$('#camBtn').onclick = camOpen;
+
 // ---- mobile ticket panel + start --------------------------------------------------------------------------
 $('#openTicket').onclick = () => $('#right').classList.add('open');
 $('#closeTicket').onclick = () => $('#right').classList.remove('open');
-const mq = matchMedia('(max-width:760px)'); const syncMq = () => { $('#closeTicket').hidden = !mq.matches; }; mq.addEventListener('change', syncMq); syncMq();
+const mq = matchMedia('(max-width:760px)'); const syncMq = () => { $('#closeTicket').hidden = !mq.matches; camPlace(); }; mq.addEventListener('change', syncMq); syncMq();
 
 store.keys().filter(k => /^ppos-seq-\d{6}$/.test(k) && k.slice(9) < dayKey(addDays(new Date(), -3)).slice(2).replace(/-/g, '')).forEach(store.del);
-applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT(); syncSoon(3000); setTimeout(officeAsk, 2500);
+applyShop(); applyLicense(); buildCats(); render(); updHeld(); updOT(); syncSoon(3000); setTimeout(officeAsk, 2500); camSync();
 const hashKey = (location.hash.match(/key=([A-Za-z0-9-]+)/) || [])[1];
 if (hashKey) {
   history.replaceState(null, '', location.pathname + location.search);
@@ -1584,7 +1820,7 @@ if ('serviceWorker' in navigator) {
   setInterval(look, 30 * 60000);
   setInterval(() => {
     if (!updateReady) return;
-    if (ticket.length || topVeil()) { idleSince = 0; return; }
+    if (ticket.length || topVeil() || rec) { idleSince = 0; return; }   // never reload in the middle of a sale or a recording
     if (!idleSince) idleSince = Date.now(); else if (Date.now() - idleSince >= 20000) location.reload();
   }, 5000);
 }

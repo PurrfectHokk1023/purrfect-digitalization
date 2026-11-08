@@ -1,7 +1,7 @@
 // Purrfect POS offline helper (make_pos_app.py): network first so updates arrive, the saved copy when there is no internet.
 // cache: 'no-cache' makes every load ask the server (a quick "not modified" when nothing changed), so the browser's 10-minute copy
 // can't hold an update back. A request that can't be copied that way (very old browsers) goes as it is.
-const CACHE = 'ppos-4';
+const CACHE = 'ppos-5';
 const SHELL = ['./', './?app=1', 'index.html', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys()
