@@ -102,7 +102,8 @@ section { margin: 28px 0; }
 .people { display: grid; gap: 8px; }
 .person { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
 .person:hover { border-color: var(--blue-2); text-decoration: none; }
-.av { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; border-radius: 50%; display: block; }
+.av { overflow: hidden; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
 .person .who { min-width: 0; flex: 1; }
 .person .who b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .person .who span { font-size: 12.5px; color: var(--muted); }
@@ -143,3 +144,6 @@ details.cycle summary { cursor: pointer; font-weight: 600; }
 .hero > div:first-child::before { content: ""; position: absolute; z-index: -1; left: -60px; top: -40px; width: 260px; height: 260px; opacity: .14;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100'%3E%3Cg fill='%23fcd116'%3E%3Ccircle r='18'/%3E%3Cg id='r'%3E%3Cpath d='M0-22L4-48H-4Z'/%3E%3C/g%3E%3Cuse href='%23r' transform='rotate(45)'/%3E%3Cuse href='%23r' transform='rotate(90)'/%3E%3Cuse href='%23r' transform='rotate(135)'/%3E%3Cuse href='%23r' transform='rotate(180)'/%3E%3Cuse href='%23r' transform='rotate(225)'/%3E%3Cuse href='%23r' transform='rotate(270)'/%3E%3Cuse href='%23r' transform='rotate(315)'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat; }
 main { position: relative; z-index: 0; }
+
+.ramp { height: 10px; border-radius: 5px; margin: 14px 0 4px; }
+.votes { color: var(--ink); font-weight: 600; }

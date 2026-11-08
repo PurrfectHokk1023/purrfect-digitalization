@@ -22,8 +22,16 @@ const initials = (n) => { const w = n.split(' ').filter((x) => /^[A-ZÑ]/.test(x
 const daysTo2028 = () => Math.max(0, Math.ceil((ELECTION_2028 - Date.now()) / 864e5));
 const term = (y, pos) => `${y}–${+y + (/^(President|Vice President|Senator)$/.test(pos) ? 6 : 3)}`;
 
+let PHOTOS = {};
+const photoUrl = (file, w) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${w}`;
+function avatar(id, name, size = 34) {
+  const ph = PHOTOS[id];
+  const st = size !== 34 ? ` style="width:${size}px;height:${size}px;font-size:${Math.round(size / 3)}px"` : '';
+  return ph ? `<span class="av"${st}><img src="${photoUrl(ph[0], size * 2)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></span>`
+    : `<span class="av"${st}>${esc(initials(name))}</span>`;
+}
 function personCard(r, extra = '') {
-  return `<a class="person" href="#/person/${r.i}"><span class="av">${esc(initials(r.n))}</span>
+  return `<a class="person" href="#/person/${r.i}">${avatar(r.i, r.n)}
     <span class="who"><b>${esc(r.n)}</b><span>${esc(r.p)}${r.pt ? ' · ' + esc(r.pt) : ''}${extra}</span></span></a>`;
 }
 function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; moveTip(e); }
@@ -208,25 +216,108 @@ async function town(code) {
 }
 
 async function person(id) {
-  const [bucket, places] = await Promise.all([get(`people/${Math.floor(id / 1000)}.json`), get('places.json')]);
+  const [bucket, places, sd] = await Promise.all([get(`people/${Math.floor(id / 1000)}.json`), get('places.json'), get('saln.json')]);
   const p = bucket[id];
   if (!p) { $app.innerHTML = '<p class="pad">Not found.</p>'; return; }
   const place = (pc, mc) => mc ? `<a href="#/m/${mc}">${esc(places[mc]?.[0] || '')}</a>, <a href="#/p/${pc}">${esc(places[pc]?.[0] || '')}</a>` : pc ? `<a href="#/p/${pc}">${esc(places[pc]?.[0] || '')}</a>` : 'Nationwide';
   const last = p.c[p.c.length - 1];
   $app.innerHTML = `
   <div class="crumbs"><a href="#/">Philippines</a> › Official</div>
-  <div class="flex"><span class="av" style="width:56px;height:56px;font-size:18px">${esc(initials(p.n))}</span><div><h1 style="margin:0">${esc(p.n)}</h1><div class="muted">${esc(p.f)}</div></div></div>
+  <div class="flex">${avatar(id, p.n, 96)}<div><h1 style="margin:0">${esc(p.n)}</h1><div class="muted">${esc(p.f)}</div>
+    ${PHOTOS[id] ? `<small class="muted">Photo: <a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(PHOTOS[id][0])}" target="_blank" rel="noopener">Wikimedia Commons</a> · <a href="https://www.wikidata.org/wiki/${PHOTOS[id][1]}" target="_blank" rel="noopener">Wikidata</a></small>` : ''}</div></div>
   <section class="grid g2">
     <div class="card"><h2>Elected seats</h2><div class="timeline">
-      ${p.c.slice().reverse().map(([pos, y, pc, mc, party]) => `<div class="t"><b>${esc(pos)}</b> · ${term(y, pos)}<br><span class="muted">${place(pc, mc)}${party ? ' · ' + esc(party) : ''}</span></div>`).join('')}
+      ${p.c.slice().reverse().map(([pos, y, pc, mc, party, v]) => `<div class="t"><b>${esc(pos)}</b> · ${term(y, pos)}<br><span class="muted">${place(pc, mc)}${party ? ' · ' + esc(party) : ''}${v ? ` · <b class="votes">${fmt(v)} votes</b>` : ''}</span></div>`).join('')}
     </div></div>
     <div class="card"><h2>Record</h2>
       <p>${p.c.length} winning ${p.c.length === 1 ? 'race' : 'races'} on record since 2001. Latest: <b>${esc(last[0])}</b>, ${term(last[1], last[0])}.</p>
       <p class="note">Built from COMELEC winners lists. People are matched by full name within a province, so two people with the same full name may be merged, and a name spelled differently in one year may show as two people.</p>
-      <h3 style="margin-top:16px">Statement of assets (SALN)</h3>
-      <p class="muted">Not yet available here. SALNs of national officials can be requested from the Office of the Ombudsman.</p>
     </div>
-  </section>`;
+  </section>
+  <section class="card" id="vmap" hidden></section>
+  <section class="card"><h2>Statement of assets, liabilities and net worth (SALN)</h2>${salnBlock(p.saln, sd.sources)}</section>`;
+  voteMap(id, p, places);
+}
+
+async function voteMap(id, p, places) {
+  const races = await get(`votes/${id}.json`).catch(() => null);
+  const box = document.getElementById('vmap');
+  if (!races || !races.length || !box) return;
+  box.hidden = false;
+  box.innerHTML = `<div class="flex between"><h2 style="margin:0">Where the votes came from</h2>
+    <select id="vr" class="btn">${races.map((r, i) => `<option value="${i}">${esc(r.p)} ${r.y}</option>`).join('')}</select></div>
+    <div class="grid g2" style="margin-top:12px;align-items:start"><div class="mapbox" id="vm"></div>
+    <div><div class="stat blue"><span>Total votes</span><b id="vt"></b></div>
+    <div class="legend" id="vl"></div>
+    <h3 style="margin-top:16px">Strongest towns</h3><div id="vtop" class="tscroll"></div>
+    <p class="note" style="margin-top:12px">Shading is the estimated share of voters in each town who voted for ${esc(p.n)}: their votes divided by the votes cast in that town's biggest single-seat race (president, governor or mayor). Totals are summed from per-town results in OpenHalalan and may differ slightly from COMELEC's official canvass.</p></div></div>`;
+  const draw = async (r) => {
+    const pcs = [...new Set(Object.keys(r.m).map((mc) => places[mc]?.[1]).filter(Boolean))];
+    const national = ['President', 'Vice President', 'Senator'].includes(r.p);
+    let geo;
+    if (national || pcs.length > 3) geo = await get('geo/munis.json');
+    else {
+      const parts = await Promise.all(pcs.map((pc) => get(`geo/p/${pc}.json`).catch(() => null)));
+      geo = { type: 'FeatureCollection', features: parts.filter(Boolean).flatMap((g) => g.features) };
+    }
+    document.getElementById('vt').textContent = fmt(r.t);
+    const vals = Object.values(r.m).map((v) => v[1]).filter((v) => v != null).sort((a, b) => a - b);
+    const hi = vals.length ? vals[Math.floor(vals.length * 0.98)] || vals[vals.length - 1] : 100;
+    const color = d3.scaleSequential(d3.interpolateYlOrRd).domain([0, Math.max(hi, 1)]);
+    const el = document.getElementById('vm'); el.innerHTML = '';
+    const svg = drawMap(el, geo, {
+      label: (d) => { const v = r.m[d.properties.c]; const nm = places[d.properties.c]?.[0] || ''; return v ? `<b>${esc(nm)}</b><br>${fmt(v[0])} votes${v[1] != null ? ` · ≈${v[1]}% of voters` : ''}` : `<b>${esc(nm)}</b><br>No votes on record`; },
+      onClick: (d) => { if (places[d.properties.c]) location.hash = '#/m/' + d.properties.c; },
+    });
+    svg.selectAll('path').style('fill', (d) => { const v = r.m[d.properties.c]; return v && v[1] != null ? color(v[1]) : v ? '#cfd6e4' : 'var(--line)'; }).style('stroke-width', national ? 0.15 : 0.6);
+    document.getElementById('vl').innerHTML = `<div class="ramp" style="background:linear-gradient(90deg,${[0, .25, .5, .75, 1].map((t) => color(t * Math.max(hi, 1))).join(',')})"></div>
+      <div class="flex between muted" style="font-size:12px"><span>0%</span><span>≈ share of voters</span><span>${Math.round(hi)}%+</span></div>`;
+    const top = Object.entries(r.m).filter(([, v]) => v[1] != null).sort((a, b) => b[1][1] - a[1][1]).slice(0, 8);
+    document.getElementById('vtop').innerHTML = `<table><tbody>${top.map(([mc, v]) => `<tr><td><a href="#/m/${mc}">${esc(places[mc]?.[0] || mc)}</a><br><small class="muted">${esc(places[places[mc]?.[1]]?.[0] || '')}</small></td><td class="num">${fmt(v[0])}</td><td class="num"><b>${v[1]}%</b></td></tr>`).join('')}</tbody></table>`;
+  };
+  document.getElementById('vr').addEventListener('input', (e) => draw(races[+e.target.value]));
+  draw(races[0]);
+}
+
+const asof = (y, d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Dec 31, ' + y;
+function salnBlock(rows, sources) {
+  if (!rows || !rows.length) return `<p class="muted">No published SALN summary on file for this official. Alamin PH has the Senate summaries (2019, 2020, 2024) and House summaries (2015–2018). Others can be requested from the Office of the Ombudsman or the official's chamber.</p>`;
+  const max = Math.max(...rows.map((r) => r[4]), 1);
+  return `<div class="bars" style="margin:6px 0 14px">${rows.map(([y, d, a, l, n]) => `<div class="barrow"><span>${y}</span><div class="b" style="width:${Math.max(0, n / max * 100).toFixed(1)}%;background:var(--flag-yellow)"></div><span class="v">${peso(n)}</span></div>`).join('')}</div>
+  <div class="tscroll"><table><thead><tr><th>As of</th><th>Chamber</th><th class="num">Assets</th><th class="num">Liabilities</th><th class="num">Net worth</th><th>Source</th></tr></thead><tbody>
+  ${rows.slice().reverse().map(([y, d, a, l, n, si, ch]) => `<tr><td>${asof(y, d)}</td><td>${esc(ch)}</td><td class="num">${peso(a)}</td><td class="num">${peso(l)}</td><td class="num"><b>${peso(n)}</b></td><td><a href="${esc(sources[si][1])}" target="_blank" rel="noopener">${esc(sources[si][0])}</a></td></tr>`).join('')}
+  </tbody></table></div>
+  <p class="note" style="margin-top:10px">Totals as declared by the official in the published summary. Declared values are often acquisition cost, not market value. A SALN is a self-declaration, not an audit.</p>`;
+}
+
+async function salnPage() {
+  const sd = await get('saln.json');
+  const years = [...new Set(sd.rows.map((r) => r.y))].sort((a, b) => b - a);
+  $app.innerHTML = `
+  <div class="crumbs"><a href="#/">Philippines</a> › SALN</div>
+  <h1>SALN records</h1>
+  <p class="muted" style="max-width:780px">Declared assets, liabilities and net worth of senators and House members, from the official summary tables each chamber published. Only rows where assets minus liabilities equals the stated net worth are shown, so misread numbers are left out.</p>
+  <div class="toolbar"><select id="sc"><option value="">Senate and House</option><option>Senate</option><option>House</option></select>
+    <select id="sy">${years.map((y) => `<option>${y}</option>`).join('')}<option value="">All years</option></select>
+    <input id="sq" type="search" placeholder="Name or district"><select id="so"><option value="n">Highest net worth</option><option value="-n">Lowest net worth</option><option value="l">Highest liabilities</option><option value="nm">Name A–Z</option></select></div>
+  <div class="card tscroll"><table><thead><tr><th>#</th><th>Official</th><th>Chamber · as of</th><th class="num">Assets</th><th class="num">Liabilities</th><th class="num">Net worth</th></tr></thead><tbody id="st"></tbody></table></div>
+  <div class="flex" style="margin-top:12px"><button class="btn" id="sm">Show more</button><span class="muted" id="sn"></span></div>
+  <section class="card"><h2>Sources</h2><ul>${sd.sources.map(([label, url]) => `<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a></li>`).join('')}</ul>
+  <p class="note">House figures were read from the scanned summary PDFs with text recognition and checked row by row. Senate 2024 figures are as tallied by GMA News from the senators' released SALNs; some are as of June 30, 2025. Party-list representatives are listed but not linked to a profile.</p></section>`;
+  let limit = 100;
+  const render = () => {
+    const c = document.getElementById('sc').value, y = document.getElementById('sy').value, q = document.getElementById('sq').value.toLowerCase(), o = document.getElementById('so').value;
+    let rows = sd.rows.filter((r) => (!c || r.ch === c) && (!y || String(r.y) === y) && (!q || (r.nm + ' ' + (r.d || '') + ' ' + r.w).toLowerCase().includes(q)));
+    rows = rows.slice().sort(o === 'n' ? (a, b) => b.n - a.n : o === '-n' ? (a, b) => a.n - b.n : o === 'l' ? (a, b) => b.l - a.l : (a, b) => a.nm.localeCompare(b.nm));
+    document.getElementById('st').innerHTML = rows.slice(0, limit).map((r, i) => `<tr><td class="muted">${i + 1}</td>
+      <td>${r.i != null ? `<a href="#/person/${r.i}">${esc(r.nm)}</a>` : esc(r.nm)}${r.w ? `<br><small class="muted">${esc(r.w)}</small>` : ''}</td>
+      <td>${esc(r.ch)}<br><small class="muted">${asof(r.y, r.asof)}</small></td><td class="num">${peso(r.a)}</td><td class="num">${peso(r.l)}</td><td class="num"><b>${peso(r.n)}</b></td></tr>`).join('');
+    document.getElementById('sn').textContent = `${fmt(rows.length)} records`;
+    document.getElementById('sm').hidden = rows.length <= limit;
+  };
+  ['sc', 'sy', 'sq', 'so'].forEach((id) => document.getElementById(id).addEventListener('input', () => { limit = 100; render(); }));
+  document.getElementById('sm').addEventListener('click', () => { limit += 200; render(); });
+  render();
 }
 
 async function national() {
@@ -235,10 +326,11 @@ async function national() {
   <div class="crumbs"><a href="#/">Philippines</a> › National</div>
   <h1>National officials</h1>
   <section class="grid g2">
-    <div class="card">${officialsBlock(n.president, 'President, 2022–2028')}<div style="margin-top:12px">${officialsBlock(n.vp, 'Vice President, 2022–2028')}</div></div>
+    <div class="card">${officialsBlock(n.president.map((r) => ({ ...r, pt: r.pt + (r.v ? ' · ' + fmt(r.v) + ' votes' : '') })), 'President, 2022–2028')}<div style="margin-top:12px">${officialsBlock(n.vp.map((r) => ({ ...r, pt: r.pt + (r.v ? ' · ' + fmt(r.v) + ' votes' : '') })), 'Vice President, 2022–2028')}</div></div>
     <div class="card"><h3>Senate</h3><p class="muted">Senators elected in 2022 serve to 2028; those elected in 2025 serve to 2031. Shown as elected; later vacancies are not reflected.</p></div>
   </section>
-  <section class="card"><h2>Senators elected 2025 and 2022</h2><div class="grid g3">${n.senators.map((r) => personCard(r, ` · elected ${r.y}`)).join('')}</div></section>
+  <section class="card"><h2>Senators elected 2025 and 2022</h2><div class="grid g3">${n.senators.map((r) => personCard(r, ` · ${r.y}${r.v ? ` · ${fmt(r.v)} votes` : ''}`)).join('')}</div>
+    <p class="note" style="margin-top:12px">Tap a senator to see a map of where their votes came from.</p></section>
   <section class="card"><h2>Earlier national races</h2>
     ${Object.keys(n.history).sort((a, b) => b - a).map((y) => `<details class="cycle"><summary>${y}</summary><div class="grid g3" style="margin-top:10px">${n.history[y].map((r) => personCard(r)).join('')}</div></details>`).join('')}
     <p class="note">National winners are available from 2016 onward in the source data.</p></section>`;
@@ -327,21 +419,29 @@ function about() {
       <p class="muted">Barangay officials and party-list representatives are not included yet. Names are shown as printed on the ballot, which for 2016 onward often includes a nickname.</p></div>
     <div class="card"><h2>DPWH contracts</h2>
       <p>DPWH contract lists 2016–2025 as compiled in <a href="https://github.com/csiiiv/dpwh-contracts-dashboard" target="_blank" rel="noopener">csiiiv/dpwh-contracts-dashboard</a> (MIT), placed in a city or municipality using project coordinates from the DPWH transparency data as matched to PSGC codes in <a href="https://github.com/csiiiv/dpwh_coor2psgc_geomapping" target="_blank" rel="noopener">csiiiv/dpwh_coor2psgc_geomapping</a>. Related work: <a href="https://budget.bettergov.ph" target="_blank" rel="noopener">BetterGov.PH Budget</a>.</p></div>
+    <div class="card"><h2>SALN</h2>
+      <p>Official summary tables of declared assets, liabilities and net worth: the Senate's 2019 and 2020 tables (via the Internet Archive, since the Senate site is down) and the House's 2015–2018 summary reports. Senators' 2024 figures are from the SALNs released in October 2025 as tallied by GMA News. Scanned tables were read with text recognition; only rows where assets minus liabilities equals net worth are published. See also <a href="https://saln-tracker-ph.netlify.app" target="_blank" rel="noopener">SALN Tracker Philippines</a>.</p></div>
+    <div class="card"><h2>Votes</h2>
+      <p>Per-town vote counts from OpenHalalan's <a href="https://github.com/RobertRLeung/OpenHalalan" target="_blank" rel="noopener">NLE_Vote_Counts</a> file (ODbL 1.0): complete for 2016, 2019, 2022 and 2025, partial for 2010 and 2013. Totals are summed across towns (plus overseas for national races) and can differ slightly from COMELEC's official canvass.</p></div>
+    <div class="card"><h2>Photos</h2>
+      <p>Portraits come from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> through <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>, under each file's own free license (credited and linked on every official's page). A photo is shown only when the name, Jr./Sr., middle initial and office on Wikidata agree with the election record; otherwise initials are shown.</p></div>
     <div class="card"><h2>Maps and place codes</h2>
       <p>PSA's Philippine Standard Geographic Code (PSGC) with 2023 boundaries from <a href="https://github.com/faeldon/philippines-json-maps" target="_blank" rel="noopener">faeldon/philippines-json-maps</a>. Town names in the election data are matched to PSGC by name within the province; a handful of renamed or split towns (for example Don Victoriano Chiongbian) are not on the map yet.</p></div>
     <div class="card"><h2>How to read this</h2>
       <p><b>Families</b> groups officials by surname within a province. It does not prove kinship, and common surnames are flagged. <b>Seat changes</b> list successions where the new office holder shares the surname (or middle name) of the outgoing one, and people who won a different office in the next election.</p>
       <p>This site is non-partisan. It shows public records, not allegations. If a record is wrong, tell us at <a href="mailto:purrfecthokkaidocafe@gmail.com">purrfecthokkaidocafe@gmail.com</a>.</p></div>
   </section>
-  <section class="card"><h2>Coming next</h2><p class="muted">Barangay officials, SALN summaries of national officials, PhilGEPS contracts by local government, bills and laws by legislator, and community reports.</p></section>`;
+  <section class="card"><h2>Coming next</h2><p class="muted">Barangay officials, SALNs of the President, Vice President and Cabinet, PhilGEPS contracts by local government, bills and laws by legislator, and community reports.</p></section>`;
 }
 
 /* ---------- router ---------- */
 const routes = [
   [/^#?\/?$/, home], [/^#\/p\/(\d+)$/, province], [/^#\/m\/(\d+)$/, town], [/^#\/person\/(\d+)$/, person],
-  [/^#\/national$/, national], [/^#\/families$/, families], [/^#\/changes$/, changes], [/^#\/spending$/, spending], [/^#\/about$/, about],
+  [/^#\/national$/, national], [/^#\/families$/, families], [/^#\/changes$/, changes], [/^#\/spending$/, spending], [/^#\/saln$/, salnPage], [/^#\/about$/, about],
 ];
 async function route() {
+  if (!route.photos) route.photos = get('photos.json').then((p) => { PHOTOS = p; }).catch(() => {});
+  await route.photos;
   const h = location.hash || '#/';
   document.getElementById('nav').classList.remove('open');
   document.querySelectorAll('nav a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === h || (h.length > 2 && a.getAttribute('href') !== '#/' && h.startsWith(a.getAttribute('href')))));
