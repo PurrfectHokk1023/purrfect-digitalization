@@ -49,6 +49,7 @@ function drawMap(el, geo, { onClick, label, selected } = {}) {
     .on('mousemove', (e, d) => showTip(e, label(d)))
     .on('mouseleave', hideTip)
     .on('click', (e, d) => { hideTip(); onClick && onClick(d); });
+  svg.proj = proj;
   return svg;
 }
 
@@ -161,6 +162,7 @@ async function province(code) {
     </div>
     <div class="mapbox" id="map"><span class="mapnote muted">Tap a town</span></div>
   </div>
+  <section class="card" id="projects"><div class="flex between"><h2 style="margin:0">DPWH projects in ${esc(p.n)}</h2><span class="muted" id="pjc">Loading projects…</span></div></section>
   <section class="card"><h2>Cities and municipalities</h2>
     <div class="tscroll"><table><thead><tr><th>Town</th><th>Mayor (2025)</th><th class="num">DPWH contracts</th><th class="num">Value</th></tr></thead><tbody>
     ${p.munis.map((m) => `<tr><td><a href="#/m/${m.c}">${esc(m.n)}</a></td><td>${esc(m.mayor || '—')}</td><td class="num">${fmt(m.dpn)}</td><td class="num">${peso(m.dp)}</td></tr>`).join('')}
@@ -173,6 +175,95 @@ async function province(code) {
     label: (d) => { const m = byCode[d.properties.c]; return `<b>${esc(d.properties.n)}</b>${m ? `<br>Mayor: ${esc(m.mayor || '—')}<br>${fmt(m.dpn)} DPWH contracts · ${peso(m.dp)}` : ''}`; },
     onClick: (d) => { location.hash = '#/m/' + d.properties.c; },
   });
+  projectsBlock(code, geo, p);
+}
+
+const STATUS = { 'On-Going': ['#d97706', 'On-going'], 'Completed': ['#15803d', 'Completed'], 'Not Yet Started': ['#0038a8', 'Not yet started'],
+  'For Procurement': ['#7c3aed', 'For procurement'], 'Terminated': ['#ce1126', 'Terminated'] };
+const DOC_LABEL = { A: 'Notice of award', P: 'Notice to proceed', C: 'Contract' };
+const docUrl = (d) => d[1] === '|' ? d.slice(2) : 'https://www.dpwh.gov.ph/dpwh/sites/default/files/webform/civil_works/' + d.slice(1).split('/').map(encodeURIComponent).join('/');
+function satTile(lat, lon, z = 17) {
+  const n = 2 ** z, x = Math.floor((lon + 180) / 360 * n), r = lat * Math.PI / 180;
+  const y = Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n);
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+}
+function projectCard(r, places, asof) {
+  const [cid, desc, cat, st, prog, budget, paid, contractor, yr, start, expiry, mun, lat, lon, photos, docs] = r;
+  const [col, label] = STATUS[st] || ['#64748b', st || 'Unknown'];
+  const late = st === 'On-Going' && expiry && expiry < asof;
+  const pct = prog == null ? null : Math.max(0, Math.min(100, prog));
+  return `<article class="pj">
+    ${lat ? `<a class="pjimg" href="https://www.google.com/maps/@${lat},${lon},400m/data=!3m1!1e3" target="_blank" rel="noopener" title="Open the site in Google Maps satellite view">
+      <img src="${satTile(lat, lon)}" alt="Satellite view of the project site" loading="lazy" referrerpolicy="no-referrer"><span class="pin"></span><small>Satellite view of the site</small></a>`
+      : `<div class="pjimg none"><span>No coordinates published</span></div>`}
+    <div class="pjbody">
+      <div class="flex" style="gap:6px"><span class="chip" style="background:${col}1f;color:${col}">${esc(label)}</span>${late ? '<span class="chip amber">Past target date</span>' : ''}<span class="chip gray">${esc(cat)}</span>${yr ? `<span class="chip gray">${yr}</span>` : ''}</div>
+      <h3 class="pjt" title="${esc(desc)}">${esc(desc)}</h3>
+      <div class="muted" style="font-size:13px">${mun ? `<a href="#/m/${mun}">${esc(places[mun]?.[0] || '')}</a> · ` : ''}${esc(cid)}${contractor ? ' · ' + esc(contractor) : ''}</div>
+      ${pct != null ? `<div class="prog"><div style="width:${pct}%;background:${col}"></div></div><div class="flex between" style="font-size:12.5px"><span>${pct.toFixed(pct % 1 ? 1 : 0)}% done</span><span class="muted">${start ? 'Started ' + esc(start) : ''}${expiry ? ' · target ' + esc(expiry) : ''}</span></div>` : ''}
+      <div class="flex between" style="margin-top:6px"><span><b>${peso(budget)}</b> <small class="muted">contract</small></span><span class="muted" style="font-size:13px">${paid ? peso(paid) + ' paid' : ''}</span></div>
+      <div class="pjlinks"><a href="https://transparency.dpwh.gov.ph/projects/${esc(cid)}" target="_blank" rel="noopener">DPWH page${photos ? ` (${photos} site photos)` : ''}</a>${(docs || []).map((d) => `<a href="${esc(docUrl(d))}" target="_blank" rel="noopener">${DOC_LABEL[d[0]]}</a>`).join('')}</div>
+    </div></article>`;
+}
+async function projectsBlock(code, geo, p) {
+  const box = document.getElementById('projects');
+  const [pj, places] = await Promise.all([get(`pj/${code}.json`).catch(() => null), get('places.json')]);
+  if (!box) return;
+  if (!pj || !pj.rows.length) { document.getElementById('pjc').textContent = 'No DPWH projects with a location in this province.'; return; }
+  const order = ['On-Going', 'Not Yet Started', 'For Procurement', 'Completed', 'Terminated'];
+  const years = [...new Set(pj.rows.map((r) => r[8]).filter(Boolean))].sort((a, b) => b - a);
+  const asof = pj.asof || '2025-11-26';
+  const late = pj.rows.filter((r) => r[3] === 'On-Going' && r[10] && r[10] < asof).length;
+  box.innerHTML = `<div class="flex between"><h2 style="margin:0">DPWH projects in ${esc(p.n)}</h2><span class="muted">${fmt(pj.rows.length)} projects · status as of ${new Date(asof + 'T00:00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })} · tap a status to filter</span></div>
+    <div class="grid g4 pjstats" style="margin:14px 0">${order.filter((k) => pj.s[k]).map((k) => `<button class="stat pjs" data-s="${k}" style="border-left:5px solid ${STATUS[k][0]}"><span>${STATUS[k][1]}<br><small class="muted">${peso(pj.s[k][1])}</small></span><b>${fmt(pj.s[k][0])}</b></button>`).join('')}
+      ${late ? `<button class="stat pjs" data-s="late" style="border-left:5px solid var(--flag-red)"><span>On-going past target date<br><small class="muted">on that date</small></span><b>${fmt(late)}</b></button>` : ''}</div>
+    <div class="grid g2" style="align-items:start">
+      <div class="mapbox" id="pjmap"><span class="mapnote muted">Dots = project sites · tap one</span></div>
+      <div><div class="toolbar" style="margin-top:0"><input id="pq" type="search" placeholder="Search project, barangay or contractor">
+        <select id="ps"><option value="">Any status</option>${order.filter((k) => pj.s[k]).map((k) => `<option value="${k}">${STATUS[k][1]}</option>`).join('')}<option value="late">Past target date</option></select>
+        <select id="pm"><option value="">All towns</option>${p.munis.map((m) => `<option value="${m.c}">${esc(m.n)}</option>`).join('')}</select>
+        <select id="py"><option value="">All years</option>${years.map((y) => `<option>${y}</option>`).join('')}</select>
+        <select id="po"><option value="new">Newest first</option><option value="big">Largest first</option><option value="slow">Least progress (on-going)</option></select></div>
+        <div class="legend">${order.filter((k) => pj.s[k]).map((k) => `<span><i style="background:${STATUS[k][0]}"></i>${STATUS[k][1]}</span>`).join('')}</div>
+        <p class="note" style="margin-top:10px">Status, progress and amounts as published on the DPWH Transparency Portal, captured ${esc(asof)} (the portal may show newer figures). Thumbnails are satellite imagery of the published coordinates (Esri World Imagery), not DPWH site photos, which the portal does not publish openly; the DPWH page link opens the official record. "Past target date" means the published expiry date had passed by the capture date while the status still read on-going; the contract may have been extended, and it is not a finding of delay or fault.</p></div>
+    </div>
+    <div class="pjgrid" id="pjl"></div>
+    <div class="flex" style="margin-top:12px"><button class="btn" id="pmore">Show more</button><span class="muted" id="pcount"></span></div>`;
+  let svg = null;
+  if (geo) {
+    svg = drawMap(document.getElementById('pjmap'), geo, { label: (d) => `<b>${esc(d.properties.n)}</b>`, onClick: (d) => { document.getElementById('pm').value = d.properties.c; limit = 24; render(); } });
+    svg.selectAll('path').style('fill', 'var(--blue-soft)');
+  }
+  let limit = 24;
+  const filtered = () => {
+    const q = document.getElementById('pq').value.toLowerCase(), st = document.getElementById('ps').value, m = document.getElementById('pm').value,
+      y = document.getElementById('py').value, o = document.getElementById('po').value;
+    let rows = pj.rows.filter((r) => (!st || (st === 'late' ? r[3] === 'On-Going' && r[10] && r[10] < asof : r[3] === st)) && (!m || String(r[11]) === m)
+      && (!y || String(r[8]) === y) && (!q || (r[1] + ' ' + r[7] + ' ' + r[0]).toLowerCase().includes(q)));
+    if (o === 'big') rows = rows.slice().sort((a, b) => b[5] - a[5]);
+    else if (o === 'slow') rows = rows.filter((r) => r[3] === 'On-Going').sort((a, b) => (a[4] ?? 0) - (b[4] ?? 0));
+    else rows = rows.slice().sort((a, b) => (b[9] || '').localeCompare(a[9] || '') || b[5] - a[5]);
+    return rows;
+  };
+  const render = () => {
+    const rows = filtered();
+    document.getElementById('pjl').innerHTML = rows.slice(0, limit).map((r) => projectCard(r, places, asof)).join('') || '<p class="muted">No projects match.</p>';
+    document.getElementById('pcount').textContent = `Showing ${Math.min(limit, rows.length)} of ${fmt(rows.length)}`;
+    document.getElementById('pmore').hidden = rows.length <= limit;
+    if (svg) {
+      const pts = rows.filter((r) => r[12]).slice(0, 4000);
+      svg.selectAll('circle').data(pts, (r) => r[0]).join('circle')
+        .attr('cx', (r) => svg.proj([r[13], r[12]])[0]).attr('cy', (r) => svg.proj([r[13], r[12]])[1]).attr('r', 2.6)
+        .attr('fill', (r) => (STATUS[r[3]] || ['#64748b'])[0]).attr('stroke', 'white').attr('stroke-width', 0.5).style('cursor', 'pointer')
+        .on('mousemove', (e, r) => showTip(e, `<b>${esc(r[1].slice(0, 90))}${r[1].length > 90 ? '…' : ''}</b><br>${esc((STATUS[r[3]] || [0, r[3]])[1])}${r[4] != null ? ' · ' + Math.round(r[4]) + '%' : ''} · ${peso(r[5])}`))
+        .on('mouseleave', hideTip)
+        .on('click', (e, r) => { hideTip(); document.getElementById('pq').value = r[0]; limit = 24; render(); document.getElementById('pjl').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    }
+  };
+  ['pq', 'ps', 'pm', 'py', 'po'].forEach((id) => document.getElementById(id).addEventListener('input', () => { limit = 24; render(); }));
+  box.querySelectorAll('.pjs').forEach((b) => b.addEventListener('click', () => { document.getElementById('ps').value = b.dataset.s; limit = 24; render(); }));
+  document.getElementById('pmore').addEventListener('click', () => { limit += 24; render(); });
+  render();
 }
 
 async function town(code) {
@@ -248,7 +339,7 @@ async function voteMap(id, p, places) {
     <select id="vr" class="btn">${races.map((r, i) => `<option value="${i}">${esc(r.p)} ${r.y}</option>`).join('')}</select></div>
     <div class="grid g2" style="margin-top:12px;align-items:start"><div class="mapbox" id="vm"></div>
     <div><div class="stat blue"><span>Total votes</span><b id="vt"></b></div>
-    <div class="legend" id="vl"></div>
+    <div id="vl"></div>
     <h3 style="margin-top:16px">Strongest towns</h3><div id="vtop" class="tscroll"></div>
     <p class="note" style="margin-top:12px">Shading is the estimated share of voters in each town who voted for ${esc(p.n)}: their votes divided by the votes cast in that town's biggest single-seat race (president, governor or mayor). Totals are summed from per-town results in OpenHalalan and may differ slightly from COMELEC's official canvass.</p></div></div>`;
   const draw = async (r) => {
