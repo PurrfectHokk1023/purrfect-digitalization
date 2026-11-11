@@ -89,6 +89,7 @@ async function home() {
   const [stats, provs, geo, dyn] = await Promise.all([get('stats.json'), get('provinces.json'), get('geo/provinces.json'), get('dynasties.json')]);
   const byCode = Object.fromEntries(provs.map((p) => [p.c, p]));
   $app.innerHTML = `
+  <a class="live-banner" href="#/impeachment"><span class="dot"></span><b>LIVE · VP impeachment trial</b><span>Defense presenting evidence. 14 votes needed to convict. Follow the trial →</span></a>
   <div class="hero">
     <div>
       <span class="chip sun">☀ Free, sourced and non-partisan</span>
@@ -411,6 +412,61 @@ async function salnPage() {
   render();
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const niceDate = (d) => { const [y, m, dd] = d.split('-'); return dd ? `${MONTHS[+m - 1]} ${+dd}, ${y}` : m ? `${MONTHS[+m - 1]} ${y}` : y; };
+
+async function impeachment() {
+  const [im, n] = await Promise.all([get('../impeachment.json'), get('national.json')]);
+  const sen = n.senators.slice().sort((a, b) => a.n.localeCompare(b.n));
+  const vp = n.vp[0];
+  const sitting = sen.filter((s) => !im.not_sitting[s.i]);
+  $app.innerHTML = `
+  <div class="crumbs"><a href="#/">Philippines</a> › Impeachment trial</div>
+  <div class="flex between"><span class="chip amber">● ${esc(im.status)} · ${esc(im.day)}</span><span class="muted">Updated ${niceDate(im.updated)}</span></div>
+  <h1 style="margin-top:12px">${esc(im.title)}</h1>
+  <section class="grid g3">
+    <a class="card feat" href="#/person/${im.respondent}" style="display:flex;gap:14px;align-items:center">${avatar(vp.i, vp.n, 72)}<div><b style="font-size:18px">${esc(vp.n)}</b><br><span class="muted">Vice President, 2022–2028 · respondent</span></div></a>
+    <div class="card feat"><span class="muted">Votes needed to convict</span><div class="big">${im.votes_needed}</div><small class="muted">${esc(im.votes_base)}</small></div>
+    <div class="card feat"><span class="muted">Articles still on trial</span><div class="big">${im.articles.filter((a) => a.s === 'pending').length} of ${im.articles.length}</div><small class="muted">Article II: unexplained wealth</small></div>
+  </section>
+  <section class="card"><h2>The charges</h2>
+    <div class="grid g2">${im.articles.map((a) => `<div class="pj" style="padding:14px 16px;${a.s === 'pending' ? 'border:2px solid var(--flag-red)' : 'opacity:.7'}">
+      <div class="flex between"><b>Article ${a.n}</b><span class="chip ${a.s === 'pending' ? 'amber' : 'gray'}">${a.s === 'pending' ? 'On trial' : 'Withdrawn ' + niceDate(a.d)}</span></div>
+      <p style="margin:8px 0 0">${esc(a.t)}</p></div>`).join('')}</div>
+    <ul style="margin-top:14px">${im.claims.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+    <p class="note">Article II is an accusation that the Senate has not yet ruled on. Conviction removes the official from office and bars them from public office. A verdict needs ${im.votes_needed} votes.</p>
+  </section>
+  <section class="card" id="watch"><div class="flex between"><h2 style="margin:0">Watch the trial</h2><span class="muted">Full sessions from Philippine news channels on YouTube</span></div>
+    ${(() => { const v = im.videos[0]; return `<div class="yt big" data-id="${esc(v.id)}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" loading="lazy"><span class="play"></span><span class="ytlabel"><b>${esc(v.day)} · ${niceDate(v.d)}</b><br>${esc(v.t)}</span></div>
+      <p class="muted" style="margin:6px 0 0">${esc(v.by)}${v.alt.length ? ' · also on ' + v.alt.map(([n, id]) => `<a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" rel="noopener">${esc(n)}</a>`).join(', ') : ''}</p>`; })()}
+    <div class="ytgrid">${im.videos.slice(1).map((v) => `<div><div class="yt" data-id="${esc(v.id)}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" loading="lazy"><span class="play"></span></div>
+      <b>${esc(v.day)} · ${niceDate(v.d)}</b><br><span>${esc(v.t)}</span><br><small class="muted">${esc(v.by)}${v.alt.length ? ' · also on ' + v.alt.map(([n, id]) => `<a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" rel="noopener">${esc(n)}</a>`).join(', ') : ''}</small></div>`).join('')}</div>
+    <p class="note" style="margin-top:12px">Videos are the networks' own uploads, played from YouTube. Alamin PH does not edit or host them.</p>
+  </section>
+  <section class="grid g2">
+    <div class="card"><h2>Timeline</h2><div class="timeline">
+      ${im.timeline.slice().reverse().map((e) => `<div class="t"><b>${niceDate(e.d)}</b><br><span>${esc(e.t)}</span></div>`).join('')}
+    </div></div>
+    <div class="card"><h2>Next hearings</h2>
+      <table><tbody>${im.next.map((e) => `<tr><td style="white-space:nowrap"><b>${niceDate(e.d)}</b></td><td>${esc(e.t)}</td></tr>`).join('')}</tbody></table>
+      <h3 style="margin-top:18px">In the courtroom</h3>
+      <table><tbody>${im.people.map((p) => `<tr><td class="muted">${esc(p.r)}</td><td>${esc(p.n)}</td></tr>`).join('')}</tbody></table>
+      <p style="margin-top:14px"><a href="#/person/${im.respondent}">See her elected seats, votes and SALN record →</a></p>
+    </div>
+  </section>
+  <section class="card"><h2>The senator-judges</h2>
+    <p class="muted">${sitting.length} of ${sen.length} can take part, so ${im.votes_needed} votes convict. Senators shown as elected in 2022 and 2025; tap one for their record.</p>
+    <div class="grid g3">${sen.map((s) => personCard(s, im.roles[s.i] ? ` · <b>${esc(im.roles[s.i])}</b>` : im.not_sitting[s.i] ? ` · <span style="color:var(--red)">Not counted</span>` : '')).join('')}</div>
+    <h3 style="margin-top:16px">Not counted in the vote</h3>
+    <ul>${Object.entries(im.not_sitting).map(([i, why]) => `<li><a href="#/person/${i}">${esc((sen.find((s) => String(s.i) === i) || {}).n || i)}</a>: ${esc(why)}</li>`).join('')}</ul>
+  </section>
+  <section class="card"><h2>Sources</h2><ul>${im.sources.map(([l, u]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a></li>`).join('')}</ul>
+    <p class="note">Alamin PH summarises published news reports and does not take sides. Reports sometimes differ on details; we use the figures most outlets agree on. Spotted an error? Email purrfecthokkaidocafe@gmail.com.</p></section>`;
+  document.querySelectorAll('.yt').forEach((el) => el.addEventListener('click', () => {
+    el.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${el.dataset.id}?autoplay=1&rel=0" title="Trial video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  }, { once: true }));
+}
+
 async function national() {
   const n = await get('national.json');
   $app.innerHTML = `
@@ -528,7 +584,7 @@ function about() {
 /* ---------- router ---------- */
 const routes = [
   [/^#?\/?$/, home], [/^#\/p\/(\d+)$/, province], [/^#\/m\/(\d+)$/, town], [/^#\/person\/(\d+)$/, person],
-  [/^#\/national$/, national], [/^#\/families$/, families], [/^#\/changes$/, changes], [/^#\/spending$/, spending], [/^#\/saln$/, salnPage], [/^#\/about$/, about],
+  [/^#\/national$/, national], [/^#\/families$/, families], [/^#\/changes$/, changes], [/^#\/spending$/, spending], [/^#\/saln$/, salnPage], [/^#\/impeachment$/, impeachment], [/^#\/about$/, about],
 ];
 async function route() {
   if (!route.photos) route.photos = get('photos.json').then((p) => { PHOTOS = p; }).catch(() => {});

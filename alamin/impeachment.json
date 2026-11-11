@@ -1,0 +1,273 @@
+{
+ "updated": "2026-11-12",
+ "title": "Impeachment trial of Vice President Sara Duterte",
+ "respondent": 75482,
+ "status": "Defense presenting evidence",
+ "day": "Day 42 (Nov 11, 2026)",
+ "votes_needed": 14,
+ "votes_base": "two-thirds of the senator-judges able to take part (20 of 24 now), rounded up",
+ "articles": [
+  {
+   "n": "I",
+   "t": "Misuse of confidential funds (Office of the Vice President and DepEd)",
+   "s": "withdrawn",
+   "d": "2026-10-13"
+  },
+  {
+   "n": "II",
+   "t": "Unexplained wealth, incomplete SALNs (2022–2025) and prohibited business interests",
+   "s": "pending",
+   "d": ""
+  },
+  {
+   "n": "III",
+   "t": "Bribery of DepEd officials",
+   "s": "withdrawn",
+   "d": "2026-10-13"
+  },
+  {
+   "n": "IV",
+   "t": "Alleged threats against the President, the First Lady and a former Speaker",
+   "s": "withdrawn",
+   "d": "2026-10-13"
+  }
+ ],
+ "claims": [
+  "A forensic financial analyst for the prosecution estimated about ₱817 million in unexplained assets. The defense disputes the figure.",
+  "Prosecutors say the case rests mainly on documents: her SALNs, corporate financial statements, tax and property records, firearms registrations and financial transaction reports.",
+  "The Vice President denies wrongdoing and calls the proceedings political harassment."
+ ],
+ "timeline": [
+  {
+   "d": "2025-02-05",
+   "t": "First impeachment: 215 House members sign the complaint and send it to the Senate."
+  },
+  {
+   "d": "2025-07-25",
+   "t": "Supreme Court voids the first impeachment under the one-year bar. No trial is held."
+  },
+  {
+   "d": "2025-08-06",
+   "t": "Senate votes 19–4 (1 present) to archive the first articles."
+  },
+  {
+   "d": "2026-05-11",
+   "t": "Second impeachment: 257 House members vote to impeach and send four articles to the Senate."
+  },
+  {
+   "d": "2026-07-06",
+   "t": "Senate trial begins. Sen. Chiz Escudero is elected presiding officer and sets 16 votes to convict."
+  },
+  {
+   "d": "2026-09-23",
+   "t": "Day 29: court votes 13–1 to count only senator-judges able to take part. Votes needed fall to 14."
+  },
+  {
+   "d": "2026-10-13",
+   "t": "Prosecution drops Articles I, III and IV (Day 39). Only Article II, unexplained wealth, remains."
+  },
+  {
+   "d": "2026-10",
+   "t": "Prosecution rests its case after nearly four months of testimony."
+  },
+  {
+   "d": "2026-11-09",
+   "t": "Defense starts its evidence (Day 40). First witness: Davao City Assessor's Office officer Jaime Adalin. The court served 22 of 24 subpoenas the defense asked for."
+  },
+  {
+   "d": "2026-11-10",
+   "t": "Defense witnesses: Samal City assessor John Kenneth Enumerables and Davao City accountant Vingelin Bajan."
+  },
+  {
+   "d": "2026-11-11",
+   "t": "GenCorp corporate counsel Suzette Balucanag-Punay testifies for the defense that GenCorp paid the Vice President ₱2,142,369.14 as return of capital in 2022–2025 and that the Vice President held no GenCorp shares or posts in those years. Senator-judges press her on why the SALNs list GenCorp shares."
+  }
+ ],
+ "next": [
+  {
+   "d": "2026-11-12",
+   "t": "Full day. Defense to present BPI senior vice president Atty. Paul Roderick Ysmael."
+  },
+  {
+   "d": "2026-11-13",
+   "t": "Full day"
+  },
+  {
+   "d": "2026-11-16",
+   "t": "No trial: ASEAN Summit (Nov 16–18)"
+  },
+  {
+   "d": "2026-11-19",
+   "t": "Full day"
+  },
+  {
+   "d": "2026-11-20",
+   "t": "Full day"
+  },
+  {
+   "d": "2026-11-23",
+   "t": "10 AM – 2 PM"
+  }
+ ],
+ "not_sitting": {
+  "66689": "In hiding from an International Criminal Court arrest warrant (Philstar, Sep 2026)",
+  "75477": "Detained on a non-bailable plunder charge (Philstar, Sep 2026)",
+  "83628": "Detained on a non-bailable plunder charge (Philstar, Sep 2026)",
+  "75478": "Abroad on extended medical leave (Philstar, Sep 2026)"
+ },
+ "roles": {
+  "75476": "Presiding officer"
+ },
+ "people": [
+  {
+   "r": "Lead prosecutor",
+   "n": "Rep. Gerville Luistro"
+  },
+  {
+   "r": "Prosecutor",
+   "n": "Atty. Lorna Kapunan"
+  },
+  {
+   "r": "Defense",
+   "n": "Atty. Sheila Sison (lead), Atty. Michael Poa, Atty. Justin Nichol Gular"
+  }
+ ],
+ "sources": [
+  [
+   "Reuters explainer: where the trial stands (Nov 9, 2026)",
+   "https://www.timeslive.co.za/news/world/2026-11-09-explainer-where-does-philippine-vp-sara-dutertes-impeachment-trial-stand/"
+  ],
+  [
+   "Inquirer live updates, Nov 11, 2026",
+   "https://www.inquirer.net/495306/live-updates-sara-duterte-impeachment-trial-nov-11-2026/"
+  ],
+  [
+   "Manila Times: trial resumes, Nov 9, 2026",
+   "https://www.manilatimes.net/2026/11/09/news/vp-saras-impeachment-trial-resumes/2464835"
+  ],
+  [
+   "Interaksyon: prosecutors stake case on unexplained wealth (Nov 11, 2026)",
+   "https://interaksyon.philstar.com/politics-issues/2026/11/11/321697/vp-saras-impeachment-nears-end-as-prosecutors-stake-case-on-unexplained-wealth/"
+  ],
+  [
+   "Philstar: court votes 13–1 to lower the threshold (Sep 2026)",
+   "https://www.philstar.com/headlines/2026/09/22/2558345/senate-scraps-fixed-16-vote-threshold-sara-duterte-impeachment"
+  ],
+  [
+   "DZRH: prosecution drops 3 articles, keeps unexplained wealth (Oct 13, 2026)",
+   "https://www.dzrh.com.ph/post/prosecution-drops-3-impeachment-articles-vs-sara-duterte-retains-unexplained-wealth-charge"
+  ],
+  [
+   "Inquirer: November trial schedule",
+   "https://newsinfo.inquirer.net/2322926/vp-impeachment-trial-court-releases-november-schedule/amp"
+  ],
+  [
+   "Wikipedia: first impeachment of Sara Duterte (2025 background)",
+   "https://en.wikipedia.org/wiki/First_impeachment_of_Sara_Duterte"
+  ]
+ ],
+ "videos": [
+  {
+   "day": "Day 42",
+   "d": "2026-11-11",
+   "t": "GenCorp counsel testifies on the Vice President's return of capital",
+   "id": "K0tPn7wRzzE",
+   "by": "GMA News",
+   "alt": [
+    [
+     "Rappler",
+     "_a0KTPngz7E"
+    ],
+    [
+     "ABS-CBN News",
+     "RhV-sGQrexE"
+    ]
+   ]
+  },
+  {
+   "day": "Day 41",
+   "d": "2026-11-10",
+   "t": "Defense witnesses from Samal and Davao City",
+   "id": "Y-Q2kPp9eRA",
+   "by": "GMA News",
+   "alt": [
+    [
+     "Rappler",
+     "_9PRZEmo2KU"
+    ],
+    [
+     "ABS-CBN News",
+     "8m8EKYJD84s"
+    ]
+   ]
+  },
+  {
+   "day": "Day 40",
+   "d": "2026-11-09",
+   "t": "Defense presents its first witness",
+   "id": "mTvpMHBeMwU",
+   "by": "ABS-CBN News",
+   "alt": [
+    [
+     "GMA News report",
+     "MsnYNuWoEOc"
+    ],
+    [
+     "ANC",
+     "yUnoivsq4XE"
+    ]
+   ]
+  },
+  {
+   "day": "Day 39",
+   "d": "2026-10-13",
+   "t": "Prosecution drops Articles I, III and IV",
+   "id": "MWUrt2ohIvA",
+   "by": "INQUIRER.net",
+   "alt": [
+    [
+     "ABS-CBN News",
+     "4EeH70DDoKk"
+    ],
+    [
+     "Manila Bulletin",
+     "PNN7161XXwo"
+    ]
+   ]
+  },
+  {
+   "day": "Day 29",
+   "d": "2026-09-23",
+   "t": "Court lowers the votes needed to convict to 14",
+   "id": "hzyOkgo0Sw0",
+   "by": "GMA News",
+   "alt": [
+    [
+     "Rappler",
+     "B9aPup9N5Gs"
+    ],
+    [
+     "INQUIRER.net",
+     "TkbRdsxpBn4"
+    ]
+   ]
+  },
+  {
+   "day": "Day 1",
+   "d": "2026-07-06",
+   "t": "Trial opens; Escudero elected presiding officer",
+   "id": "0lbYD6gRBBE",
+   "by": "ANC",
+   "alt": [
+    [
+     "ABS-CBN News (part 1 of 4)",
+     "1QtBTmryDrI"
+    ],
+    [
+     "The Manila Times",
+     "GAXa2i1OMc8"
+    ]
+   ]
+  }
+ ]
+}
